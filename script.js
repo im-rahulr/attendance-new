@@ -413,6 +413,21 @@ function updateCurrentTime() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeData();
     
+    // Set up event listeners for attendance buttons on dashboard
+    if (window.location.pathname.includes('dashboard.html')) {
+        const classesContainer = document.querySelector('.classes-section');
+        if (classesContainer) {
+            classesContainer.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.matches('.btn-present') || target.matches('.btn-absent')) {
+                    const classId = parseInt(target.dataset.classId, 10);
+                    const newStatus = target.matches('.btn-present') ? 'present' : 'absent';
+                    updateAttendance(classId, newStatus);
+                }
+            });
+        }
+    }
+    
     // Set up online/offline status detection
     window.addEventListener('online', function() {
         console.log('Device is online. Syncing data with Firestore...');

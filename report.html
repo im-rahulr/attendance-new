@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Report</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Add Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
     <style>
         .loading-overlay {
             position: fixed;
@@ -46,6 +46,42 @@
     </style>
 </head>
 <body>
+    <div class="app-container">   
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title">Attendity</div>
+            <div class="profile-icon" id="profileIcon">JS</div>
+        </div>
+        
+        <!-- Report Content -->
+        <div class="report-content">
+            <div class="report-header">
+                <h1>Attendance Report</h1>
+            </div>
+            
+            <div class="total-attendance">
+                <h3>Total Attendance Percentage</h3>
+                <div class="percentage-circle">
+                    <span class="percentage">75%</span>
+                </div>
+            </div>
+            
+            <div class="subject-attendance">
+                <h3>Subject Attendance Percentage</h3>
+                
+                <!-- Subject cards will be dynamically added here -->
+                
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">Dashboard</a>
+            <a href="report.html" class="nav-item active">Report</a>
+            <a href="profile.html" class="nav-item">Profile</a>
+        </div>
+    </div>
+    
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner"></div>
         <p>Loading your report...</p>
@@ -54,35 +90,6 @@
     <div id="errorMessage" class="error-message">
         An error occurred. Please try again.
     </div>
-
-    <header class="app-header">
-        <h1 class="app-title">Attendity</h1>
-        <div class="profile-icon" id="profileInitial">P</div>
-    </header>
-    
-    <main class="main-content">
-        <div class="total-attendance">
-            <h3>Total Attendance Percentage</h3>
-            <div class="percentage-circle">
-                <span class="percentage" id="totalPercentage">0%</span>
-            </div>
-        </div>
-        
-        <div class="subject-attendance">
-            <h3>Subject Attendance Percentage</h3>
-            
-            <div id="subjectsContainer">
-                <!-- Subject cards will be loaded here dynamically -->
-            </div>
-        </div>
-    </main>
-    
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item">Dashboard</a>
-        <!-- <a href="index.html" class="nav-item">Home</a> -->
-        <a href="report.html" class="nav-item active">Report</a>
-        <a href="profile.html" class="nav-item">Profile</a>
-    </nav>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -90,7 +97,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
+    <!-- Custom JS -->
     <script src="auth.js"></script>
+    <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Firebase references
@@ -112,7 +121,7 @@
                 if (user) {
                     // Update profile initial
                     const initials = getInitials(user.displayName || 'User');
-                    document.getElementById('profileInitial').textContent = initials;
+                    document.getElementById('profileIcon').textContent = initials;
                     
                     // Load attendance report data
                     loadAttendanceReport(user.uid);

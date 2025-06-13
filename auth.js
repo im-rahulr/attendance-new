@@ -13,35 +13,68 @@ const firebaseConfig = {
 let auth;
 let db;
 
-// Initialize Firebase with offline persistence
-try {
-  firebase.initializeApp(firebaseConfig);
+// Function to initialize Firebase with retry mechanism
+function initializeFirebase(maxRetries = 3) {
+  let retries = 0;
   
-  // Enable offline persistence for Firestore
-  firebase.firestore().enablePersistence({ synchronizeTabs: true })
-    .catch((err) => {
-      if (err.code == 'failed-precondition') {
-        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-      } else if (err.code == 'unimplemented') {
-        console.warn('The current browser does not support all of the features required to enable persistence');
+  const tryInitialize = () => {
+    try {
+      // Check if Firebase is already initialized
+      if (firebase.apps.length > 0) {
+        console.log("Firebase already initialized");
+        auth = firebase.auth();
+        db = firebase.firestore();
+        return true;
       }
-    });
+      
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      
+      // Enable offline persistence for Firestore
+      firebase.firestore().enablePersistence({ synchronizeTabs: true })
+        .catch((err) => {
+          if (err.code == 'failed-precondition') {
+            console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+          } else if (err.code == 'unimplemented') {
+            console.warn('The current browser does not support all of the features required to enable persistence');
+          }
+        });
+        
+      // Initialize auth and db
+      auth = firebase.auth();
+      db = firebase.firestore();
+      
+      // Set network timeout settings
+      firebase.firestore().settings({
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+      });
+      
+      console.log("Firebase initialized successfully");
+      return true;
+    } catch (error) {
+      console.error(`Firebase initialization attempt ${retries + 1} failed:`, error);
+      return false;
+    }
+  };
+
+  const initWithRetry = () => {
+    if (tryInitialize()) return;
     
-  // Initialize auth and db
-  auth = firebase.auth();
-  db = firebase.firestore();
-  
-  // Set network timeout settings
-  firebase.firestore().settings({
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
-  });
-  
-  // Set max retry attempts for auth
-  auth.settings.appVerificationDisabledForTesting = false;
-} catch (error) {
-  console.error("Firebase initialization error:", error);
-  alert("Error initializing Firebase. Please check your internet connection and try again.");
+    retries++;
+    if (retries < maxRetries) {
+      console.log(`Retrying Firebase initialization (${retries}/${maxRetries})...`);
+      setTimeout(initWithRetry, 1500 * retries); // Incremental backoff
+    } else {
+      console.error(`Failed to initialize Firebase after ${maxRetries} attempts.`);
+      alert("Error initializing Firebase. Please check your internet connection and try again.");
+    }
+  };
+
+  initWithRetry();
 }
+
+// Initialize Firebase when the script loads
+initializeFirebase();
 
 // DOM elements
 document.addEventListener('DOMContentLoaded', function() {
