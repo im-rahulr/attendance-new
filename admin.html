@@ -796,6 +796,17 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     
+    // Enable offline persistence for Firestore
+    db.enablePersistence()
+      .catch((err) => {
+          console.error("Persistence error:", err.code);
+          if (err.code == 'failed-precondition') {
+              console.warn("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
+          } else if (err.code == 'unimplemented') {
+              console.warn("The current browser does not support all of the features required to enable persistence");
+          }
+    });
+    
     // Admin emails (you can store these in Firestore instead)
     const adminEmails = ["admin@admin.com"];
     let attendanceChartInstance = null;
@@ -1526,6 +1537,9 @@
 
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
+        // Check if running on Netlify
+        checkNetlifyEnvironment();
+        
         // Auth state change listener
         auth.onAuthStateChanged(function(user) {
             const adminLoginContainer = document.getElementById('adminLoginContainer');
@@ -2071,8 +2085,11 @@
         document.getElementById('spinner').style.display = 'flex';
         document.getElementById('adminTableContainer').style.display = 'none';
         
+        console.log("Fetching users data from Firestore...");
+        
         db.collection('users').get()
             .then(snapshot => {
+                console.log("Users data received, count:", snapshot.size);
                 const users = [];
                 let totalAttendanceSum = 0;
 
@@ -2094,8 +2111,13 @@
 
                     let lastUpdated = 'Never';
                     if (userData.lastUpdated) {
-                        const date = userData.lastUpdated.toDate();
-                        lastUpdated = date.toLocaleString();
+                        try {
+                            const date = userData.lastUpdated.toDate();
+                            lastUpdated = date.toLocaleString();
+                        } catch (e) {
+                            console.warn("Error formatting date for user:", doc.id, e);
+                            lastUpdated = 'Invalid date';
+                        }
                     }
                     
                     users.push({
@@ -2114,6 +2136,12 @@
                 
                 if (users.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center">No users found</td></tr>`;
+                    console.warn("No users found in the database");
+                    
+                    // Check if we need to create sample data
+                    if (currentUser && confirm("No user data found. Would you like to create sample user data?")) {
+                        createSampleUserData();
+                    }
                 } else {
                     users.forEach((user, idx) => {
                         const tr = document.createElement('tr');
@@ -2139,7 +2167,14 @@
                                 </button>
                             </td>
                         `;
-                        tr.querySelector('.view-details-btn').addEventListener('click', () => showUserDetails(user));
+                        try {
+                            const viewBtn = tr.querySelector('.view-details-btn');
+                            if (viewBtn) {
+                                viewBtn.addEventListener('click', () => showUserDetails(user));
+                            }
+                        } catch (e) {
+                            console.error("Error adding event listener to view button:", e);
+                        }
                         tbody.appendChild(tr);
                     });
                 }
@@ -2152,14 +2187,135 @@
                 const avgAttendance = users.length > 0 ? Math.round(totalAttendanceSum / users.length) : 0;
                 document.getElementById('avgAttendanceStat').textContent = `${avgAttendance}%`;
                 
-                updateDashboardChart(users);
+                try {
+                    updateDashboardChart(users);
+                } catch (e) {
+                    console.error("Error updating dashboard chart:", e);
+                }
 
                 showToast('User data loaded successfully!', 'success');
             })
             .catch(error => {
                 console.error("Error loading users:", error);
                 document.getElementById('spinner').style.display = 'none';
-                showToast('Failed to load user data!', 'danger');
+                document.getElementById('adminTableContainer').style.display = '';
+                document.querySelector('#adminTable tbody').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+                
+                // Check if permission denied - could be Firebase rules issue
+                if (error.code === 'permission-denied') {
+                    showToast('Permission denied. Please check your Firebase rules.', 'danger');
+                    console.error("This is likely a Firebase rules issue. Make sure your rules allow reading/writing data from your Netlify domain.");
+                    
+                    // Check if admin user exists and if we're authenticated
+                    if (currentUser) {
+                        // Try to create the collection with basic permissions
+                        createInitialUserData();
+                    }
+                } else {
+                    showToast('Failed to load user data: ' + error.message, 'danger');
+                }
+            });
+    }
+    
+    // Create initial user data function
+    function createInitialUserData() {
+        console.log("Attempting to create initial user data...");
+        
+        // First check if the current user is admin
+        if (!currentUser || !checkAdmin(currentUser.email)) {
+            console.error("Cannot create initial data: not authenticated as admin");
+            return;
+        }
+        
+        db.collection('users').doc('initial').set({
+            name: 'Initial User',
+            email: 'initial@example.com',
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            attendanceData: {
+                subjects: {}
+            },
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            console.log("Initial user created successfully");
+            showToast('Initial user created. You should now be able to see data.', 'success');
+            loadUserData(); // Try loading data again
+        })
+        .catch(error => {
+            console.error("Error creating initial user:", error);
+            showToast('Error creating initial user: ' + error.message, 'danger');
+        });
+    }
+    
+    // Sample data creation function
+    function createSampleUserData() {
+        console.log("Creating sample user data...");
+        showToast('Creating sample data...', 'info');
+        
+        const sampleUsers = [
+            {
+                name: 'John Doe',
+                email: 'john@example.com',
+                attendanceData: {
+                    subjects: {
+                        'Computer Science': {
+                            present: 15,
+                            absent: 2
+                        },
+                        'Mathematics': {
+                            present: 12,
+                            absent: 5
+                        }
+                    }
+                }
+            },
+            {
+                name: 'Jane Smith',
+                email: 'jane@example.com',
+                attendanceData: {
+                    subjects: {
+                        'Computer Science': {
+                            present: 14,
+                            absent: 3
+                        },
+                        'Mathematics': {
+                            present: 16,
+                            absent: 1
+                        }
+                    }
+                }
+            }
+        ];
+        
+        const batch = db.batch();
+        
+        sampleUsers.forEach((user, index) => {
+            const userRef = db.collection('users').doc(`sample_user_${index}`);
+            batch.set(userRef, {
+                ...user,
+                createdBy: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+        
+        batch.commit()
+            .then(() => {
+                console.log("Sample data created");
+                showToast('Sample data created successfully!', 'success');
+                loadUserData();
+            })
+            .catch(error => {
+                console.error("Error creating sample data:", error);
+                showToast('Error creating sample data: ' + error.message, 'danger');
             });
     }
 
@@ -2206,6 +2362,8 @@
         spinner.style.display = 'flex';
         list.innerHTML = '';
 
+        console.log("Loading subjects...");
+        
         // Make sure we have a reference to the authenticated user
         if (!currentUser) {
             spinner.style.display = 'none';
@@ -2217,10 +2375,16 @@
         db.collection('subjects').get()
             .then(snapshot => {
                 spinner.style.display = 'none';
+                console.log("Subjects data received, count:", snapshot.size);
                 
                 if(snapshot.empty) {
                     list.innerHTML = '<li class="list-group-item">No subjects found. Add your first subject above.</li>';
                     document.getElementById('totalSubjectsStat').textContent = 0;
+                    
+                    // Offer to create sample subjects
+                    if (confirm("No subjects found. Would you like to create sample subjects?")) {
+                        createSampleSubjects();
+                    }
                     return;
                 }
                 
@@ -2280,10 +2444,17 @@
             .catch(error => {
                 console.error("Error loading subjects:", error);
                 spinner.style.display = 'none';
+                list.innerHTML = `
+                    <li class="list-group-item text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading subjects: ${error.message}
+                    </li>
+                `;
                 
                 // If permission denied, try to create the collection
                 if (error.code === 'permission-denied') {
                     showToast('Creating subjects collection...', 'info');
+                    console.log("Permission denied when accessing subjects. Creating initial collection...");
                     // Create an initial empty document to establish the collection
                     db.collection('subjects').doc('initial').set({
                         createdBy: currentUser.uid,
@@ -2294,15 +2465,62 @@
                     })
                     .then(() => {
                         showToast('Subjects collection created. You can now add subjects.', 'success');
+                        console.log("Subjects collection created successfully");
                         loadSubjects(); // Try loading again
                     })
                     .catch(innerError => {
                         showToast('Error creating subjects: ' + innerError.message, 'danger');
-                        console.error("Error creating subjects:", innerError);
+                        console.error("Error creating subjects collection:", innerError);
                     });
                 } else {
                     showToast('Error loading subjects: ' + error.message, 'danger');
                 }
+            });
+    }
+
+    // Create sample subjects function
+    function createSampleSubjects() {
+        console.log("Creating sample subjects...");
+        showToast('Creating sample subjects...', 'info');
+        
+        const sampleSubjects = [
+            {
+                name: 'Computer Science',
+                classDays: ['Monday', 'Wednesday', 'Friday'],
+                classOrder: 1
+            },
+            {
+                name: 'Mathematics',
+                classDays: ['Tuesday', 'Thursday'],
+                classOrder: 2 
+            },
+            {
+                name: 'Physics',
+                classDays: ['Monday', 'Thursday'],
+                classOrder: 3
+            }
+        ];
+        
+        const batch = db.batch();
+        
+        sampleSubjects.forEach((subject, index) => {
+            const subjectRef = db.collection('subjects').doc(`sample_subject_${index}`);
+            batch.set(subjectRef, {
+                ...subject,
+                createdBy: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+        
+        batch.commit()
+            .then(() => {
+                console.log("Sample subjects created");
+                showToast('Sample subjects created successfully!', 'success');
+                loadSubjects();
+            })
+            .catch(error => {
+                console.error("Error creating sample subjects:", error);
+                showToast('Error creating sample subjects: ' + error.message, 'danger');
             });
     }
 
@@ -2779,7 +2997,133 @@
     function checkAdmin(email) {
         return adminEmails.includes(email);
     }
+    
+    // Check if running on Netlify and show Firebase rules information
+    function checkNetlifyEnvironment() {
+        console.log("Checking if running on Netlify...");
+        
+        // Check if we're on Netlify by looking at the hostname
+        const isNetlify = window.location.hostname.includes('netlify.app') || 
+                          window.location.hostname.includes('netlify.com');
+                          
+        // Check for potential CORS issues
+        checkCorsIssues();
+                          
+        if (isNetlify) {
+            console.log("Running on Netlify domain:", window.location.hostname);
+            
+            // Create a dismissible warning at the top of the page
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'alert alert-warning alert-dismissible fade show mx-3 mt-3';
+            warningDiv.innerHTML = `
+                <strong>Netlify Deployment Notice:</strong> 
+                If you're seeing this message and data is not loading, you need to update your Firebase Security Rules.
+                Add the domain <code>${window.location.hostname}</code> to your authorized domains in Firebase console.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-info" id="showFirebaseRulesBtn">Show Firebase Rules Tips</button>
+                </div>
+            `;
+            
+            // Insert the warning at the top of the body
+            document.body.insertBefore(warningDiv, document.body.firstChild);
+            
+            // Add event listener to the button
+            document.getElementById('showFirebaseRulesBtn').addEventListener('click', showFirebaseRulesTips);
+        }
+    }
+    
+    // Show Firebase rules tips
+    function showFirebaseRulesTips() {
+        // Create modal if it doesn't exist
+        if (!document.getElementById('rulesModal')) {
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal fade';
+            modalDiv.id = 'rulesModal';
+            modalDiv.setAttribute('tabindex', '-1');
+            modalDiv.setAttribute('aria-labelledby', 'rulesModalLabel');
+            modalDiv.setAttribute('aria-hidden', 'true');
+            
+            modalDiv.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="rulesModalLabel">Firebase Rules for Netlify Deployment</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>To make your Firebase database work with your Netlify deployment, you need to update your security rules:</p>
+                            
+                            <h6 class="mt-3">Step 1: Add Netlify domain to Firebase Authentication</h6>
+                            <ol>
+                                <li>Go to the <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+                                <li>Select your project</li>
+                                <li>Go to Authentication → Settings → Authorized Domains</li>
+                                <li>Add your Netlify domain: <code>${window.location.hostname}</code></li>
+                            </ol>
+                            
+                            <h6 class="mt-3">Step 2: Update Firestore Rules</h6>
+                            <p>Go to Firestore Database → Rules and update with rules like these:</p>
+                            <pre class="bg-light p-3 border rounded"><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow admin operations on all documents
+    match /{document=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@admin.com', 'youremail@example.com'];
+    }
+    
+    // Allow authenticated users to read their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow authenticated users to read subject data
+    match /subjects/{document=**} {
+      allow read: if request.auth != null;
+    }
+  }
+}</code></pre>
 
+                            <div class="alert alert-info mt-3">
+                                <strong>Tip:</strong> Make sure to replace <code>youremail@example.com</code> with your actual admin email.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+        }
+        
+        // Show the modal
+        const rulesModal = new bootstrap.Modal(document.getElementById('rulesModal'));
+        rulesModal.show();
+    }
+
+    // Check for potential CORS issues
+    function checkCorsIssues() {
+        // Make a simple test request to Firestore
+        console.log("Testing Firestore connectivity...");
+        db.collection('test_connection').doc('test').get()
+            .then(() => {
+                console.log("✅ Firestore connection successful");
+            })
+            .catch(error => {
+                console.error("❌ Firestore connection error:", error);
+                
+                // Check if it's a CORS error
+                if (error.code === 'permission-denied' || error.name === 'FirebaseError') {
+                    console.warn("This may be a Firebase rules or CORS issue");
+                    
+                    // Create a toast notification
+                    showToast('Firebase connectivity issue detected. Check console for details.', 'warning');
+                }
+            });
+    }
+    
     // Create manual attendance collection if it doesn't exist
     function createManualAttendanceCollection() {
         if (!currentUser) {
