@@ -111,6 +111,21 @@
             border-radius: 10px;
             transition: width 0.5s ease-in-out;
         }
+        .attendance-info {
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .info-safe {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .info-danger {
+            background-color: #ffebee;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
@@ -250,40 +265,58 @@
             }
             
             // Check if user is logged in
-            auth.onAuthStateChanged(function(user) {
+            auth.onAuthStateChanged(user => {
                 if (user) {
-                    console.log("User authenticated:", user.uid);
-                    // Update profile initial
-                    const initials = getInitials(user.displayName || 'User');
-                    document.getElementById('profileIcon').textContent = initials;
+                    // User is signed in, load the report
+                    console.log("User authenticated, loading report data...");
                     
-                    // Set up real-time listener for attendance data
+                    // Set up real-time listener for this user
                     setupRealtimeListener(user.uid);
+                    
+                    // Also update the profile icon with user's initials
+                    if (user.displayName) {
+                        const initials = getInitials(user.displayName);
+                        document.getElementById('profileIcon').textContent = initials;
+                    }
+                    
+                    // Force an immediate update
+                    updateUI(true); // Force server fetch for the latest report
                 } else {
-                    // Redirect to login page if not authenticated
-                    console.log("User not authenticated, redirecting to login");
-                    window.location.href = 'login.html';
+                    // User is signed out, redirect to login
+                    console.log("User not authenticated, redirecting to login.");
+                    window.location.href = 'index.html';
                 }
             });
             
             // Set up real-time listener
             function setupRealtimeListener(userId) {
+                console.log("Setting up real-time listener for user:", userId);
                 const userRef = db.collection('users').doc(userId);
                 
                 userRef.onSnapshot(
                     function(doc) {
-                        if (doc.exists && doc.data().attendanceData) {
-                            console.log("Got real-time attendance data update");
-                            const data = doc.data().attendanceData;
-                            displayReport(data);
+                        console.log("Real-time update received:", doc.exists);
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            if (userData && userData.attendanceData) {
+                                console.log("Got real-time attendance data update");
+                                const data = userData.attendanceData;
+                                displayReport(data);
+                            } else {
+                                console.log("User exists but no attendance data found");
+                                // Show message for no attendance data
+                                document.getElementById('totalPercentage').textContent = '0%';
+                                document.getElementById('subjectsContainer').innerHTML = 
+                                    '<h3>Subject Attendance Percentage</h3>' +
+                                    '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No attendance data available yet. Start marking your attendance on the dashboard.</p>';
+                            }
                             hideLoading();
                         } else {
-                            console.log("No attendance data found");
-                            // Show message for no attendance data
+                            console.log("User document does not exist");
                             document.getElementById('totalPercentage').textContent = '0%';
                             document.getElementById('subjectsContainer').innerHTML = 
                                 '<h3>Subject Attendance Percentage</h3>' +
-                                '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No attendance data available yet. Start marking your attendance on the dashboard.</p>';
+                                '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">User data not found. Please try logging in again.</p>';
                             hideLoading();
                         }
                     },
@@ -297,15 +330,34 @@
             
             // Display attendance report
             function displayReport(data) {
-                console.log("Displaying report");
+                console.log("Displaying report with data:", data);
                 try {
+                    // Debug the data structure
+                    if (!data) {
+                        console.error("No data provided to displayReport");
+                        document.getElementById('totalPercentage').textContent = '0%';
+                        document.getElementById('subjectsContainer').innerHTML = 
+                            '<h3>Subject Attendance Percentage</h3>' +
+                            '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No attendance data available yet. Start marking your attendance on the dashboard.</p>';
+                        return;
+                    }
+                    
+                    if (!data.subjects) {
+                        console.error("No subjects data in the provided data object");
+                        document.getElementById('totalPercentage').textContent = '0%';
+                        document.getElementById('subjectsContainer').innerHTML = 
+                            '<h3>Subject Attendance Percentage</h3>' +
+                            '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No subjects data available. Please contact your administrator.</p>';
+                        return;
+                    }
+                    
                     // Calculate and display total attendance percentage
                     const totalStats = calculateTotalStats(data.subjects);
                     const totalPercentage = calculatePercentage(totalStats.present, totalStats.absent);
                     document.getElementById('totalPercentage').textContent = totalPercentage + '%';
                     
                     // Display subject-wise attendance
-                    displaySubjects(data.subjects);
+                    renderSubjects(data.subjects, data, data.totalClasses);
                     
                     // Show toast notification for updates
                     showToast("Report updated with latest data");
@@ -335,29 +387,105 @@
                 return Math.round((present / total) * 100);
             }
             
-            // Display subject cards
-            function displaySubjects(subjects) {
-                const container = document.getElementById('subjectsContainer');
-                container.innerHTML = '<h3>Subject Attendance Percentage</h3>';
+            function getProgressBarColor(percentage) {
+                if (percentage < 75) {
+                    return '#F44336'; // Red for below 75%
+                } else {
+                    return '#4CAF50'; // Green for 75% and above
+                }
+            }
+            
+            function renderSubjects(subjects, attendanceData, totalClasses) {
+                const subjectsContainer = document.getElementById('subjectsContainer');
+                subjectsContainer.innerHTML = '<h3>Subject Attendance Percentage</h3>';
+
+                // Handle both array and object formats for subjects
+                let subjectsList = [];
                 
-                for (const subjectName in subjects) {
-                    const subject = subjects[subjectName];
-                    const percentage = calculatePercentage(subject.present || 0, subject.absent || 0);
+                if (Array.isArray(subjects)) {
+                    // If subjects is already an array (from Firestore subjects collection)
+                    subjectsList = subjects;
+                } else if (typeof subjects === 'object' && subjects !== null) {
+                    // If subjects is an object (from user's attendanceData.subjects)
+                    subjectsList = Object.keys(subjects).map(name => {
+                        return {
+                            name: name,
+                            data: subjects[name]
+                        };
+                    });
+                }
+
+                if (subjectsList.length === 0) {
+                    subjectsContainer.innerHTML += '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No subjects found. Please contact your administrator.</p>';
+                    return;
+                }
+
+                let totalPresent = 0;
+                let totalAbsent = 0;
+                let totalOverallClasses = 0;
+
+                subjectsList.forEach(subject => {
+                    // Get subject name based on data format
+                    const subjectName = subject.name || subject;
                     
+                    // Get attendance data for this subject
+                    const attendance = attendanceData.subjects && attendanceData.subjects[subjectName] 
+                        ? attendanceData.subjects[subjectName] 
+                        : (subject.data || { present: 0, absent: 0 });
+                    
+                    const present = attendance.present || 0;
+                    const absent = attendance.absent || 0;
+                    const total = present + absent;
+                    const percentage = total > 0 ? (present / total) * 100 : 0;
+                    
+                    totalPresent += present;
+                    totalAbsent += absent;
+                    totalOverallClasses += total;
+
                     const subjectCard = document.createElement('div');
                     subjectCard.className = 'subject-card';
+                    
+                    let infoMessage = '';
+                    let infoClass = '';
+                    
+                    if (total > 0) {
+                        if (percentage < 75) {
+                            const classesToAttend = Math.ceil((0.75 * total - present) / 0.25);
+                            infoMessage = `You need to attend ${classesToAttend} more class(es) to reach 75%.`;
+                            infoClass = 'info-danger';
+                        } else {
+                            const maxBunkable = Math.floor(present / 0.75 - total);
+                            infoMessage = `You can bunk ${maxBunkable} more class(es) and still maintain 75%.`;
+                            infoClass = 'info-safe';
+                        }
+                    } else {
+                        infoMessage = 'No attendance data yet.';
+                        infoClass = '';
+                    }
+                    
                     subjectCard.innerHTML = `
                         <h4 class="subject-name">${subjectName}</h4>
                         <div class="attendance-stats">
-                            <div class="present-count">Total Present: <span>${subject.present || 0}</span></div>
-                            <div class="absent-count">Total Absent: <span>${subject.absent || 0}</span></div>
+                            <span class="present-count">Present: ${present}</span>
+                            <span class="absent-count">Absent: ${absent}</span>
                         </div>
                         <div class="percentage-bar">
-                            <div class="progress-bar" style="width: ${percentage}%"></div>
-                            <span class="percentage">${percentage}%</span>
+                            <div class="progress-bar" style="width: ${percentage.toFixed(2)}%; background-color: ${getProgressBarColor(percentage)}"></div>
+                            <span class="percentage">${percentage.toFixed(2)}%</span>
+                        </div>
+                        <div class="attendance-info ${infoClass}">
+                            ${infoMessage}
                         </div>
                     `;
-                    container.appendChild(subjectCard);
+                    
+                    subjectsContainer.appendChild(subjectCard);
+                });
+
+                // Update total attendance percentage
+                const totalPercentage = totalOverallClasses > 0 ? (totalPresent / totalOverallClasses) * 100 : 0;
+                const totalPercentageEl = document.getElementById('totalPercentage');
+                if (totalPercentageEl) {
+                    totalPercentageEl.textContent = `${totalPercentage.toFixed(2)}%`;
                 }
             }
             

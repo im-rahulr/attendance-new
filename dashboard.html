@@ -296,6 +296,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log("DOM Content Loaded - Setting up listeners");
         
+        // Initialize data to ensure the dashboard is populated
+        if (typeof initializeData === 'function') {
+            initializeData();
+        }
+        
         // Check if Firebase Auth and Firestore are initialized
         if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
             // Set up real-time listener for the current user
