@@ -6,6 +6,8 @@
     <title>Attendance Report</title>
     <!-- Add Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
     <style>
@@ -21,19 +23,6 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-        }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #D9ED92;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         .error-message {
             background-color: #ffebee;
@@ -159,10 +148,24 @@
         </div>
     </div>
     
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p id="loadingText">Loading your report...</p>
+    <!-- Bootstrap Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingText">Loading your report...</p>
+    </div>
+    
+    <!-- Bootstrap Toast -->
+    <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1030">
+        <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Report updated successfully!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
     </div>
     
     <!-- Error Message -->
@@ -175,6 +178,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JS -->
     <script src="auth.js"></script>
@@ -199,6 +205,49 @@
                 hideLoading();
                 return;
             }
+
+            // Override the toast and loading functions for Bootstrap
+            window.showLoading = function(message = "Loading...") {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                const loadingText = document.getElementById('loadingText');
+                
+                if (loadingText) {
+                    loadingText.textContent = message;
+                }
+                
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+            };
+            
+            window.hideLoading = function() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            };
+            
+            window.showToast = function(message, duration = 3000) {
+                const toastEl = document.getElementById('liveToast');
+                const toastMessage = document.getElementById('toastMessage');
+                
+                if (toastMessage) {
+                    toastMessage.textContent = message;
+                }
+                
+                if (toastEl) {
+                    const toast = new bootstrap.Toast(toastEl, { delay: duration });
+                    toast.show();
+                }
+            };
+            
+            function showError(message) {
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                    errorMessage.textContent = message;
+                    errorMessage.style.display = 'block';
+                }
+            }
             
             // Check if user is logged in
             auth.onAuthStateChanged(function(user) {
@@ -208,8 +257,8 @@
                     const initials = getInitials(user.displayName || 'User');
                     document.getElementById('profileIcon').textContent = initials;
                     
-                    // Load attendance report data
-                    loadAttendanceReport(user.uid);
+                    // Set up real-time listener for attendance data
+                    setupRealtimeListener(user.uid);
                 } else {
                     // Redirect to login page if not authenticated
                     console.log("User not authenticated, redirecting to login");
@@ -217,15 +266,17 @@
                 }
             });
             
-            // Load attendance report data
-            function loadAttendanceReport(userId) {
-                console.log("Loading attendance report for user:", userId);
-                db.collection('users').doc(userId).get()
-                    .then((doc) => {
+            // Set up real-time listener
+            function setupRealtimeListener(userId) {
+                const userRef = db.collection('users').doc(userId);
+                
+                userRef.onSnapshot(
+                    function(doc) {
                         if (doc.exists && doc.data().attendanceData) {
-                            console.log("Got attendance data:", doc.data().attendanceData);
+                            console.log("Got real-time attendance data update");
                             const data = doc.data().attendanceData;
                             displayReport(data);
+                            hideLoading();
                         } else {
                             console.log("No attendance data found");
                             // Show message for no attendance data
@@ -233,26 +284,35 @@
                             document.getElementById('subjectsContainer').innerHTML = 
                                 '<h3>Subject Attendance Percentage</h3>' +
                                 '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No attendance data available yet. Start marking your attendance on the dashboard.</p>';
+                            hideLoading();
                         }
-                        hideLoading();
-                    })
-                    .catch((error) => {
-                        console.error("Error loading attendance report:", error);
+                    },
+                    function(error) {
+                        console.error("Error in real-time updates:", error);
                         showError("Failed to load attendance report. Please try again.");
                         hideLoading();
-                    });
+                    }
+                );
             }
             
             // Display attendance report
             function displayReport(data) {
                 console.log("Displaying report");
-                // Calculate and display total attendance percentage
-                const totalStats = calculateTotalStats(data.subjects);
-                const totalPercentage = calculatePercentage(totalStats.present, totalStats.absent);
-                document.getElementById('totalPercentage').textContent = totalPercentage + '%';
-                
-                // Display subject-wise attendance
-                displaySubjects(data.subjects);
+                try {
+                    // Calculate and display total attendance percentage
+                    const totalStats = calculateTotalStats(data.subjects);
+                    const totalPercentage = calculatePercentage(totalStats.present, totalStats.absent);
+                    document.getElementById('totalPercentage').textContent = totalPercentage + '%';
+                    
+                    // Display subject-wise attendance
+                    displaySubjects(data.subjects);
+                    
+                    // Show toast notification for updates
+                    showToast("Report updated with latest data");
+                } catch (error) {
+                    console.error("Error displaying report:", error);
+                    showError("Error calculating attendance data");
+                }
             }
             
             // Calculate total attendance statistics
@@ -298,28 +358,6 @@
                         </div>
                     `;
                     container.appendChild(subjectCard);
-                }
-            }
-            
-            function showLoading() {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'flex';
-                }
-            }
-            
-            function hideLoading() {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            }
-            
-            function showError(message) {
-                const errorMessage = document.getElementById('errorMessage');
-                if (errorMessage) {
-                    errorMessage.textContent = message;
-                    errorMessage.style.display = 'block';
                 }
             }
             

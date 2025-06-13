@@ -6,6 +6,7 @@ let firebaseRtdb; // Realtime Database reference for presence
 
 // Initialize attendance data if not exists
 function initializeData() {
+    console.log("Initializing data...");
     showLoading("Loading your data...");
     
     // Check if Firebase is initialized
@@ -27,6 +28,7 @@ function initializeData() {
     // Check if user is authenticated
     firebaseAuth.onAuthStateChanged(async (user) => {
         if (user) {
+            console.log("User authenticated in initializeData:", user.uid);
             currentUser = user;
             
             // Setup presence system if Realtime Database is available
@@ -37,46 +39,194 @@ function initializeData() {
             try {
                 // Check if the user already has attendance data in Firestore
                 const userRef = firebaseDb.collection('users').doc(user.uid);
-                const userDoc = await userRef.get();
+                const userDoc = await userRef.get({ source: "server" }); // Force server fetch
+                
+                // Fetch subjects from admin-created subjects collection
+                const subjectsSnapshot = await firebaseDb.collection('subjects').get();
+                const adminSubjects = {};
+                
+                // If no subjects are defined by admin yet, show a message
+                if (subjectsSnapshot.empty) {
+                    hideLoading();
+                    showToast("No subjects have been added by the administrator yet.", 5000);
+                    
+                    // Create empty data structure
+                    if (!userDoc.exists || !userDoc.data().attendanceData) {
+                        await userRef.set({
+                            name: user.displayName || 'User',
+                            email: user.email,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            attendanceData: {
+                                subjects: {},
+                                todaysClasses: []
+                            }
+                        }, { merge: true });
+                    }
+                    
+                    updateUI(true);
+                    return;
+                }
+                
+                // Process admin-defined subjects
+                subjectsSnapshot.forEach(doc => {
+                    const subjectName = doc.data().name;
+                    adminSubjects[subjectName] = { 
+                        present: 0, 
+                        absent: 0,
+                        sessions: []
+                    };
+                });
+                
+                console.log("Admin subjects:", Object.keys(adminSubjects));
+                
+                // Create initial classes array from admin subjects
+                const todaysClasses = Object.keys(adminSubjects).map((subject, index) => {
+                    return {
+                        id: index + 1,
+                        subject: subject,
+                        status: 'unmarked',
+                        label: `${index + 1}${getOrdinalSuffix(index + 1)} class`
+                    };
+                });
                 
                 if (userDoc.exists) {
                     if (userDoc.data().attendanceData) {
-                        // User already has data, no need to initialize
-                        updateUI(true);
+                        console.log("User has existing attendance data");
+                        // User already has data, update it with current admin subjects
+                        const existingData = userDoc.data().attendanceData;
+                        const updatedSubjects = {};
+                        
+                        // Keep only admin-defined subjects and preserve existing attendance data
+                        Object.keys(adminSubjects).forEach(subject => {
+                            updatedSubjects[subject] = existingData.subjects[subject] || adminSubjects[subject];
+                        });
+                        
+                        // Update today's classes with existing status
+                        const updatedClasses = todaysClasses.map(newClass => {
+                            // Try to find matching class in existing data
+                            const existingClass = existingData.todaysClasses.find(
+                                cls => cls.subject === newClass.subject
+                            );
+                            
+                            if (existingClass) {
+                                // Preserve the status from existing class
+                                return {
+                                    ...newClass,
+                                    status: existingClass.status
+                                };
+                            }
+                            return newClass;
+                        });
+                        
+                        // Update with new data structure
+                        const updatedData = {
+                            subjects: updatedSubjects,
+                            todaysClasses: updatedClasses
+                        };
+                        
+                        console.log("Updating user data with:", updatedData);
+                        await userRef.update({
+                            attendanceData: updatedData,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        // If we're on dashboard page, update UI with the new data
+                        if (window.location.pathname.includes('dashboard')) {
+                            if (typeof updateDashboardUI === 'function') {
+                                updateDashboardUI(updatedData);
+                            } else {
+                                updateUI(false, updatedData);
+                            }
+                        } else {
+                            updateUI(false, updatedData);
+                        }
+                        
                         hideLoading();
                     } else {
                         // User exists but doesn't have attendance data
-                        const initialData = createInitialData();
+                        console.log("User exists but no attendance data");
+                        const initialData = {
+                            subjects: adminSubjects,
+                            todaysClasses: todaysClasses
+                        };
+                        
                         await userRef.update({
-                            attendanceData: initialData
+                            attendanceData: initialData,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                        updateUI(true);
+                        
+                        // If we're on dashboard page, update UI with the new data
+                        if (window.location.pathname.includes('dashboard')) {
+                            if (typeof updateDashboardUI === 'function') {
+                                updateDashboardUI(initialData);
+                            } else {
+                                updateUI(false, initialData);
+                            }
+                        } else {
+                            updateUI(false, initialData);
+                        }
+                        
                         hideLoading();
                     }
                 } else {
                     // User document doesn't exist, create it with initial data
-                    const initialData = createInitialData();
+                    console.log("Creating new user document");
+                    const initialData = {
+                        subjects: adminSubjects,
+                        todaysClasses: todaysClasses
+                    };
+                    
                     await userRef.set({
                         name: user.displayName || 'User',
                         email: user.email,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        attendanceData: initialData
+                        attendanceData: initialData,
+                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    updateUI(true);
+                    
+                    // If we're on dashboard page, update UI with the new data
+                    if (window.location.pathname.includes('dashboard')) {
+                        if (typeof updateDashboardUI === 'function') {
+                            updateDashboardUI(initialData);
+                        } else {
+                            updateUI(false, initialData);
+                        }
+                    } else {
+                        updateUI(false, initialData);
+                    }
+                    
                     hideLoading();
                 }
             } catch (error) {
                 console.error("Error initializing user data:", error);
                 hideLoading();
+                showToast("Error loading subjects. Please try again later.", 5000);
                 // Try to load data from localStorage as fallback
                 if (localStorage.getItem('attendanceData')) {
                     updateUI(true);
                 }
             }
         } else {
+            console.log("No authenticated user in initializeData");
             hideLoading();
         }
     });
+}
+
+// Helper function to get ordinal suffix for numbers
+function getOrdinalSuffix(num) {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) {
+        return "st";
+    }
+    if (j === 2 && k !== 12) {
+        return "nd";
+    }
+    if (j === 3 && k !== 13) {
+        return "rd";
+    }
+    return "th";
 }
 
 // Setup presence system to track online/offline status
@@ -171,65 +321,53 @@ function syncLocalStorageToFirestore() {
 
 // Create initial attendance data structure
 function createInitialData() {
+    // This function is now deprecated as we fetch subjects from Firestore
+    // Keeping it for backward compatibility
     return {
-        subjects: {
-            'English': { 
-                present: 0, 
-                absent: 0,
-                sessions: []
-            },
-            'Mathematics': { 
-                present: 0, 
-                absent: 0,
-                sessions: []
-            }
-        },
-        todaysClasses: [
-            {
-                id: 1,
-                subject: 'English',
-                status: 'unmarked',
-                label: '1st class'
-            },
-            {
-                id: 2,
-                subject: 'Mathematics',
-                status: 'unmarked',
-                label: '2nd class'
-            },
-            {
-                id: 3,
-                subject: 'Mathematics',
-                status: 'unmarked',
-                label: '3rd class'
-            }
-        ]
+        subjects: {},
+        todaysClasses: []
     };
 }
 
 // Function to get current data from Firestore
 async function getAttendanceData(forceServer = false) {
+    console.log("Getting attendance data, forceServer:", forceServer);
+    
     if (!currentUser) {
+        console.log("No current user, checking localStorage");
         // If no user is authenticated, try to get data from localStorage
         const localData = localStorage.getItem('attendanceData');
         return localData ? JSON.parse(localData) : null;
     }
+    
     try {
         if (!firebaseDb) {
             console.error("Firestore not initialized");
             throw new Error("Firestore not initialized");
         }
+        
         const userRef = firebaseDb.collection('users').doc(currentUser.uid);
         let userDoc;
+        
         if (forceServer) {
             // Force fetch from server, not cache
+            console.log("Forcing server fetch");
             userDoc = await userRef.get({ source: "server" });
         } else {
             userDoc = await userRef.get();
         }
+        
         if (userDoc.exists && userDoc.data().attendanceData) {
-            return userDoc.data().attendanceData;
+            console.log("Got attendance data from Firestore");
+            const data = userDoc.data().attendanceData;
+            
+            // Save to localStorage as backup
+            localStorage.setItem('attendanceData', JSON.stringify(data));
+            localStorage.setItem('attendanceDataTimestamp', Date.now().toString());
+            
+            return data;
         } else {
+            console.log("No attendance data found in Firestore");
             return null;
         }
     } catch (error) {
@@ -242,11 +380,16 @@ async function getAttendanceData(forceServer = false) {
 
 // Function to save data to Firestore
 async function saveAttendanceData(data) {
+    console.log("Saving attendance data:", data);
+    
     // Always save to localStorage as backup with timestamp
     localStorage.setItem('attendanceData', JSON.stringify(data));
     localStorage.setItem('attendanceDataTimestamp', Date.now().toString());
     
-    if (!currentUser || !firebaseDb) return;
+    if (!currentUser || !firebaseDb) {
+        console.log("No current user or Firestore, saved to localStorage only");
+        return data;
+    }
     
     try {
         const userRef = firebaseDb.collection('users').doc(currentUser.uid);
@@ -254,28 +397,36 @@ async function saveAttendanceData(data) {
             attendanceData: data,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         });
+        
+        console.log("Data saved to Firestore successfully");
+        // Return the updated data for immediate UI updates
+        return data;
     } catch (error) {
         console.error('Error saving attendance data:', error);
         // Data is already saved to localStorage as backup
+        return data; // Still return data for UI updates
     }
 }
 
 // Function to update attendance status
 async function updateAttendance(classId, newStatus) {
+    console.log(`Updating attendance for class ${classId} to ${newStatus}`);
     try {
         // Add animation to the button
         const buttons = document.querySelectorAll(`button[data-class-id="${classId}"]`);
         const clickedButton = buttons[newStatus === 'present' ? 0 : 1];
         
         // Add ripple effect
-        clickedButton.classList.add('animate');
-        setTimeout(() => {
-            clickedButton.classList.remove('animate');
-        }, 700);
+        if (clickedButton) {
+            clickedButton.classList.add('animate');
+            setTimeout(() => {
+                clickedButton.classList.remove('animate');
+            }, 700);
+        }
         
         showLoading(`Marking ${newStatus}...`);
         
-        const data = await getAttendanceData();
+        const data = await getAttendanceData(true); // Force server fetch
         if (!data) {
             hideLoading();
             showToast("Could not find attendance data");
@@ -294,6 +445,8 @@ async function updateAttendance(classId, newStatus) {
                 showToast(`Already marked ${newStatus}`);
                 return;
             }
+            
+            console.log(`Changing status from ${oldStatus} to ${newStatus} for ${subject}`);
             
             // Update class status
             classToUpdate.status = newStatus;
@@ -317,10 +470,20 @@ async function updateAttendance(classId, newStatus) {
                 status: newStatus
             });
             
-            await saveAttendanceData(data);
+            const updatedData = await saveAttendanceData(data);
             hideLoading();
             showToast(`Marked ${newStatus} for ${subject}`);
-            updateUI(true);
+            
+            // Update UI immediately with the updated data
+            if (updatedData) {
+                // If we're using the dashboard.html updateDashboardUI function
+                if (typeof updateDashboardUI === 'function') {
+                    updateDashboardUI(updatedData);
+                } else {
+                    // Otherwise use our own updateUI function
+                    updateUI(false, updatedData);
+                }
+            }
         } else {
             hideLoading();
             showToast("Class not found");
@@ -361,40 +524,94 @@ async function calculateTotalPercentage() {
 }
 
 // Function to update UI based on current data
-async function updateUI(forceServer = false) {
+async function updateUI(forceServer = false, providedData = null) {
     try {
-        showLoading("Loading latest data...");
-        const data = await getAttendanceData(forceServer);
-        hideLoading();
-        if (!data) return;
+        if (!providedData) {
+            showLoading("Loading latest data...");
+            providedData = await getAttendanceData(forceServer);
+            hideLoading();
+        }
+        
+        if (!providedData) return;
+        const data = providedData;
         
         const currentPath = window.location.pathname;
+        console.log("Updating UI for path:", currentPath);
         
         // Update Dashboard Page UI
         if (currentPath.includes('dashboard')) {
-            const classCards = document.querySelectorAll('.class-card');
+            // Check if we have a custom updateDashboardUI function from dashboard.html
+            if (typeof updateDashboardUI === 'function') {
+                console.log("Using custom updateDashboardUI function");
+                updateDashboardUI(data);
+                return;
+            }
             
-            classCards.forEach((card, index) => {
-                const classData = data.todaysClasses[index];
-                if (!classData) return;
-                
-                const statusElement = card.querySelector('.status span');
-                if (statusElement) {
-                    if (classData.status === 'unmarked') {
-                        statusElement.textContent = 'Mark your attendance';
-                        statusElement.className = 'status-unmarked';
-                    } else {
-                        statusElement.textContent = classData.status;
-                        statusElement.className = classData.status === 'present' ? 'status-present' : '';
-                    }
+            // Otherwise use our default implementation
+            console.log("Using default dashboard UI update");
+            const classesSection = document.querySelector('.classes-section');
+            if (classesSection) {
+                // Keep the title
+                const title = classesSection.querySelector('.section-title');
+                classesSection.innerHTML = '';
+                if (title) {
+                    classesSection.appendChild(title);
+                } else {
+                    const newTitle = document.createElement('h2');
+                    newTitle.className = 'section-title';
+                    newTitle.textContent = "Today's Classes";
+                    classesSection.appendChild(newTitle);
                 }
                 
-                const presentBtn = card.querySelector('.btn-present');
-                const absentBtn = card.querySelector('.btn-absent');
-                
-                if (presentBtn) presentBtn.classList.toggle('active', classData.status === 'present');
-                if (absentBtn) absentBtn.classList.toggle('active', classData.status === 'absent');
-            });
+                // Check if there are any classes (subjects)
+                if (!data.todaysClasses || data.todaysClasses.length === 0) {
+                    const noClassesMsg = document.createElement('div');
+                    noClassesMsg.className = 'alert alert-info';
+                    noClassesMsg.textContent = 'No subjects have been added by the administrator yet.';
+                    classesSection.appendChild(noClassesMsg);
+                } else {
+                    // Add class cards dynamically based on subjects
+                    data.todaysClasses.forEach(classData => {
+                        const classCard = document.createElement('div');
+                        classCard.className = 'class-card';
+                        
+                        let statusText = 'Mark your attendance';
+                        let statusClass = 'status-unmarked';
+                        
+                        if (classData.status === 'present') {
+                            statusText = 'Present';
+                            statusClass = 'status-present';
+                        } else if (classData.status === 'absent') {
+                            statusText = 'Absent';
+                            statusClass = 'status-absent';
+                        }
+                        
+                        classCard.innerHTML = `
+                            <div class="class-info">
+                                <div class="subject">${classData.subject}</div>
+                                <div class="status">Status: <span class="${statusClass}">${statusText}</span></div>
+                            </div>
+                            <div class="class-label">${classData.label}</div>
+                            <div class="attendance-buttons">
+                                <button class="btn-present ${classData.status === 'present' ? 'active' : ''}" data-class-id="${classData.id}">Present</button>
+                                <button class="btn-absent ${classData.status === 'absent' ? 'active' : ''}" data-class-id="${classData.id}">Absent</button>
+                            </div>
+                        `;
+                        
+                        // Add event listeners to the buttons
+                        classesSection.appendChild(classCard);
+                    });
+                    
+                    // Add event listeners after all cards are added
+                    document.querySelectorAll('.btn-present, .btn-absent').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const classId = parseInt(this.getAttribute('data-class-id'));
+                            const status = this.classList.contains('btn-present') ? 'present' : 'absent';
+                            updateAttendance(classId, status);
+                        });
+                    });
+                }
+            }
         }
         
         // Update Report Page UI
@@ -411,31 +628,40 @@ async function updateUI(forceServer = false) {
             if (subjectContainer) {
                 subjectContainer.innerHTML = '<h3>Subject Attendance Percentage</h3>';
                 
-                for (const subject in data.subjects) {
-                    const subjectData = data.subjects[subject];
-                    const percentage = calculatePercentage(subjectData.present || 0, subjectData.absent || 0);
-                    
-                    const subjectCard = document.createElement('div');
-                    subjectCard.className = 'subject-card';
-                    subjectCard.innerHTML = `
-                        <h4 class="subject-name">${subject}</h4>
-                        <div class="attendance-stats">
-                            <div class="present-count">Total Present: <span>${subjectData.present || 0}</span></div>
-                            <div class="absent-count">Total Absent: <span>${subjectData.absent || 0}</span></div>
-                        </div>
-                        <div class="percentage-bar">
-                            <div class="progress-bar" style="width: ${percentage}%"></div>
-                            <span class="percentage">${percentage}%</span>
-                        </div>
-                    `;
-                    
-                    subjectContainer.appendChild(subjectCard);
+                // Check if there are any subjects
+                if (Object.keys(data.subjects).length === 0) {
+                    const noSubjectsMsg = document.createElement('div');
+                    noSubjectsMsg.className = 'alert alert-info';
+                    noSubjectsMsg.textContent = 'No subjects have been added by the administrator yet.';
+                    subjectContainer.appendChild(noSubjectsMsg);
+                } else {
+                    for (const subject in data.subjects) {
+                        const subjectData = data.subjects[subject];
+                        const percentage = calculatePercentage(subjectData.present || 0, subjectData.absent || 0);
+                        
+                        const subjectCard = document.createElement('div');
+                        subjectCard.className = 'subject-card';
+                        subjectCard.innerHTML = `
+                            <h4 class="subject-name">${subject}</h4>
+                            <div class="attendance-stats">
+                                <div class="present-count">Total Present: <span>${subjectData.present || 0}</span></div>
+                                <div class="absent-count">Total Absent: <span>${subjectData.absent || 0}</span></div>
+                            </div>
+                            <div class="percentage-bar">
+                                <div class="progress-bar" style="width: ${percentage}%"></div>
+                                <span class="percentage">${percentage}%</span>
+                            </div>
+                        `;
+                        
+                        subjectContainer.appendChild(subjectCard);
+                    }
                 }
             }
         }
     } catch (error) {
         hideLoading();
         console.error('Error updating UI:', error);
+        showToast("Error updating the interface. Please refresh the page.", 5000);
     }
 }
 
@@ -450,46 +676,26 @@ function updateCurrentTime() {
     currentTimeElement.textContent = `${hours}:${minutes}`;
 }
 
-// Initialize the app
+// Setup real-time listener for user's attendance data (for dashboard.html)
 document.addEventListener('DOMContentLoaded', function() {
-    initializeData();
+    console.log("Script.js: DOM Content Loaded");
     
-    // Set up event listeners for attendance buttons on dashboard
-    if (window.location.pathname.includes('dashboard')) {
-        const classesContainer = document.querySelector('.classes-section');
-        if (classesContainer) {
-            classesContainer.addEventListener('click', (event) => {
-                const target = event.target;
-                if (target.matches('.btn-present') || target.matches('.btn-absent')) {
-                    const classId = parseInt(target.dataset.classId, 10);
-                    const newStatus = target.matches('.btn-present') ? 'present' : 'absent';
-                    updateAttendance(classId, newStatus);
-                }
-            });
-        }
+    // Initialize Firebase if not already initialized
+    if (typeof firebase !== 'undefined') {
+        // Initialize data
+        initializeData();
+        
+        // Update current time if element exists
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 60000); // Update every minute
+    } else {
+        console.error("Firebase not loaded");
     }
-    
-    // Set up online/offline status detection
-    window.addEventListener('online', function() {
-        console.log('Device is online. Syncing data with Firestore...');
-        syncLocalStorageToFirestore();
-    });
-    
-    window.addEventListener('offline', function() {
-        console.log('Device is offline. Data will be saved locally.');
-    });
-    
-    // Update UI immediately and then periodically
-    updateUI();
-    setInterval(updateUI, 60000); // Update every minute
-    
-    // Update time display
-    updateCurrentTime();
-    setInterval(updateCurrentTime, 60000); // Update every minute
 });
 
 // Helper functions for UI feedback
 function showLoading(message = "Loading...") {
+    console.log("Show loading:", message);
     const loadingOverlay = document.getElementById('loadingOverlay');
     const loadingText = document.getElementById('loadingText');
     
@@ -502,6 +708,7 @@ function showLoading(message = "Loading...") {
 }
 
 function hideLoading() {
+    console.log("Hide loading");
     const loadingOverlay = document.getElementById('loadingOverlay');
     if (loadingOverlay) {
         loadingOverlay.style.display = 'none';
@@ -509,6 +716,20 @@ function hideLoading() {
 }
 
 function showToast(message, duration = 3000) {
+    console.log("Show toast:", message);
+    
+    // Try the Bootstrap toast first (from dashboard.html)
+    const liveToast = document.getElementById('liveToast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    if (liveToast && toastMessage) {
+        toastMessage.textContent = message;
+        const toast = new bootstrap.Toast(liveToast, { delay: duration });
+        toast.show();
+        return;
+    }
+    
+    // Fall back to the original toast
     const toast = document.getElementById('toastNotification');
     if (toast) {
         toast.textContent = message;
@@ -518,7 +739,7 @@ function showToast(message, duration = 3000) {
             toast.classList.remove('show');
         }, duration);
     } else {
-        // Fallback to alert if toast element not found
-        alert(message);
+        // Fallback to console if no toast element found
+        console.log(message);
     }
 } 

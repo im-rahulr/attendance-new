@@ -6,6 +6,8 @@
     <title>Attendance Dashboard</title>
     <!-- Add Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
     <style>
@@ -45,37 +47,16 @@
             align-items: center;
             z-index: 1000;
         }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #D9ED92;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .error-message {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 20px 0;
-            display: none;
-        }
-        .success-message {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 20px 0;
-            display: none;
-        }
         .status-unmarked {
             color: #ff9800;
+            font-weight: 500;
+        }
+        .status-present {
+            color: #4caf50;
+            font-weight: 500;
+        }
+        .status-absent {
+            color: #f44336;
             font-weight: 500;
         }
 
@@ -84,6 +65,16 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
+        }
+        
+        .btn-present.active {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .btn-absent.active {
+            background-color: #f44336;
+            color: white;
         }
 
         .btn-present:after, .btn-absent:after {
@@ -114,26 +105,6 @@
                 opacity: 0;
             }
         }
-
-        /* Toast notification */
-        .toast-notification {
-            position: fixed;
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .toast-notification.show {
-            opacity: 1;
-        }
     </style>
 </head>
 <body>
@@ -153,42 +124,7 @@
         <!-- Today's Classes Section -->
         <div class="classes-section">
             <h2 class="section-title">Today's Classes</h2>
-            
-            <div class="class-card">
-                <div class="class-info">
-                    <div class="subject">English</div>
-                    <div class="status">Status: <span class="status-unmarked">Mark your attendance</span></div>
-                </div>
-                <div class="class-label">1st class</div>
-                <div class="attendance-buttons">
-                    <button class="btn-present" data-class-id="1">Present</button>
-                    <button class="btn-absent" data-class-id="1">Absent</button>
-                </div>
-            </div>
-            
-            <div class="class-card">
-                <div class="class-info">
-                    <div class="subject">Mathematics</div>
-                    <div class="status">Status: <span class="status-unmarked">Mark your attendance</span></div>
-                </div>
-                <div class="class-label">2nd class</div>
-                <div class="attendance-buttons">
-                    <button class="btn-present" data-class-id="2">Present</button>
-                    <button class="btn-absent" data-class-id="2">Absent</button>
-                </div>
-            </div>
-            
-            <div class="class-card">
-                <div class="class-info">
-                    <div class="subject">Mathematics</div>
-                    <div class="status">Status: <span class="status-unmarked">Mark your attendance</span></div>
-                </div>
-                <div class="class-label">3rd class</div>
-                <div class="attendance-buttons">
-                    <button class="btn-present" data-class-id="3">Present</button>
-                    <button class="btn-absent" data-class-id="3">Absent</button>
-                </div>
-            </div>
+            <!-- Class cards will be dynamically generated here by script.js -->
         </div>
         
         <!-- Bottom Navigation -->
@@ -199,15 +135,24 @@
         </div>
     </div>
     
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p id="loadingText">Updating attendance...</p>
+    <!-- Bootstrap Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingText">Updating attendance...</p>
     </div>
     
-    <!-- Toast Notification -->
-    <div id="toastNotification" class="toast-notification">
-        Attendance updated successfully!
+    <!-- Bootstrap Toast -->
+    <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 1030">
+        <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Attendance updated successfully!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
     </div>
     
     <!-- Firebase SDK -->
@@ -216,8 +161,226 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <!-- Custom JS -->
     <script src="auth.js"></script>
     <script src="script.js"></script>
+    
+    <script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+        authDomain: "attendance-a9a19.firebaseapp.com",
+        projectId: "attendance-a9a19",
+        storageBucket: "attendance-a9a19.appspot.com",
+        messagingSenderId: "1055787262218",
+        appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+        measurementId: "G-3XPB4VLFYH"
+    };
+    
+    // Initialize Firebase if not already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    // Override the showLoading and hideLoading functions from script.js
+    window.showLoading = function(message = "Loading...") {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
+        
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+    };
+    
+    window.hideLoading = function() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    };
+    
+    // Override the showToast function from script.js
+    window.showToast = function(message, duration = 3000) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        if (toastMessage) {
+            toastMessage.textContent = message;
+        }
+        
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, { delay: duration });
+            toast.show();
+        }
+    };
+    
+    // Update dashboard UI with data
+    function updateDashboardUI(data) {
+        console.log("Updating dashboard UI with data:", data);
+        
+        if (!data || !data.todaysClasses) {
+            console.log("No attendance data available");
+            return;
+        }
+        
+        const classesSection = document.querySelector('.classes-section');
+        if (!classesSection) return;
+        
+        // Keep the title
+        const title = classesSection.querySelector('.section-title');
+        classesSection.innerHTML = '';
+        if (title) {
+            classesSection.appendChild(title);
+        }
+        
+        // Check if there are any classes
+        if (data.todaysClasses.length === 0) {
+            const noClassesMsg = document.createElement('div');
+            noClassesMsg.className = 'alert alert-info';
+            noClassesMsg.textContent = 'No subjects have been added by the administrator yet.';
+            classesSection.appendChild(noClassesMsg);
+            return;
+        }
+        
+        // Add class cards dynamically based on subjects
+        data.todaysClasses.forEach(classData => {
+            const classCard = document.createElement('div');
+            classCard.className = 'class-card';
+            
+            let statusText = 'Mark your attendance';
+            let statusClass = 'status-unmarked';
+            
+            if (classData.status === 'present') {
+                statusText = 'Present';
+                statusClass = 'status-present';
+            } else if (classData.status === 'absent') {
+                statusText = 'Absent';
+                statusClass = 'status-absent';
+            }
+            
+            classCard.innerHTML = `
+                <div class="class-info">
+                    <div class="subject">${classData.subject}</div>
+                    <div class="status">Status: <span class="${statusClass}">${statusText}</span></div>
+                </div>
+                <div class="class-label">${classData.label}</div>
+                <div class="attendance-buttons">
+                    <button class="btn-present ${classData.status === 'present' ? 'active' : ''}" data-class-id="${classData.id}">Present</button>
+                    <button class="btn-absent ${classData.status === 'absent' ? 'active' : ''}" data-class-id="${classData.id}">Absent</button>
+                </div>
+            `;
+            
+            classesSection.appendChild(classCard);
+        });
+        
+        // Re-attach event listeners to buttons
+        document.querySelectorAll('.btn-present, .btn-absent').forEach(button => {
+            button.addEventListener('click', function() {
+                const classId = parseInt(this.getAttribute('data-class-id'));
+                const status = this.classList.contains('btn-present') ? 'present' : 'absent';
+                if (typeof updateAttendance === 'function') {
+                    updateAttendance(classId, status);
+                }
+            });
+        });
+    }
+    
+    // Setup real-time listener for user's attendance data
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Content Loaded - Setting up listeners");
+        
+        // Check if Firebase Auth and Firestore are initialized
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+            // Set up real-time listener for the current user
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    console.log("User authenticated:", user.uid);
+                    
+                    // Set user's initials in profile icon
+                    const profileIcon = document.getElementById('profileIcon');
+                    if (profileIcon) {
+                        const name = user.displayName || user.email || 'User';
+                        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+                        profileIcon.textContent = initials;
+                    }
+                    
+                    // Set user's name in greeting
+                    const userName = document.getElementById('userName');
+                    if (userName) {
+                        userName.textContent = user.displayName || 'User';
+                    }
+                    
+                    // Set up real-time listener for user's attendance data
+                    const userRef = firebase.firestore().collection('users').doc(user.uid);
+                    
+                    // Listen for real-time updates
+                    userRef.onSnapshot(
+                        function(doc) {
+                            console.log("Received Firestore update");
+                            if (doc.exists && doc.data().attendanceData) {
+                                const data = doc.data().attendanceData;
+                                console.log("Attendance data received:", data);
+                                updateDashboardUI(data);
+                            } else {
+                                console.log("No attendance data in document");
+                            }
+                        },
+                        function(error) {
+                            console.error("Real-time listener error:", error);
+                        }
+                    );
+                } else {
+                    console.log("No authenticated user");
+                }
+            });
+        } else {
+            console.error("Firebase not properly initialized");
+        }
+    });
+    
+    // Force refresh on page load
+    window.addEventListener('load', function() {
+        console.log("Window loaded - Forcing data refresh");
+        
+        // Show loading indicator
+        showLoading("Loading your attendance data...");
+        
+        // Check if user is authenticated
+        if (firebase.auth().currentUser) {
+            console.log("User is already authenticated on page load");
+            const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+            
+            // Force a refresh from server
+            userRef.get({ source: "server" })
+                .then(function(doc) {
+                    if (doc.exists && doc.data().attendanceData) {
+                        console.log("Got fresh data from server");
+                        updateDashboardUI(doc.data().attendanceData);
+                    } else {
+                        console.log("No data found on server");
+                    }
+                    hideLoading();
+                })
+                .catch(function(error) {
+                    console.error("Error fetching data on page load:", error);
+                    hideLoading();
+                    showToast("Error loading attendance data. Please try again.");
+                });
+        } else {
+            console.log("Waiting for auth state to resolve");
+            // The onAuthStateChanged handler will take care of it
+            setTimeout(function() {
+                hideLoading();
+            }, 2000);
+        }
+    });
+    </script>
 </body>
 </html> 

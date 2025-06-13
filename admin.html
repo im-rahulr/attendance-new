@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4a154b;
+            --primary-light: #6d2c70;
+            --secondary: #1e88e5;
+            --background: #f6f7fb;
+            --card-bg: #fff;
+            --border-radius: 18px;
+            --shadow: 0 4px 24px rgba(80, 80, 120, 0.08);
+            --text-main: #23272f;
+            --text-muted: #7b7b93;
+            --accent: #f2c94c;
+        }
+        body {
+            background: var(--background);
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            color: var(--text-main);
+        }
+        .admin-header {
+            background: var(--primary);
+            color: #fff;
+            padding: 1.5rem 0;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow);
+        }
+        .admin-header .container-fluid {
+            max-width: 1400px;
+        }
+        .admin-header h2 {
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .btn-outline-light {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .nav-pills {
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 0.5rem 1rem;
+            margin-bottom: 2rem;
+        }
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 600;
+            border-radius: 10px;
+            margin-right: 8px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav-pills .nav-link.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(74, 21, 75, 0.08);
+        }
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            background: var(--card-bg);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background: transparent;
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        .stat-card {
+            text-align: center;
+            padding: 2.2rem 1rem 1.5rem 1rem;
+            border-radius: var(--border-radius);
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+        .stat-card .icon {
+            font-size: 2.7rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        .stat-card h3 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-card h5 {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table th {
+            background: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background: #f3e6f7;
+        }
+        .btn-primary, .btn-info {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        .btn-info {
+            background: var(--secondary);
+            border: none;
+        }
+        .btn-info:hover {
+            background: #1565c0;
+        }
+        .progress {
+            background: #f3e6f7;
+            border-radius: 8px;
+            height: 20px;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            font-weight: 600;
+        }
+        .list-group-item {
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f7f9fa;
+            color: var(--text-main);
+        }
+        .list-group-item:last-child {
+            margin-bottom: 0;
+        }
+        .modal-header {
+            background: var(--primary);
+            color: #fff;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+        }
+        .modal-content {
+            border-radius: var(--border-radius);
+        }
+        .toast {
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        @media (max-width: 991px) {
+            .stat-card { margin-bottom: 1rem; }
+        }
+        @media (max-width: 767px) {
+            .admin-header, .admin-container { padding: 0 10px; }
+            .stat-card { padding: 1.2rem 0.5rem 1rem 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <div class="container-fluid admin-container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0"><i class="fas fa-user-shield me-2"></i>Admin Panel</h2>
+                <button id="logoutBtn" class="btn btn-outline-light"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container admin-container">
+        <!-- Login Form (shown if not authenticated) -->
+        <div id="adminLoginContainer" style="display:none;">
+            <div class="card mx-auto" style="max-width: 450px; margin-top: 50px;">
+                <div class="card-header text-center">
+                    <h4 class="mb-0"><i class="fas fa-lock me-2"></i>Admin Login</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        Only administrators can access this page.
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="adminEmail" placeholder="admin@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="adminPassword" placeholder="password">
+                    </div>
+                    <button id="adminLoginBtn" class="btn btn-primary w-100">Login</button>
+                    <div id="loginError" class="mt-3 text-danger" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard (shown if authenticated) -->
+        <div id="adminDashboard" style="display:none;">
+             <ul class="nav nav-pills" id="admin-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-content" type="button" role="tab" aria-controls="dashboard-content" aria-selected="true"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-content" type="button" role="tab" aria-controls="users-content" aria-selected="false"><i class="fas fa-users me-2"></i>Users</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="subjects-tab" data-bs-toggle="tab" data-bs-target="#subjects-content" type="button" role="tab" aria-controls="subjects-content" aria-selected="false"><i class="fas fa-book me-2"></i>Subjects</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="admin-tabs-content">
+                <!-- Dashboard Content -->
+                <div class="tab-pane fade show active" id="dashboard-content" role="tabpanel" aria-labelledby="dashboard-tab">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="icon"><i class="fas fa-users"></i></div>
+                                <h3 id="totalUsersStat">0</h3>
+                                <h5>Total Users</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="icon"><i class="fas fa-chart-pie"></i></div>
+                                <h3 id="avgAttendanceStat">0%</h3>
+                                <h5>Avg. Attendance</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="icon"><i class="fas fa-book"></i></div>
+                                <h3 id="totalSubjectsStat">0</h3>
+                                <h5>Total Subjects</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">Attendance Overview</h5>
+                                    <div style="min-height:320px;">
+                                        <canvas id="attendanceChart" style="max-height:320px;"></canvas>
+                                        <div id="attendanceChartFallback" class="text-center text-muted mt-4" style="display:none;">No attendance data available</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Content -->
+                <div class="tab-pane fade" id="users-content" role="tabpanel" aria-labelledby="users-tab">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">All Users</h5>
+                            <button id="refreshBtn" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh Data
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="spinner" class="spinner-container">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div id="adminTableContainer" class="table-responsive" style="display:none;">
+                                <table class="table table-bordered table-hover align-middle" id="adminTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Total Attendance</th>
+                                            <th>Last Updated</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subjects Content -->
+                <div class="tab-pane fade" id="subjects-content" role="tabpanel" aria-labelledby="subjects-tab">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Add New Subject</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="subjectName" class="form-label">Subject Name</label>
+                                        <input type="text" id="subjectName" class="form-control" placeholder="e.g., Computer Science">
+                                    </div>
+                                    <button id="addSubjectBtn" class="btn btn-primary w-100">
+                                        <i class="fas fa-plus-circle me-2"></i>Add Subject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Existing Subjects</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="subjectsSpinner" class="spinner-container" style="display:none;">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                    </div>
+                                    <ul class="list-group" id="subjectsList"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="adminToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastBody">Notification</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+     <!-- User Details Modal -->
+    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userDetailsModalLabel">User Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> <span id="modalUserName"></span></p>
+                            <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+                        </div>
+                         <div class="col-md-6">
+                            <canvas id="userAttendanceChart"></canvas>
+                        </div>
+                    </div>
+                    <hr>
+                    <h5>Subject-wise Attendance</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalUserSubjects"></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+        authDomain: "attendance-a9a19.firebaseapp.com",
+        projectId: "attendance-a9a19",
+        storageBucket: "attendance-a9a19.appspot.com",
+        messagingSenderId: "1055787262218",
+        appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+        measurementId: "G-3XPB4VLFYH"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // Admin emails (you can store these in Firestore instead)
+    const adminEmails = ["admin@admin.com"];
+    let attendanceChartInstance = null;
+    let userAttendanceChartInstance = null;
+    let currentUser = null;
+    
+    // Toast notifications
+    function showToast(msg, type = 'primary') {
+        const toast = document.getElementById('adminToast');
+        const toastBody = document.getElementById('toastBody');
+        toast.className = `toast align-items-center text-bg-${type} border-0`;
+        toastBody.textContent = msg;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+    
+    // Check if user is admin
+    function checkAdmin(email) {
+        return adminEmails.includes(email);
+    }
+    
+    // Load user data from Firestore
+    function loadUserData() {
+        document.getElementById('spinner').style.display = 'flex';
+        document.getElementById('adminTableContainer').style.display = 'none';
+        
+        db.collection('users').get()
+            .then(snapshot => {
+                const users = [];
+                let totalAttendanceSum = 0;
+
+                snapshot.forEach(doc => {
+                    const userData = doc.data();
+                    const attendance = userData.attendanceData?.subjects || {};
+                    
+                    let totalPresent = 0;
+                    let totalAbsent = 0;
+                    
+                    Object.values(attendance).forEach(subject => {
+                        totalPresent += subject.present || 0;
+                        totalAbsent += subject.absent || 0;
+                    });
+                    
+                    const total = totalPresent + totalAbsent;
+                    const percent = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+                    totalAttendanceSum += percent;
+
+                    let lastUpdated = 'Never';
+                    if (userData.lastUpdated) {
+                        const date = userData.lastUpdated.toDate();
+                        lastUpdated = date.toLocaleString();
+                    }
+                    
+                    users.push({
+                        id: doc.id,
+                        name: userData.name || 'Unknown',
+                        email: userData.email || 'No email',
+                        attendancePercent: percent,
+                        lastUpdated: lastUpdated,
+                        attendanceData: userData.attendanceData
+                    });
+                });
+                
+                // Populate table
+                const tbody = document.querySelector('#adminTable tbody');
+                tbody.innerHTML = '';
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center">No users found</td></tr>`;
+                } else {
+                    users.forEach((user, idx) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${idx+1}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                        style="width: ${user.attendancePercent}%;" 
+                                        aria-valuenow="${user.attendancePercent}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        ${user.attendancePercent}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${user.lastUpdated}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-details-btn">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        `;
+                        tr.querySelector('.view-details-btn').addEventListener('click', () => showUserDetails(user));
+                        tbody.appendChild(tr);
+                    });
+                }
+                
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('adminTableContainer').style.display = '';
+                
+                // Update stats
+                document.getElementById('totalUsersStat').textContent = users.length;
+                const avgAttendance = users.length > 0 ? Math.round(totalAttendanceSum / users.length) : 0;
+                document.getElementById('avgAttendanceStat').textContent = `${avgAttendance}%`;
+                
+                updateDashboardChart(users);
+
+                showToast('User data loaded successfully!', 'success');
+            })
+            .catch(error => {
+                console.error("Error loading users:", error);
+                document.getElementById('spinner').style.display = 'none';
+                showToast('Failed to load user data!', 'danger');
+            });
+    }
+
+    // Show user details in modal
+    function showUserDetails(user) {
+        document.getElementById('modalUserName').textContent = user.name;
+        document.getElementById('modalUserEmail').textContent = user.email;
+
+        const subjectsTbody = document.getElementById('modalUserSubjects');
+        subjectsTbody.innerHTML = '';
+        const subjects = user.attendanceData?.subjects || {};
+        const labels = [];
+        const presentData = [];
+
+        if(Object.keys(subjects).length > 0) {
+            for(const subjectName in subjects) {
+                const subject = subjects[subjectName];
+                const total = (subject.present || 0) + (subject.absent || 0);
+                subjectsTbody.innerHTML += `
+                    <tr>
+                        <td>${subjectName}</td>
+                        <td>${subject.present || 0}</td>
+                        <td>${subject.absent || 0}</td>
+                        <td>${total}</td>
+                    </tr>
+                `;
+                labels.push(subjectName);
+                presentData.push(subject.present || 0);
+            }
+        } else {
+            subjectsTbody.innerHTML = '<tr><td colspan="4" class="text-center">No attendance data available.</td></tr>';
+        }
+
+        updateUserAttendanceChart(labels, presentData);
+
+        const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+        modal.show();
+    }
+
+    // Load subjects
+    function loadSubjects() {
+        const spinner = document.getElementById('subjectsSpinner');
+        const list = document.getElementById('subjectsList');
+        spinner.style.display = 'flex';
+        list.innerHTML = '';
+
+        // Make sure we have a reference to the authenticated user
+        if (!currentUser) {
+            spinner.style.display = 'none';
+            showToast('Authentication error. Please reload the page.', 'danger');
+            return;
+        }
+
+        // First check if the subjects collection exists, if not create it
+        db.collection('subjects').get()
+            .then(snapshot => {
+                spinner.style.display = 'none';
+                
+                if(snapshot.empty) {
+                    list.innerHTML = '<li class="list-group-item">No subjects found. Add your first subject above.</li>';
+                    document.getElementById('totalSubjectsStat').textContent = 0;
+                    return;
+                }
+                
+                document.getElementById('totalSubjectsStat').textContent = snapshot.size;
+                snapshot.forEach(doc => {
+                    const subject = doc.data();
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    li.textContent = subject.name;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteBtn.onclick = () => deleteSubject(doc.id, subject.name);
+
+                    li.appendChild(deleteBtn);
+                    list.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading subjects:", error);
+                spinner.style.display = 'none';
+                
+                // If permission denied, try to create the collection
+                if (error.code === 'permission-denied') {
+                    showToast('Creating subjects collection...', 'info');
+                    // Create an initial empty document to establish the collection
+                    db.collection('subjects').doc('initial').set({
+                        createdBy: currentUser.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        name: 'Initial Subject'
+                    })
+                    .then(() => {
+                        showToast('Subjects collection created. You can now add subjects.', 'success');
+                        loadSubjects(); // Try loading again
+                    })
+                    .catch(innerError => {
+                        showToast('Error creating subjects: ' + innerError.message, 'danger');
+                        console.error("Error creating subjects:", innerError);
+                    });
+                } else {
+                    showToast('Error loading subjects: ' + error.message, 'danger');
+                }
+            });
+    }
+
+    // Add subject
+    function addSubject() {
+        const subjectNameInput = document.getElementById('subjectName');
+        const name = subjectNameInput.value.trim();
+        if(!name) {
+            showToast('Please enter a subject name.', 'warning');
+            return;
+        }
+
+        const addBtn = document.getElementById('addSubjectBtn');
+        addBtn.disabled = true;
+        addBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+
+        // Check if we have the current user
+        if (!currentUser) {
+            showToast('Authentication error. Please reload the page.', 'danger');
+            addBtn.disabled = false;
+            addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Subject';
+            return;
+        }
+
+        db.collection('subjects').add({ 
+            name: name,
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            showToast('Subject added successfully!', 'success');
+            subjectNameInput.value = '';
+            loadSubjects();
+        })
+        .catch(error => {
+            console.error("Error adding subject: ", error);
+            
+            // If permission denied, try to create the collection first
+            if (error.code === 'permission-denied') {
+                db.collection('subjects').doc('initial').set({
+                    createdBy: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    name: 'Initial Subject'
+                })
+                .then(() => {
+                    // Now try to add the actual subject
+                    return db.collection('subjects').add({ 
+                        name: name,
+                        createdBy: currentUser.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    showToast('Subject added successfully!', 'success');
+                    subjectNameInput.value = '';
+                    loadSubjects();
+                })
+                .catch(innerError => {
+                    showToast('Error adding subject: ' + innerError.message, 'danger');
+                    console.error("Error in second attempt:", innerError);
+                });
+            } else {
+                showToast('Error adding subject: ' + error.message, 'danger');
+            }
+        })
+        .finally(() => {
+            addBtn.disabled = false;
+            addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Subject';
+        });
+    }
+
+    // Delete subject
+    function deleteSubject(id, name) {
+        if (!confirm(`Are you sure you want to delete the subject "${name}"? This cannot be undone.`)) {
+            return;
+        }
+
+        db.collection('subjects').doc(id).delete()
+            .then(() => {
+                showToast(`Subject "${name}" deleted successfully.`, 'success');
+                loadSubjects();
+            })
+            .catch(error => {
+                showToast('Error deleting subject: ' + error.message, 'danger');
+                console.error("Error deleting subject:", error);
+            });
+    }
+
+    // Update Dashboard Chart
+    function updateDashboardChart(users) {
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        const fallback = document.getElementById('attendanceChartFallback');
+        // Filter out users with no attendance data
+        const usersWithData = users.filter(u => u.attendancePercent > 0);
+        if (attendanceChartInstance) attendanceChartInstance.destroy();
+        if (usersWithData.length === 0) {
+            fallback.style.display = '';
+            return;
+        } else {
+            fallback.style.display = 'none';
+        }
+        attendanceChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: usersWithData.map(u => u.name),
+                datasets: [{
+                    label: 'Attendance %',
+                    data: usersWithData.map(u => u.attendancePercent),
+                    backgroundColor: 'rgba(74, 21, 75, 0.8)',
+                    borderRadius: 8,
+                    maxBarThickness: 48
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#7b7b93', font: { weight: 600 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#f3e6f7' },
+                        ticks: { color: '#7b7b93', font: { weight: 600 }, stepSize: 20 }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateUserAttendanceChart(labels, data) {
+        const ctx = document.getElementById('userAttendanceChart').getContext('2d');
+        
+        // If no data, show a message
+        if (labels.length === 0 || data.every(val => val === 0)) {
+            if (userAttendanceChartInstance) {
+                userAttendanceChartInstance.destroy();
+                userAttendanceChartInstance = null;
+            }
+            
+            // Display a message in the chart area
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('No attendance data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            return;
+        }
+        
+        if (userAttendanceChartInstance) {
+            userAttendanceChartInstance.destroy();
+        }
+        
+        userAttendanceChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Present Days',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auth state change listener
+        auth.onAuthStateChanged(user => {
+            if (user && checkAdmin(user.email)) {
+                // User is admin, show dashboard
+                currentUser = user; // Store the current user
+                document.getElementById('adminLoginContainer').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadUserData();
+                loadSubjects();
+            } else if (user) {
+                // User is not admin, show error
+                auth.signOut().then(() => {
+                    showToast('Access denied. You need admin privileges.', 'danger');
+                    document.getElementById('adminLoginContainer').style.display = 'block';
+                    document.getElementById('adminDashboard').style.display = 'none';
+                });
+            } else {
+                // No user, show login
+                currentUser = null;
+                document.getElementById('adminLoginContainer').style.display = 'block';
+                document.getElementById('adminDashboard').style.display = 'none';
+            }
+        });
+        
+        // Admin login button
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        adminLoginBtn.addEventListener('click', () => {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!email || !password) {
+                document.getElementById('loginError').textContent = 'Please enter email and password';
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+            
+            adminLoginBtn.disabled = true;
+            adminLoginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    if (!checkAdmin(userCredential.user.email)) {
+                        auth.signOut();
+                        document.getElementById('loginError').textContent = 'Access denied. You need admin privileges.';
+                        document.getElementById('loginError').style.display = 'block';
+                    } else {
+                        document.getElementById('loginError').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loginError').textContent = error.message;
+                    document.getElementById('loginError').style.display = 'block';
+                })
+                .finally(() => {
+                    adminLoginBtn.disabled = false;
+                    adminLoginBtn.textContent = 'Login';
+                });
+        });
+        
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                showToast('Logged out successfully', 'info');
+            });
+        });
+        
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            loadUserData();
+        });
+
+        // Add subject button
+        document.getElementById('addSubjectBtn').addEventListener('click', addSubject);
+    });
+    </script>
+</body>
+</html> 
