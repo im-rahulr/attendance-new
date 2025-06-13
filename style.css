@@ -1,0 +1,287 @@
+/* Reset and Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+}
+
+.app-container {
+    max-width: 414px;
+    height: 100vh;
+    margin: 0 auto;
+    background-color: #ffffff;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    color: #333;
+}
+
+.status-icons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Header Styles */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+}
+
+.app-title {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.profile-icon {
+    width: 36px;
+    height: 36px;
+    background-color: #252B42;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Greeting Section */
+.greeting-section {
+    padding: 16px;
+}
+
+.greeting {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.welcome-text {
+    font-size: 18px;
+    color: #7C8DB5;
+}
+
+/* Classes Section */
+.classes-section {
+    padding: 16px;
+}
+
+.section-title {
+    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.class-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+}
+
+.class-info {
+    margin-bottom: 12px;
+}
+
+.subject {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.status {
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.status-present {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.class-label {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 14px;
+    color: #666;
+}
+
+.attendance-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-present, .btn-absent {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-present {
+    background-color: #E8F5E9;
+    color: #4CAF50;
+}
+
+.btn-present.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-absent {
+    background-color: #FFEBEE;
+    color: #F44336;
+}
+
+.btn-absent.active {
+    background-color: #F44336;
+    color: white;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 414px;
+    display: flex;
+    justify-content: space-around;
+    background-color: #ffffff;
+    padding: 12px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item {
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.nav-item.active {
+    background-color: #E3F2FD;
+    color: #1976D2;
+}
+
+/* Report Page Styles */
+.report-header {
+    padding: 16px;
+    text-align: center;
+}
+
+.report-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.report-content {
+    padding: 16px;
+}
+
+.total-attendance {
+    background-color: #5E72E4;
+    color: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.total-attendance h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.percentage-circle {
+    width: 150px;
+    height: 150px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.percentage-circle .percentage {
+    font-size: 48px;
+    font-weight: 700;
+    color: #5E72E4;
+}
+
+.subject-attendance h3 {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.subject-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+}
+
+.subject-name {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.attendance-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.present-count {
+    color: #4CAF50;
+}
+
+.absent-count {
+    color: #F44336;
+}
+
+.percentage-bar {
+    background-color: #f5f5f5;
+    border-radius: 999px;
+    text-align: center;
+    padding: 8px;
+}
+
+.percentage-bar .percentage {
+    font-weight: 700;
+    font-size: 24px;
+}
+
+/* Make sure the main content doesn't get hidden under the bottom nav */
+.main-content, .report-content {
+    padding-bottom: 70px;
+} 

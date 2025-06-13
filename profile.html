@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Attendity</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .profile-page {
+            padding: 20px 0;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .large-profile-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #D9ED92;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+            margin-right: 20px;
+            color: #333;
+        }
+        .profile-name {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+        .profile-email {
+            color: #666;
+            margin: 5px 0 0;
+        }
+        .profile-section {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .section-title {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .profile-field {
+            margin-bottom: 15px;
+        }
+        .field-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .field-value {
+            display: block;
+            font-weight: 500;
+        }
+        .edit-field {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .edit-field input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+        .edit-field button {
+            margin-left: 10px;
+            padding: 0 15px;
+            background-color: #D9ED92;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .action-button {
+            background-color: #D9ED92;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .action-button:hover {
+            background-color: #c5e17a;
+        }
+        .logout-button {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .logout-button:hover {
+            background-color: #e5e5e5;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #D9ED92;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading your profile...</p>
+    </div>
+
+    <header class="app-header">
+        <h1 class="app-title">Attendity</h1>
+        <div class="profile-icon" id="profileInitial">P</div>
+    </header>
+    
+    <main class="main-content profile-page">
+        <div id="errorMessage" class="error-message">
+            An error occurred. Please try again.
+        </div>
+        
+        <div id="successMessage" class="success-message">
+            Profile updated successfully!
+        </div>
+        
+        <div class="profile-header">
+            <div class="large-profile-icon" id="largeProfileIcon">P</div>
+            <div>
+                <h2 class="profile-name" id="profileName">Loading...</h2>
+                <p class="profile-email" id="profileEmail">loading@example.com</p>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <h3 class="section-title">Personal Information</h3>
+            
+            <div class="profile-field">
+                <span class="field-label">Display Name</span>
+                <div class="edit-field">
+                    <input type="text" id="displayNameInput" placeholder="Your name">
+                    <button id="updateNameBtn">Update</button>
+                </div>
+            </div>
+            
+            <div class="profile-field">
+                <span class="field-label">Email</span>
+                <span class="field-value" id="emailValue">loading@example.com</span>
+            </div>
+            
+            <div class="profile-field">
+                <span class="field-label">Joined On</span>
+                <span class="field-value" id="joinedDate">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <h3 class="section-title">Attendance Statistics</h3>
+            
+            <div class="profile-field">
+                <span class="field-label">Total Present Days</span>
+                <span class="field-value" id="totalPresent">Loading...</span>
+            </div>
+            
+            <div class="profile-field">
+                <span class="field-label">Total Absent Days</span>
+                <span class="field-value" id="totalAbsent">Loading...</span>
+            </div>
+            
+            <div class="profile-field">
+                <span class="field-label">Attendance Rate</span>
+                <span class="field-value" id="attendanceRate">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <h3 class="section-title">Account Actions</h3>
+            <button id="resetPasswordBtn" class="action-button">Reset Password</button>
+            <button id="logoutBtn" class="action-button logout-button">Logout</button>
+        </div>
+    </main>
+    
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">Dashboard</a>
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="report.html" class="nav-item">Report</a>
+        <a href="profile.html" class="nav-item active">Profile</a>
+    </nav>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Firebase references
+            let auth;
+            let db;
+            
+            try {
+                auth = firebase.auth();
+                db = firebase.firestore();
+            } catch (error) {
+                showError("Firebase initialization failed. Please check your internet connection.");
+                hideLoading();
+                return;
+            }
+            
+            // Check if user is logged in
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    // Redirect to login page if not authenticated
+                    window.location.href = 'login.html';
+                } else {
+                    // Update UI with user info
+                    updateProfileUI(user);
+                    
+                    // Load user's attendance data
+                    loadAttendanceData(user.uid);
+                }
+            });
+            
+            // Update Profile UI with user information
+            function updateProfileUI(user) {
+                const displayName = user.displayName || 'User';
+                const email = user.email || '';
+                const creationTime = user.metadata.creationTime;
+                
+                document.getElementById('profileName').textContent = displayName;
+                document.getElementById('profileEmail').textContent = email;
+                document.getElementById('emailValue').textContent = email;
+                document.getElementById('displayNameInput').value = displayName;
+                
+                const initials = getInitials(displayName);
+                document.getElementById('profileInitial').textContent = initials;
+                document.getElementById('largeProfileIcon').textContent = initials;
+                
+                // Format and display creation date
+                if (creationTime) {
+                    const joinDate = new Date(creationTime);
+                    document.getElementById('joinedDate').textContent = joinDate.toLocaleDateString();
+                } else {
+                    document.getElementById('joinedDate').textContent = 'N/A';
+                }
+                
+                hideLoading();
+            }
+            
+            // Load attendance data from Firestore
+            function loadAttendanceData(userId) {
+                db.collection('users').doc(userId).get()
+                    .then((doc) => {
+                        if (doc.exists && doc.data().attendanceData) {
+                            const data = doc.data().attendanceData;
+                            calculateAttendanceStats(data);
+                        } else {
+                            showDefaultAttendanceStats();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error loading attendance data:", error);
+                        showDefaultAttendanceStats();
+                    });
+            }
+            
+            // Calculate and display attendance statistics
+            function calculateAttendanceStats(data) {
+                let totalPresent = 0;
+                let totalAbsent = 0;
+                
+                // Calculate totals from subjects data
+                if (data.subjects) {
+                    Object.values(data.subjects).forEach(subject => {
+                        totalPresent += subject.present || 0;
+                        totalAbsent += subject.absent || 0;
+                    });
+                }
+                
+                // Display statistics
+                document.getElementById('totalPresent').textContent = totalPresent;
+                document.getElementById('totalAbsent').textContent = totalAbsent;
+                
+                const total = totalPresent + totalAbsent;
+                const rate = total > 0 ? ((totalPresent / total) * 100).toFixed(1) + '%' : 'N/A';
+                document.getElementById('attendanceRate').textContent = rate;
+            }
+            
+            // Show default attendance stats when data is not available
+            function showDefaultAttendanceStats() {
+                document.getElementById('totalPresent').textContent = '0';
+                document.getElementById('totalAbsent').textContent = '0';
+                document.getElementById('attendanceRate').textContent = 'N/A';
+            }
+            
+            // Update display name
+            document.getElementById('updateNameBtn').addEventListener('click', function() {
+                const newName = document.getElementById('displayNameInput').value.trim();
+                
+                if (!newName) {
+                    showError("Please enter a valid name");
+                    return;
+                }
+                
+                const user = auth.currentUser;
+                if (user) {
+                    showLoading();
+                    user.updateProfile({
+                        displayName: newName
+                    }).then(() => {
+                        // Update displayed name
+                        document.getElementById('profileName').textContent = newName;
+                        
+                        // Update initials
+                        const initials = getInitials(newName);
+                        document.getElementById('profileInitial').textContent = initials;
+                        document.getElementById('largeProfileIcon').textContent = initials;
+                        
+                        showSuccess("Name updated successfully!");
+                        hideLoading();
+                    }).catch((error) => {
+                        showError("Failed to update name: " + error.message);
+                        hideLoading();
+                    });
+                }
+            });
+            
+            // Reset password
+            document.getElementById('resetPasswordBtn').addEventListener('click', function() {
+                const user = auth.currentUser;
+                if (user && user.email) {
+                    showLoading();
+                    auth.sendPasswordResetEmail(user.email)
+                        .then(() => {
+                            showSuccess("Password reset email sent to " + user.email);
+                            hideLoading();
+                        })
+                        .catch((error) => {
+                            showError("Failed to send password reset email: " + error.message);
+                            hideLoading();
+                        });
+                }
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                auth.signOut().then(function() {
+                    window.location.href = 'login.html';
+                }).catch(function(error) {
+                    showError("Failed to log out: " + error.message);
+                });
+            });
+            
+            // Helper functions
+            function getInitials(name) {
+                return name.split(' ').map(part => part.charAt(0)).join('').toUpperCase();
+            }
+            
+            function hideLoading() {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+            
+            function showLoading() {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+            }
+            
+            function showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
+            
+            function showSuccess(message) {
+                const successElement = document.getElementById('successMessage');
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    successElement.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html> 

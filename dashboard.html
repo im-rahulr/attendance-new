@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Attendity</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .user-profile {
+            display: flex;
+            align-items: center;
+            background-color: #f7f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .user-profile .profile-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+        .user-info h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .user-info p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #D9ED92;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading your dashboard...</p>
+    </div>
+
+    <div id="errorMessage" class="error-message">
+        An error occurred. Please try again.
+    </div>
+
+    <header class="app-header">
+        <h1 class="app-title">Attendity</h1>
+        <div class="profile-icon" id="profileInitial">P</div>
+    </header>
+    <main class="main-content">
+        <div class="greeting-section">
+            <h2 class="greeting">Hi, <span id="userNameGreeting">Rahul</span>.</h2>
+            <p class="welcome-text">Welcome to your Class</p>
+        </div>
+        <div class="classes-section">
+            <h3 class="section-title">Today's Classes</h3>
+            <div class="class-card">
+                <div class="class-info">
+                    <h4 class="subject">English</h4>
+                    <p class="status">You are marked <span class="status-present">present</span></p>
+                </div>
+                <div class="class-label">1st class</div>
+                <div class="attendance-buttons">
+                    <button class="btn-present active">Present</button>
+                    <button class="btn-absent">Absent</button>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-info">
+                    <h4 class="subject">Mathematics</h4>
+                    <p class="status">You are marked <span class="status-present">present</span></p>
+                </div>
+                <div class="class-label">2st class</div>
+                <div class="attendance-buttons">
+                    <button class="btn-present active">Present</button>
+                    <button class="btn-absent">Absent</button>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-info">
+                    <h4 class="subject">Mathematics</h4>
+                    <p class="status">You are marked <span class="status-present">present</span></p>
+                </div>
+                <div class="class-label">3rd class</div>
+                <div class="attendance-buttons">
+                    <button class="btn-present active">Present</button>
+                    <button class="btn-absent">Absent</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active">Dashboard</a>
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="report.html" class="nav-item">Report</a>
+        <a href="profile.html" class="nav-item">Profile</a>
+    </nav>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Firebase references
+            let auth;
+            let db;
+            
+            try {
+                auth = firebase.auth();
+                db = firebase.firestore();
+            } catch (error) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = "Firebase initialization failed. Please check your internet connection.";
+                hideLoading();
+                return;
+            }
+            
+            // Check if user is logged in
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    // Update UI with user info
+                    document.getElementById('userNameGreeting').textContent = user.displayName || 'User';
+                    
+                    const initials = getInitials(user.displayName || 'User');
+                    document.getElementById('profileInitial').textContent = initials;
+                    
+                    hideLoading();
+                } else {
+                    // Redirect to login page if not authenticated
+                    window.location.href = 'login.html';
+                }
+            });
+            
+            function hideLoading() {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+            
+            function getInitials(name) {
+                return name.split(' ').map(part => part.charAt(0)).join('').toUpperCase();
+            }
+        });
+    </script>
+</body>
+</html> 
