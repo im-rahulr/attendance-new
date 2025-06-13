@@ -410,16 +410,15 @@ function checkAuthState() {
     
     auth.onAuthStateChanged((user) => {
         const currentPath = window.location.pathname;
-        
+        const isAuthPage = currentPath.includes('login') || currentPath.endsWith('/');
+
         // If we're on login page and user is logged in, redirect to dashboard
-        if (user && currentPath.includes('login.html')) {
+        if (user && isAuthPage) {
             window.location.href = 'dashboard.html';
         }
         
         // If we're on a protected page and user is not logged in, redirect to login
-        if (!user && (currentPath.includes('dashboard.html') ||
-                      currentPath.includes('index.html') ||
-                      currentPath.includes('report.html'))) {
+        if (!user && !isAuthPage) {
             window.location.href = 'login.html';
         }
         
@@ -432,8 +431,9 @@ function checkAuthState() {
             
             // Update greeting if on index.html
             const greeting = document.querySelector('.greeting');
-            if (greeting && currentPath.includes('index.html')) {
-                greeting.textContent = `Hi, ${user.displayName?.split(' ')[0] || 'User'}.`;
+            if (greeting && (currentPath.includes('dashboard') || currentPath.endsWith('/'))) {
+                const userName = user.displayName?.split(' ')[0] || 'User';
+                greeting.innerHTML = `Hello, <span id="userName">${userName}</span>!`;
             }
         }
     });

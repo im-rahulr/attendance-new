@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Attendity</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Add Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
     <style>
         .profile-page {
-            padding: 20px 0;
+            padding: 20px 16px;
         }
         .profile-header {
             display: flex;
@@ -29,6 +29,7 @@
             font-weight: bold;
             margin-right: 20px;
             color: #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .profile-name {
             font-size: 24px;
@@ -41,29 +42,32 @@
         }
         .profile-section {
             background-color: #fff;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
         }
         .section-title {
             font-size: 18px;
             margin-top: 0;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-weight: 600;
+            color: #1C2D40;
         }
         .profile-field {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .field-label {
             display: block;
             font-size: 14px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         .field-value {
             display: block;
             font-weight: 500;
+            font-size: 16px;
         }
         .edit-field {
             display: flex;
@@ -71,33 +75,46 @@
         }
         .edit-field input {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 6px;
+            border-radius: 10px;
             font-family: 'Inter', sans-serif;
+            font-size: 15px;
+        }
+        .edit-field input:focus {
+            outline: none;
+            border-color: #97BCE8;
+            box-shadow: 0 0 0 2px rgba(151, 188, 232, 0.2);
         }
         .edit-field button {
             margin-left: 10px;
-            padding: 0 15px;
+            padding: 0 20px;
             background-color: #D9ED92;
             border: none;
-            border-radius: 6px;
-            font-weight: 500;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .edit-field button:hover {
+            background-color: #c5e45a;
+            transform: translateY(-2px);
         }
         .action-button {
             background-color: #D9ED92;
             border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
+            border-radius: 12px;
+            padding: 14px 20px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 10px;
-            transition: background-color 0.3s;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .action-button:hover {
-            background-color: #c5e17a;
+            background-color: #c5e45a;
+            transform: translateY(-2px);
         }
         .logout-button {
             background-color: #f5f5f5;
@@ -113,7 +130,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -135,103 +152,135 @@
         .error-message {
             background-color: #ffebee;
             color: #c62828;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px 16px;
+            border-radius: 12px;
             margin-bottom: 20px;
             display: none;
         }
         .success-message {
             background-color: #e8f5e9;
             color: #2e7d32;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px 16px;
+            border-radius: 12px;
             margin-bottom: 20px;
             display: none;
+        }
+        /* Stat cards */
+        .stat-cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 100px;
+            background-color: #f8f8f8;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1C2D40;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+        }
+        .attendance-rate {
+            background-color: #D9ED92;
         }
     </style>
 </head>
 <body>
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Loading your profile...</p>
-    </div>
-
-    <header class="app-header">
-        <h1 class="app-title">Attendity</h1>
-        <div class="profile-icon" id="profileInitial">P</div>
-    </header>
-    
-    <main class="main-content profile-page">
-        <div id="errorMessage" class="error-message">
-            An error occurred. Please try again.
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title">Attendity</div>
+            <div class="profile-icon" id="profileIcon">JS</div>
         </div>
         
-        <div id="successMessage" class="success-message">
-            Profile updated successfully!
-        </div>
-        
-        <div class="profile-header">
-            <div class="large-profile-icon" id="largeProfileIcon">P</div>
-            <div>
-                <h2 class="profile-name" id="profileName">Loading...</h2>
-                <p class="profile-email" id="profileEmail">loading@example.com</p>
+        <div class="main-content profile-page">
+            <div id="errorMessage" class="error-message">
+                An error occurred. Please try again.
             </div>
-        </div>
-        
-        <div class="profile-section">
-            <h3 class="section-title">Personal Information</h3>
             
-            <div class="profile-field">
-                <span class="field-label">Display Name</span>
-                <div class="edit-field">
-                    <input type="text" id="displayNameInput" placeholder="Your name">
-                    <button id="updateNameBtn">Update</button>
+            <div id="successMessage" class="success-message">
+                Profile updated successfully!
+            </div>
+            
+            <div class="profile-header">
+                <div class="large-profile-icon" id="largeProfileIcon">P</div>
+                <div>
+                    <h2 class="profile-name" id="profileName">Loading...</h2>
+                    <p class="profile-email" id="profileEmail">loading@example.com</p>
                 </div>
             </div>
             
-            <div class="profile-field">
-                <span class="field-label">Email</span>
-                <span class="field-value" id="emailValue">loading@example.com</span>
+            <div class="profile-section">
+                <h3 class="section-title">Personal Information</h3>
+                
+                <div class="profile-field">
+                    <span class="field-label">Display Name</span>
+                    <div class="edit-field">
+                        <input type="text" id="displayNameInput" placeholder="Your name">
+                        <button id="updateNameBtn">Update</button>
+                    </div>
+                </div>
+                
+                <div class="profile-field">
+                    <span class="field-label">Email</span>
+                    <span class="field-value" id="emailValue">loading@example.com</span>
+                </div>
+                
+                <div class="profile-field">
+                    <span class="field-label">Joined On</span>
+                    <span class="field-value" id="joinedDate">Loading...</span>
+                </div>
             </div>
             
-            <div class="profile-field">
-                <span class="field-label">Joined On</span>
-                <span class="field-value" id="joinedDate">Loading...</span>
+            <div class="profile-section">
+                <h3 class="section-title">Attendance Statistics</h3>
+                
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPresent">0</div>
+                        <div class="stat-label">Present</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalAbsent">0</div>
+                        <div class="stat-label">Absent</div>
+                    </div>
+                    <div class="stat-card attendance-rate">
+                        <div class="stat-value" id="attendanceRate">0%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <h3 class="section-title">Account Actions</h3>
+                <button id="resetPasswordBtn" class="action-button">Reset Password</button>
+                <button id="logoutBtn" class="action-button logout-button">Logout</button>
             </div>
         </div>
         
-        <div class="profile-section">
-            <h3 class="section-title">Attendance Statistics</h3>
-            
-            <div class="profile-field">
-                <span class="field-label">Total Present Days</span>
-                <span class="field-value" id="totalPresent">Loading...</span>
-            </div>
-            
-            <div class="profile-field">
-                <span class="field-label">Total Absent Days</span>
-                <span class="field-value" id="totalAbsent">Loading...</span>
-            </div>
-            
-            <div class="profile-field">
-                <span class="field-label">Attendance Rate</span>
-                <span class="field-value" id="attendanceRate">Loading...</span>
-            </div>
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">Dashboard</a>
+            <a href="report.html" class="nav-item">Report</a>
+            <a href="profile.html" class="nav-item active">Profile</a>
         </div>
-        
-        <div class="profile-section">
-            <h3 class="section-title">Account Actions</h3>
-            <button id="resetPasswordBtn" class="action-button">Reset Password</button>
-            <button id="logoutBtn" class="action-button logout-button">Logout</button>
-        </div>
-    </main>
+    </div>
     
-    <nav class="bottom-nav">
-        <a href="dashboard.html" class="nav-item">Dashboard</a>
-        <!-- <a href="index.html" class="nav-item">Home</a> -->
-        <a href="report.html" class="nav-item">Report</a>
-        <a href="profile.html" class="nav-item active">Profile</a>
-    </nav>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Loading profile...</p>
+    </div>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -249,207 +298,175 @@
             try {
                 auth = firebase.auth();
                 db = firebase.firestore();
-            } catch (error) {
-                showError("Firebase initialization failed. Please check your internet connection.");
-                hideLoading();
-                return;
-            }
-            
-            // Check if user is logged in
-            auth.onAuthStateChanged(function(user) {
-                if (!user) {
-                    // Redirect to login page if not authenticated
-                    window.location.href = 'login.html';
-                } else {
-                    // Update UI with user info
-                    updateProfileUI(user);
-                    
-                    // Load user's attendance data
-                    loadAttendanceData(user.uid);
-                }
-            });
-            
-            // Update Profile UI with user information
-            function updateProfileUI(user) {
-                const displayName = user.displayName || 'User';
-                const email = user.email || '';
-                const creationTime = user.metadata.creationTime;
                 
-                document.getElementById('profileName').textContent = displayName;
-                document.getElementById('profileEmail').textContent = email;
-                document.getElementById('emailValue').textContent = email;
-                document.getElementById('displayNameInput').value = displayName;
+                // Show loading
+                document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                const initials = getInitials(displayName);
-                document.getElementById('profileInitial').textContent = initials;
-                document.getElementById('largeProfileIcon').textContent = initials;
-                
-                // Format and display creation date
-                if (creationTime) {
-                    const joinDate = new Date(creationTime);
-                    document.getElementById('joinedDate').textContent = joinDate.toLocaleDateString();
-                } else {
-                    document.getElementById('joinedDate').textContent = 'N/A';
-                }
-                
-                hideLoading();
-            }
-            
-            // Load attendance data from Firestore
-            function loadAttendanceData(userId) {
-                db.collection('users').doc(userId).get()
-                    .then((doc) => {
-                        if (doc.exists && doc.data().attendanceData) {
-                            const data = doc.data().attendanceData;
-                            calculateAttendanceStats(data);
-                        } else {
-                            showDefaultAttendanceStats();
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error loading attendance data:", error);
-                        showDefaultAttendanceStats();
-                    });
-            }
-            
-            // Calculate and display attendance statistics
-            function calculateAttendanceStats(data) {
-                let totalPresent = 0;
-                let totalAbsent = 0;
-                
-                // Calculate totals from subjects data
-                if (data.subjects) {
-                    Object.values(data.subjects).forEach(subject => {
-                        totalPresent += subject.present || 0;
-                        totalAbsent += subject.absent || 0;
-                    });
-                }
-                
-                // Check if user has unmarked attendance
-                let hasUnmarkedAttendance = false;
-                if (data.todaysClasses) {
-                    hasUnmarkedAttendance = data.todaysClasses.some(cls => cls.status === 'unmarked');
-                }
-                
-                // Display statistics
-                document.getElementById('totalPresent').textContent = totalPresent;
-                document.getElementById('totalAbsent').textContent = totalAbsent;
-                
-                const total = totalPresent + totalAbsent;
-                const rate = total > 0 ? ((totalPresent / total) * 100).toFixed(1) + '%' : 'N/A';
-                document.getElementById('attendanceRate').textContent = rate;
-                
-                // Show message if any attendance is unmarked
-                if (hasUnmarkedAttendance) {
-                    const successElement = document.getElementById('successMessage');
-                    successElement.textContent = "You have unmarked attendance. Please visit the Dashboard to mark your attendance.";
-                    successElement.style.display = 'block';
-                    
-                    // Hide after 5 seconds
-                    setTimeout(() => {
-                        successElement.style.display = 'none';
-                    }, 5000);
-                }
-            }
-            
-            // Show default attendance stats when data is not available
-            function showDefaultAttendanceStats() {
-                document.getElementById('totalPresent').textContent = '0';
-                document.getElementById('totalAbsent').textContent = '0';
-                document.getElementById('attendanceRate').textContent = 'N/A';
-            }
-            
-            // Update display name
-            document.getElementById('updateNameBtn').addEventListener('click', function() {
-                const newName = document.getElementById('displayNameInput').value.trim();
-                
-                if (!newName) {
-                    showError("Please enter a valid name");
-                    return;
-                }
-                
-                const user = auth.currentUser;
-                if (user) {
-                    showLoading();
-                    user.updateProfile({
-                        displayName: newName
-                    }).then(() => {
-                        // Update displayed name
-                        document.getElementById('profileName').textContent = newName;
+                // Check if user is authenticated
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        // Update profile information
+                        document.getElementById('profileName').textContent = user.displayName || 'User';
+                        document.getElementById('profileEmail').textContent = user.email;
+                        document.getElementById('emailValue').textContent = user.email;
+                        document.getElementById('displayNameInput').value = user.displayName || '';
                         
-                        // Update initials
-                        const initials = getInitials(newName);
-                        document.getElementById('profileInitial').textContent = initials;
-                        document.getElementById('largeProfileIcon').textContent = initials;
+                        const largeInitials = getInitials(user.displayName || user.email || 'U');
+                        document.getElementById('largeProfileIcon').textContent = largeInitials;
+                        document.getElementById('profileIcon').textContent = largeInitials;
                         
-                        showSuccess("Name updated successfully!");
-                        hideLoading();
-                    }).catch((error) => {
-                        showError("Failed to update name: " + error.message);
-                        hideLoading();
-                    });
-                }
-            });
-            
-            // Reset password
-            document.getElementById('resetPasswordBtn').addEventListener('click', function() {
-                const user = auth.currentUser;
-                if (user && user.email) {
-                    showLoading();
-                    auth.sendPasswordResetEmail(user.email)
-                        .then(() => {
-                            showSuccess("Password reset email sent to " + user.email);
-                            hideLoading();
-                        })
-                        .catch((error) => {
-                            showError("Failed to send password reset email: " + error.message);
-                            hideLoading();
+                        // Get user data from Firestore
+                        db.collection('users').doc(user.uid).get()
+                            .then((doc) => {
+                                if (doc.exists) {
+                                    const userData = doc.data();
+                                    
+                                    // Format joined date
+                                    if (userData.createdAt) {
+                                        const date = userData.createdAt.toDate();
+                                        document.getElementById('joinedDate').textContent = date.toLocaleDateString();
+                                    }
+                                    
+                                    // Calculate attendance statistics
+                                    if (userData.attendanceData && userData.attendanceData.subjects) {
+                                        let totalPresent = 0;
+                                        let totalAbsent = 0;
+                                        
+                                        Object.values(userData.attendanceData.subjects).forEach(subject => {
+                                            totalPresent += subject.present || 0;
+                                            totalAbsent += subject.absent || 0;
+                                        });
+                                        
+                                        document.getElementById('totalPresent').textContent = totalPresent;
+                                        document.getElementById('totalAbsent').textContent = totalAbsent;
+                                        
+                                        // Calculate attendance rate
+                                        const total = totalPresent + totalAbsent;
+                                        const rate = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+                                        document.getElementById('attendanceRate').textContent = `${rate}%`;
+                                    }
+                                }
+                                
+                                // Hide loading overlay
+                                document.getElementById('loadingOverlay').style.display = 'none';
+                            })
+                            .catch((error) => {
+                                console.error("Error getting user data:", error);
+                                document.getElementById('errorMessage').style.display = 'block';
+                                document.getElementById('errorMessage').textContent = "Failed to load profile data. Please try again.";
+                                document.getElementById('loadingOverlay').style.display = 'none';
+                            });
+                        
+                        // Setup event listeners
+                        document.getElementById('updateNameBtn').addEventListener('click', function() {
+                            const newName = document.getElementById('displayNameInput').value.trim();
+                            
+                            if (newName) {
+                                // Show loading
+                                document.getElementById('loadingOverlay').style.display = 'flex';
+                                document.getElementById('loadingText').textContent = 'Updating profile...';
+                                
+                                // Update profile in Firebase Auth
+                                user.updateProfile({
+                                    displayName: newName
+                                })
+                                .then(() => {
+                                    // Update display name in Firestore
+                                    return db.collection('users').doc(user.uid).update({
+                                        name: newName
+                                    });
+                                })
+                                .then(() => {
+                                    // Update UI
+                                    document.getElementById('profileName').textContent = newName;
+                                    document.getElementById('largeProfileIcon').textContent = getInitials(newName);
+                                    document.getElementById('profileIcon').textContent = getInitials(newName);
+                                    
+                                    // Show success message
+                                    document.getElementById('successMessage').style.display = 'block';
+                                    
+                                    // Hide success message after 3 seconds
+                                    setTimeout(() => {
+                                        document.getElementById('successMessage').style.display = 'none';
+                                    }, 3000);
+                                    
+                                    // Hide loading overlay
+                                    document.getElementById('loadingOverlay').style.display = 'none';
+                                })
+                                .catch((error) => {
+                                    console.error("Error updating profile:", error);
+                                    document.getElementById('errorMessage').style.display = 'block';
+                                    document.getElementById('errorMessage').textContent = "Failed to update profile. Please try again.";
+                                    document.getElementById('loadingOverlay').style.display = 'none';
+                                });
+                            }
                         });
-                }
-            });
-            
-            // Logout
-            document.getElementById('logoutBtn').addEventListener('click', function() {
-                auth.signOut().then(function() {
-                    window.location.href = 'login.html';
-                }).catch(function(error) {
-                    showError("Failed to log out: " + error.message);
+                        
+                        document.getElementById('resetPasswordBtn').addEventListener('click', function() {
+                            // Show loading
+                            document.getElementById('loadingOverlay').style.display = 'flex';
+                            document.getElementById('loadingText').textContent = 'Sending reset email...';
+                            
+                            // Send password reset email
+                            auth.sendPasswordResetEmail(user.email)
+                                .then(() => {
+                                    // Show success message
+                                    document.getElementById('successMessage').style.display = 'block';
+                                    document.getElementById('successMessage').textContent = "Password reset email sent. Check your inbox.";
+                                    
+                                    // Hide success message after 3 seconds
+                                    setTimeout(() => {
+                                        document.getElementById('successMessage').style.display = 'none';
+                                    }, 3000);
+                                    
+                                    // Hide loading overlay
+                                    document.getElementById('loadingOverlay').style.display = 'none';
+                                })
+                                .catch((error) => {
+                                    console.error("Error sending reset email:", error);
+                                    document.getElementById('errorMessage').style.display = 'block';
+                                    document.getElementById('errorMessage').textContent = "Failed to send reset email. Please try again.";
+                                    document.getElementById('loadingOverlay').style.display = 'none';
+                                });
+                        });
+                        
+                        document.getElementById('logoutBtn').addEventListener('click', function() {
+                            // Show loading
+                            document.getElementById('loadingOverlay').style.display = 'flex';
+                            document.getElementById('loadingText').textContent = 'Logging out...';
+                            
+                            // Sign out
+                            auth.signOut()
+                                .then(() => {
+                                    window.location.href = 'login.html';
+                                })
+                                .catch((error) => {
+                                    console.error("Error signing out:", error);
+                                    document.getElementById('errorMessage').style.display = 'block';
+                                    document.getElementById('errorMessage').textContent = "Failed to sign out. Please try again.";
+                                    document.getElementById('loadingOverlay').style.display = 'none';
+                                });
+                        });
+                    } else {
+                        // Redirect to login if not authenticated
+                        window.location.href = 'login.html';
+                    }
                 });
-            });
-            
-            // Helper functions
-            function getInitials(name) {
-                return name.split(' ').map(part => part.charAt(0)).join('').toUpperCase();
-            }
-            
-            function hideLoading() {
+                
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = "Failed to initialize Firebase. Please check your internet connection.";
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
             
-            function showLoading() {
-                document.getElementById('loadingOverlay').style.display = 'flex';
-            }
-            
-            function showError(message) {
-                const errorElement = document.getElementById('errorMessage');
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-                
-                // Hide after 5 seconds
-                setTimeout(() => {
-                    errorElement.style.display = 'none';
-                }, 5000);
-            }
-            
-            function showSuccess(message) {
-                const successElement = document.getElementById('successMessage');
-                successElement.textContent = message;
-                successElement.style.display = 'block';
-                
-                // Hide after 5 seconds
-                setTimeout(() => {
-                    successElement.style.display = 'none';
-                }, 5000);
+            // Helper function to get initials from name
+            function getInitials(name) {
+                return name
+                    .split(' ')
+                    .map(part => part.charAt(0))
+                    .join('')
+                    .toUpperCase();
             }
         });
     </script>

@@ -6,9 +6,12 @@ let firebaseRtdb; // Realtime Database reference for presence
 
 // Initialize attendance data if not exists
 function initializeData() {
+    showLoading("Loading your data...");
+    
     // Check if Firebase is initialized
     if (!firebase) {
         console.error("Firebase not initialized");
+        hideLoading();
         return;
     }
 
@@ -40,6 +43,7 @@ function initializeData() {
                     if (userDoc.data().attendanceData) {
                         // User already has data, no need to initialize
                         updateUI();
+                        hideLoading();
                     } else {
                         // User exists but doesn't have attendance data
                         const initialData = createInitialData();
@@ -47,6 +51,7 @@ function initializeData() {
                             attendanceData: initialData
                         });
                         updateUI();
+                        hideLoading();
                     }
                 } else {
                     // User document doesn't exist, create it with initial data
@@ -58,14 +63,18 @@ function initializeData() {
                         attendanceData: initialData
                     });
                     updateUI();
+                    hideLoading();
                 }
             } catch (error) {
                 console.error("Error initializing user data:", error);
+                hideLoading();
                 // Try to load data from localStorage as fallback
                 if (localStorage.getItem('attendanceData')) {
                     updateUI();
                 }
             }
+        } else {
+            hideLoading();
         }
     });
 }
@@ -252,8 +261,24 @@ async function saveAttendanceData(data) {
 // Function to update attendance status
 async function updateAttendance(classId, newStatus) {
     try {
+        // Add animation to the button
+        const buttons = document.querySelectorAll(`button[data-class-id="${classId}"]`);
+        const clickedButton = buttons[newStatus === 'present' ? 0 : 1];
+        
+        // Add ripple effect
+        clickedButton.classList.add('animate');
+        setTimeout(() => {
+            clickedButton.classList.remove('animate');
+        }, 700);
+        
+        showLoading(`Marking ${newStatus}...`);
+        
         const data = await getAttendanceData();
-        if (!data) return;
+        if (!data) {
+            hideLoading();
+            showToast("Could not find attendance data");
+            return;
+        }
         
         const classToUpdate = data.todaysClasses.find(cls => cls.id === classId);
         
@@ -262,7 +287,11 @@ async function updateAttendance(classId, newStatus) {
             const subject = classToUpdate.subject;
             
             // Don't do anything if status is the same
-            if (oldStatus === newStatus) return;
+            if (oldStatus === newStatus) {
+                hideLoading();
+                showToast(`Already marked ${newStatus}`);
+                return;
+            }
             
             // Update class status
             classToUpdate.status = newStatus;
@@ -287,11 +316,17 @@ async function updateAttendance(classId, newStatus) {
             });
             
             await saveAttendanceData(data);
+            hideLoading();
+            showToast(`Marked ${newStatus} for ${subject}`);
             updateUI();
+        } else {
+            hideLoading();
+            showToast("Class not found");
         }
     } catch (error) {
         console.error('Error updating attendance:', error);
-        alert('Failed to update attendance. Please check your connection and try again.');
+        hideLoading();
+        showToast('Failed to update attendance. Please try again.');
     }
 }
 
@@ -332,7 +367,7 @@ async function updateUI() {
         const currentPath = window.location.pathname;
         
         // Update Dashboard Page UI
-        if (currentPath.includes('dashboard.html')) {
+        if (currentPath.includes('dashboard')) {
             const classCards = document.querySelectorAll('.class-card');
             
             classCards.forEach((card, index) => {
@@ -359,7 +394,7 @@ async function updateUI() {
         }
         
         // Update Report Page UI
-        if (currentPath.includes('report.html')) {
+        if (currentPath.includes('report')) {
             // Update total percentage
             const totalPercentage = await calculateTotalPercentage();
             const percentageElement = document.querySelector('.percentage-circle .percentage');
@@ -414,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeData();
     
     // Set up event listeners for attendance buttons on dashboard
-    if (window.location.pathname.includes('dashboard.html')) {
+    if (window.location.pathname.includes('dashboard')) {
         const classesContainer = document.querySelector('.classes-section');
         if (classesContainer) {
             classesContainer.addEventListener('click', (event) => {
@@ -445,4 +480,39 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update time display
     updateCurrentTime();
     setInterval(updateCurrentTime, 60000); // Update every minute
-}); 
+});
+
+// Helper functions for UI feedback
+function showLoading(message = "Loading...") {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+    
+    if (loadingOverlay) {
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
+        loadingOverlay.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+}
+
+function showToast(message, duration = 3000) {
+    const toast = document.getElementById('toastNotification');
+    if (toast) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, duration);
+    } else {
+        // Fallback to alert if toast element not found
+        alert(message);
+    }
+} 
