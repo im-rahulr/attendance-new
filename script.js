@@ -42,7 +42,7 @@ function initializeData() {
                 if (userDoc.exists) {
                     if (userDoc.data().attendanceData) {
                         // User already has data, no need to initialize
-                        updateUI();
+                        updateUI(true);
                         hideLoading();
                     } else {
                         // User exists but doesn't have attendance data
@@ -50,7 +50,7 @@ function initializeData() {
                         await userRef.update({
                             attendanceData: initialData
                         });
-                        updateUI();
+                        updateUI(true);
                         hideLoading();
                     }
                 } else {
@@ -62,7 +62,7 @@ function initializeData() {
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         attendanceData: initialData
                     });
-                    updateUI();
+                    updateUI(true);
                     hideLoading();
                 }
             } catch (error) {
@@ -70,7 +70,7 @@ function initializeData() {
                 hideLoading();
                 // Try to load data from localStorage as fallback
                 if (localStorage.getItem('attendanceData')) {
-                    updateUI();
+                    updateUI(true);
                 }
             }
         } else {
@@ -208,22 +208,25 @@ function createInitialData() {
 }
 
 // Function to get current data from Firestore
-async function getAttendanceData() {
+async function getAttendanceData(forceServer = false) {
     if (!currentUser) {
         // If no user is authenticated, try to get data from localStorage
         const localData = localStorage.getItem('attendanceData');
         return localData ? JSON.parse(localData) : null;
     }
-    
     try {
         if (!firebaseDb) {
             console.error("Firestore not initialized");
             throw new Error("Firestore not initialized");
         }
-        
         const userRef = firebaseDb.collection('users').doc(currentUser.uid);
-        const userDoc = await userRef.get();
-        
+        let userDoc;
+        if (forceServer) {
+            // Force fetch from server, not cache
+            userDoc = await userRef.get({ source: "server" });
+        } else {
+            userDoc = await userRef.get();
+        }
         if (userDoc.exists && userDoc.data().attendanceData) {
             return userDoc.data().attendanceData;
         } else {
@@ -231,7 +234,6 @@ async function getAttendanceData() {
         }
     } catch (error) {
         console.error('Error getting attendance data:', error);
-        
         // Try to get data from localStorage as fallback
         const localData = localStorage.getItem('attendanceData');
         return localData ? JSON.parse(localData) : null;
@@ -318,7 +320,7 @@ async function updateAttendance(classId, newStatus) {
             await saveAttendanceData(data);
             hideLoading();
             showToast(`Marked ${newStatus} for ${subject}`);
-            updateUI();
+            updateUI(true);
         } else {
             hideLoading();
             showToast("Class not found");
@@ -359,9 +361,11 @@ async function calculateTotalPercentage() {
 }
 
 // Function to update UI based on current data
-async function updateUI() {
+async function updateUI(forceServer = false) {
     try {
-        const data = await getAttendanceData();
+        showLoading("Loading latest data...");
+        const data = await getAttendanceData(forceServer);
+        hideLoading();
         if (!data) return;
         
         const currentPath = window.location.pathname;
@@ -430,6 +434,7 @@ async function updateUI() {
             }
         }
     } catch (error) {
+        hideLoading();
         console.error('Error updating UI:', error);
     }
 }
