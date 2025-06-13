@@ -161,8 +161,8 @@ function setupAuthListeners() {
         
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
+                // Redirect to dashboard - without .html extension for Netlify compatibility
+                window.location.href = 'dashboard';
             })
             .catch((error) => {
                 loginButton.disabled = false;
@@ -262,7 +262,7 @@ function setupAuthListeners() {
                         });
                     }).then(() => {
                         // Redirect to dashboard
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'dashboard';
                     });
                 })
                 .catch((error) => {
@@ -346,11 +346,11 @@ function setupAuthListeners() {
                             }
                         }).then(() => {
                             // Redirect to dashboard
-                            window.location.href = 'dashboard.html';
+                            window.location.href = 'dashboard';
                         });
                     } else {
                         // Redirect to dashboard
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'dashboard';
                     }
                 })
                 .catch((error) => {
@@ -414,7 +414,7 @@ function checkAuthState() {
 
         // If we're on login page and user is logged in, redirect to dashboard
         if (user && isAuthPage) {
-            window.location.href = 'dashboard.html';
+            window.location.href = 'dashboard'; // No .html extension for Netlify compatibility
         }
         
         // If we're on a protected page and user is not logged in, redirect to login

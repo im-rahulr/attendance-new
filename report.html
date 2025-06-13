@@ -16,7 +16,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -38,10 +38,89 @@
         .error-message {
             background-color: #ffebee;
             color: #c62828;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px 16px;
+            border-radius: 12px;
             margin: 20px;
+            text-align: center;
             display: none;
+        }
+        .subject-attendance {
+            margin-bottom: 80px; /* Space for the bottom nav */
+        }
+        .percentage-circle {
+            width: 150px;
+            height: 150px;
+            background-color: #6c82fb;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            box-shadow: 0 4px 10px rgba(108, 130, 251, 0.3);
+        }
+        .percentage-circle .percentage {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+        }
+        .subject-card {
+            background-color: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+        }
+        .subject-name {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .attendance-stats {
+            display: flex;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .present-count {
+            margin-right: 20px;
+            color: #4CAF50;
+        }
+        .absent-count {
+            color: #F44336;
+        }
+        .percentage-bar {
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            height: 30px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .percentage-bar .percentage {
+            font-size: 14px;
+            font-weight: 600;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+        .report-header {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .report-header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #D9ED92;
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
         }
     </style>
 </head>
@@ -62,33 +141,33 @@
             <div class="total-attendance">
                 <h3>Total Attendance Percentage</h3>
                 <div class="percentage-circle">
-                    <span class="percentage">75%</span>
+                    <span class="percentage" id="totalPercentage">0%</span>
                 </div>
             </div>
             
-            <div class="subject-attendance">
+            <div class="subject-attendance" id="subjectsContainer">
                 <h3>Subject Attendance Percentage</h3>
-                
                 <!-- Subject cards will be dynamically added here -->
-                
             </div>
         </div>
         
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <a href="dashboard.html" class="nav-item">Dashboard</a>
-            <a href="report.html" class="nav-item active">Report</a>
-            <a href="profile.html" class="nav-item">Profile</a>
+            <a href="dashboard" class="nav-item">Dashboard</a>
+            <a href="report" class="nav-item active">Report</a>
+            <a href="profile" class="nav-item">Profile</a>
         </div>
     </div>
     
+    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <p>Loading your report...</p>
+        <p id="loadingText">Loading your report...</p>
     </div>
     
+    <!-- Error Message -->
     <div id="errorMessage" class="error-message">
-        An error occurred. Please try again.
+        Failed to load attendance report. Please try again.
     </div>
     
     <!-- Firebase SDK -->
@@ -102,6 +181,11 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("Report page loaded");
+            
+            // Show loading overlay at start
+            showLoading();
+            
             // Firebase references
             let auth;
             let db;
@@ -110,8 +194,8 @@
                 auth = firebase.auth();
                 db = firebase.firestore();
             } catch (error) {
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('errorMessage').textContent = "Firebase initialization failed. Please check your internet connection.";
+                console.error("Firebase initialization error:", error);
+                showError("Firebase initialization failed. Please check your internet connection.");
                 hideLoading();
                 return;
             }
@@ -119,6 +203,7 @@
             // Check if user is logged in
             auth.onAuthStateChanged(function(user) {
                 if (user) {
+                    console.log("User authenticated:", user.uid);
                     // Update profile initial
                     const initials = getInitials(user.displayName || 'User');
                     document.getElementById('profileIcon').textContent = initials;
@@ -127,35 +212,40 @@
                     loadAttendanceReport(user.uid);
                 } else {
                     // Redirect to login page if not authenticated
+                    console.log("User not authenticated, redirecting to login");
                     window.location.href = 'login.html';
                 }
             });
             
             // Load attendance report data
             function loadAttendanceReport(userId) {
+                console.log("Loading attendance report for user:", userId);
                 db.collection('users').doc(userId).get()
                     .then((doc) => {
                         if (doc.exists && doc.data().attendanceData) {
+                            console.log("Got attendance data:", doc.data().attendanceData);
                             const data = doc.data().attendanceData;
                             displayReport(data);
                         } else {
+                            console.log("No attendance data found");
                             // Show message for no attendance data
                             document.getElementById('totalPercentage').textContent = '0%';
                             document.getElementById('subjectsContainer').innerHTML = 
-                                '<p style="text-align: center; padding: 20px;">No attendance data available yet. Start marking your attendance on the dashboard.</p>';
+                                '<h3>Subject Attendance Percentage</h3>' +
+                                '<p style="text-align: center; padding: 20px; background: #f8f8f8; border-radius: 12px;">No attendance data available yet. Start marking your attendance on the dashboard.</p>';
                         }
                         hideLoading();
                     })
                     .catch((error) => {
                         console.error("Error loading attendance report:", error);
-                        document.getElementById('errorMessage').style.display = 'block';
-                        document.getElementById('errorMessage').textContent = "Failed to load attendance report. Please try again.";
+                        showError("Failed to load attendance report. Please try again.");
                         hideLoading();
                     });
             }
             
             // Display attendance report
             function displayReport(data) {
+                console.log("Displaying report");
                 // Calculate and display total attendance percentage
                 const totalStats = calculateTotalStats(data.subjects);
                 const totalPercentage = calculatePercentage(totalStats.present, totalStats.absent);
@@ -171,8 +261,8 @@
                 let totalAbsent = 0;
                 
                 for (const subject in subjects) {
-                    totalPresent += subjects[subject].present;
-                    totalAbsent += subjects[subject].absent;
+                    totalPresent += subjects[subject].present || 0;
+                    totalAbsent += subjects[subject].absent || 0;
                 }
                 
                 return { present: totalPresent, absent: totalAbsent };
@@ -188,21 +278,22 @@
             // Display subject cards
             function displaySubjects(subjects) {
                 const container = document.getElementById('subjectsContainer');
-                container.innerHTML = '';
+                container.innerHTML = '<h3>Subject Attendance Percentage</h3>';
                 
                 for (const subjectName in subjects) {
                     const subject = subjects[subjectName];
-                    const percentage = calculatePercentage(subject.present, subject.absent);
+                    const percentage = calculatePercentage(subject.present || 0, subject.absent || 0);
                     
                     const subjectCard = document.createElement('div');
                     subjectCard.className = 'subject-card';
                     subjectCard.innerHTML = `
                         <h4 class="subject-name">${subjectName}</h4>
                         <div class="attendance-stats">
-                            <div class="present-count">Total Present: <span>${subject.present}</span></div>
-                            <div class="absent-count">Total Absent: <span>${subject.absent}</span></div>
+                            <div class="present-count">Total Present: <span>${subject.present || 0}</span></div>
+                            <div class="absent-count">Total Absent: <span>${subject.absent || 0}</span></div>
                         </div>
                         <div class="percentage-bar">
+                            <div class="progress-bar" style="width: ${percentage}%"></div>
                             <span class="percentage">${percentage}%</span>
                         </div>
                     `;
@@ -210,12 +301,30 @@
                 }
             }
             
+            function showLoading() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+            }
+            
             function hideLoading() {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+            }
+            
+            function showError(message) {
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) {
+                    errorMessage.textContent = message;
+                    errorMessage.style.display = 'block';
+                }
             }
             
             function getInitials(name) {
-                return name.split(' ').map(part => part.charAt(0)).join('').toUpperCase();
+                return name.split(' ').map(part => part[0] || '').join('').toUpperCase();
             }
         });
     </script>

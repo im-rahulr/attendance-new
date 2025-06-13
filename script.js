@@ -409,17 +409,18 @@ async function updateUI() {
                 
                 for (const subject in data.subjects) {
                     const subjectData = data.subjects[subject];
-                    const percentage = calculatePercentage(subjectData.present, subjectData.absent);
+                    const percentage = calculatePercentage(subjectData.present || 0, subjectData.absent || 0);
                     
                     const subjectCard = document.createElement('div');
                     subjectCard.className = 'subject-card';
                     subjectCard.innerHTML = `
                         <h4 class="subject-name">${subject}</h4>
                         <div class="attendance-stats">
-                            <div class="present-count">Total Present: <span>${subjectData.present}</span></div>
-                            <div class="absent-count">Total Absent: <span>${subjectData.absent}</span></div>
+                            <div class="present-count">Total Present: <span>${subjectData.present || 0}</span></div>
+                            <div class="absent-count">Total Absent: <span>${subjectData.absent || 0}</span></div>
                         </div>
                         <div class="percentage-bar">
+                            <div class="progress-bar" style="width: ${percentage}%"></div>
                             <span class="percentage">${percentage}%</span>
                         </div>
                     `;
