@@ -66,6 +66,18 @@
             margin: 20px 0;
             display: none;
         }
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+        .status-unmarked {
+            color: #ff9800;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -76,6 +88,10 @@
 
     <div id="errorMessage" class="error-message">
         An error occurred. Please try again.
+    </div>
+    
+    <div id="successMessage" class="success-message">
+        Attendance updated successfully!
     </div>
 
     <header class="app-header">
@@ -89,44 +105,14 @@
         </div>
         <div class="classes-section">
             <h3 class="section-title">Today's Classes</h3>
-            <div class="class-card">
-                <div class="class-info">
-                    <h4 class="subject">English</h4>
-                    <p class="status">You are marked <span class="status-present">present</span></p>
-                </div>
-                <div class="class-label">1st class</div>
-                <div class="attendance-buttons">
-                    <button class="btn-present active">Present</button>
-                    <button class="btn-absent">Absent</button>
-                </div>
-            </div>
-            <div class="class-card">
-                <div class="class-info">
-                    <h4 class="subject">Mathematics</h4>
-                    <p class="status">You are marked <span class="status-present">present</span></p>
-                </div>
-                <div class="class-label">2st class</div>
-                <div class="attendance-buttons">
-                    <button class="btn-present active">Present</button>
-                    <button class="btn-absent">Absent</button>
-                </div>
-            </div>
-            <div class="class-card">
-                <div class="class-info">
-                    <h4 class="subject">Mathematics</h4>
-                    <p class="status">You are marked <span class="status-present">present</span></p>
-                </div>
-                <div class="class-label">3rd class</div>
-                <div class="attendance-buttons">
-                    <button class="btn-present active">Present</button>
-                    <button class="btn-absent">Absent</button>
-                </div>
+            <div id="classesContainer">
+                <!-- Classes will be loaded here dynamically -->
             </div>
         </div>
     </main>
     <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item active">Dashboard</a>
-        <a href="index.html" class="nav-item">Home</a>
+        <!-- <a href="index.html" class="nav-item">Home</a> -->
         <a href="report.html" class="nav-item">Report</a>
         <a href="profile.html" class="nav-item">Profile</a>
     </nav>
@@ -135,6 +121,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <script src="auth.js"></script>
     <script src="script.js"></script>
@@ -163,12 +150,193 @@
                     const initials = getInitials(user.displayName || 'User');
                     document.getElementById('profileInitial').textContent = initials;
                     
-                    hideLoading();
+                    // Load user's attendance data from Firestore
+                    loadAttendanceData(user.uid);
                 } else {
                     // Redirect to login page if not authenticated
                     window.location.href = 'login.html';
                 }
             });
+            
+            // Load user's attendance data
+            function loadAttendanceData(userId) {
+                db.collection('users').doc(userId).get()
+                    .then((doc) => {
+                        if (doc.exists && doc.data().attendanceData) {
+                            // Display today's classes
+                            displayClasses(doc.data().attendanceData.todaysClasses);
+                        } else {
+                            // Initialize attendance data if not exists
+                            initializeAttendanceData(userId);
+                        }
+                        hideLoading();
+                    })
+                    .catch((error) => {
+                        console.error("Error loading attendance data:", error);
+                        document.getElementById('errorMessage').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = "Failed to load attendance data. Please try again.";
+                        hideLoading();
+                    });
+            }
+            
+            // Initialize attendance data for new user
+            function initializeAttendanceData(userId) {
+                const initialData = {
+                    subjects: {
+                        'English': { 
+                            present: 0, 
+                            absent: 0,
+                            sessions: []
+                        },
+                        'Mathematics': { 
+                            present: 0, 
+                            absent: 0,
+                            sessions: []
+                        }
+                    },
+                    todaysClasses: [
+                        {
+                            id: 1,
+                            subject: 'English',
+                            status: 'unmarked',
+                            label: '1st class'
+                        },
+                        {
+                            id: 2,
+                            subject: 'Mathematics',
+                            status: 'unmarked',
+                            label: '2nd class'
+                        },
+                        {
+                            id: 3,
+                            subject: 'Mathematics',
+                            status: 'unmarked',
+                            label: '3rd class'
+                        }
+                    ]
+                };
+                
+                db.collection('users').doc(userId).update({
+                    attendanceData: initialData
+                })
+                .then(() => {
+                    // Display initialized classes
+                    displayClasses(initialData.todaysClasses);
+                })
+                .catch((error) => {
+                    console.error("Error initializing attendance data:", error);
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = "Failed to initialize attendance data.";
+                });
+            }
+            
+            // Display class cards in the UI
+            function displayClasses(classes) {
+                const container = document.getElementById('classesContainer');
+                container.innerHTML = '';
+                
+                classes.forEach((classItem) => {
+                    const statusDisplay = classItem.status === 'unmarked' 
+                        ? '<span class="status-unmarked">Mark your attendance</span>'
+                        : `You are marked <span class="${classItem.status === 'present' ? 'status-present' : ''}">${classItem.status}</span>`;
+                    
+                    const classCard = document.createElement('div');
+                    classCard.className = 'class-card';
+                    classCard.innerHTML = `
+                        <div class="class-info">
+                            <h4 class="subject">${classItem.subject}</h4>
+                            <p class="status">${statusDisplay}</p>
+                        </div>
+                        <div class="class-label">${classItem.label}</div>
+                        <div class="attendance-buttons">
+                            <button class="btn-present ${classItem.status === 'present' ? 'active' : ''}" data-class-id="${classItem.id}">Present</button>
+                            <button class="btn-absent ${classItem.status === 'absent' ? 'active' : ''}" data-class-id="${classItem.id}">Absent</button>
+                        </div>
+                    `;
+                    container.appendChild(classCard);
+                });
+                
+                // Add event listeners to buttons
+                document.querySelectorAll('.btn-present').forEach(button => {
+                    button.addEventListener('click', function() {
+                        updateAttendance(parseInt(this.getAttribute('data-class-id')), 'present');
+                    });
+                });
+                
+                document.querySelectorAll('.btn-absent').forEach(button => {
+                    button.addEventListener('click', function() {
+                        updateAttendance(parseInt(this.getAttribute('data-class-id')), 'absent');
+                    });
+                });
+            }
+            
+            // Update attendance status
+            function updateAttendance(classId, newStatus) {
+                const userId = auth.currentUser.uid;
+                
+                // Show loading
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                document.getElementById('loadingOverlay').querySelector('p').textContent = 'Updating attendance...';
+                
+                db.collection('users').doc(userId).get()
+                    .then((doc) => {
+                        if (doc.exists && doc.data().attendanceData) {
+                            const data = doc.data().attendanceData;
+                            const classToUpdate = data.todaysClasses.find(cls => cls.id === classId);
+                            
+                            if (classToUpdate) {
+                                const oldStatus = classToUpdate.status;
+                                const subject = classToUpdate.subject;
+                                
+                                // Update class status
+                                classToUpdate.status = newStatus;
+                                
+                                // Update subject count
+                                if (oldStatus === 'present') {
+                                    data.subjects[subject].present--;
+                                } else if (oldStatus === 'absent') {
+                                    data.subjects[subject].absent--;
+                                }
+                                
+                                if (newStatus === 'present') {
+                                    data.subjects[subject].present++;
+                                } else if (newStatus === 'absent') {
+                                    data.subjects[subject].absent++;
+                                }
+                                
+                                // Add session record
+                                data.subjects[subject].sessions.push({
+                                    date: new Date().toISOString(),
+                                    status: newStatus
+                                });
+                                
+                                // Update Firestore
+                                return db.collection('users').doc(userId).update({
+                                    attendanceData: data
+                                });
+                            }
+                        }
+                    })
+                    .then(() => {
+                        // Show success message
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('successMessage').textContent = 'Attendance updated successfully!';
+                        
+                        // Hide success message after 3 seconds
+                        setTimeout(() => {
+                            document.getElementById('successMessage').style.display = 'none';
+                        }, 3000);
+                        
+                        // Reload attendance data
+                        loadAttendanceData(userId);
+                    })
+                    .catch((error) => {
+                        console.error("Error updating attendance:", error);
+                        document.getElementById('errorMessage').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = "Failed to update attendance. Please try again.";
+                        hideLoading();
+                    });
+            }
             
             function hideLoading() {
                 document.getElementById('loadingOverlay').style.display = 'none';

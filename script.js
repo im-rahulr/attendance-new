@@ -2,6 +2,7 @@
 let currentUser = null;
 let firebaseAuth;
 let firebaseDb;
+let firebaseRtdb; // Realtime Database reference for presence
 
 // Initialize attendance data if not exists
 function initializeData() {
@@ -14,11 +15,22 @@ function initializeData() {
     // Initialize Firebase references
     firebaseAuth = firebase.auth();
     firebaseDb = firebase.firestore();
+    
+    // Check if Realtime Database is available (for presence)
+    if (firebase.database) {
+        firebaseRtdb = firebase.database();
+    }
 
     // Check if user is authenticated
     firebaseAuth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
+            
+            // Setup presence system if Realtime Database is available
+            if (firebaseRtdb) {
+                setupPresence(user.uid);
+            }
+            
             try {
                 // Check if the user already has attendance data in Firestore
                 const userRef = firebaseDb.collection('users').doc(user.uid);
@@ -58,6 +70,96 @@ function initializeData() {
     });
 }
 
+// Setup presence system to track online/offline status
+function setupPresence(userId) {
+    // Create a reference to this user's specific status node
+    const userStatusRef = firebaseRtdb.ref('/status/' + userId);
+    
+    // We'll create two constants which we will write to the Realtime Database
+    // when this device is offline or online
+    const isOfflineForDatabase = {
+        state: 'offline',
+        last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+    
+    const isOnlineForDatabase = {
+        state: 'online',
+        last_changed: firebase.database.ServerValue.TIMESTAMP,
+    };
+    
+    // Create reference to the special '.info/connected' path
+    firebaseRtdb.ref('.info/connected').on('value', (snapshot) => {
+        // If we're not currently connected, don't do anything
+        if (snapshot.val() === false) {
+            return;
+        }
+        
+        // If we are connected, set up the onDisconnect handler
+        userStatusRef.onDisconnect().set(isOfflineForDatabase).then(() => {
+            // The promise returned from .onDisconnect().set() will resolve as soon as the server
+            // acknowledges the onDisconnect() request, NOT once we've actually disconnected
+            
+            // We can now safely mark ourselves as online
+            userStatusRef.set(isOnlineForDatabase);
+            
+            // When we come online, sync any data stored in localStorage
+            syncLocalStorageToFirestore();
+        });
+    });
+    
+    // Listen for changes to online status
+    userStatusRef.on('value', (snapshot) => {
+        const status = snapshot.val();
+        if (status && status.state === 'online') {
+            // User is online, ensure we have the latest data
+            syncLocalStorageToFirestore();
+        }
+    });
+}
+
+// Sync data stored in localStorage to Firestore when we come online
+function syncLocalStorageToFirestore() {
+    if (!currentUser || !firebaseDb) return;
+    
+    const localData = localStorage.getItem('attendanceData');
+    if (!localData) return;
+    
+    try {
+        const data = JSON.parse(localData);
+        const timestamp = localStorage.getItem('attendanceDataTimestamp');
+        
+        // Only update if we have data and a timestamp
+        if (data && timestamp) {
+            // Get the current data from Firestore to check timestamp
+            firebaseDb.collection('users').doc(currentUser.uid).get()
+                .then(doc => {
+                    if (doc.exists && doc.data().lastUpdated) {
+                        const serverTimestamp = doc.data().lastUpdated.toMillis();
+                        
+                        // Only update if local data is newer
+                        if (parseInt(timestamp) > serverTimestamp) {
+                            return firebaseDb.collection('users').doc(currentUser.uid).update({
+                                attendanceData: data,
+                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    } else {
+                        // No server timestamp, update anyway
+                        return firebaseDb.collection('users').doc(currentUser.uid).update({
+                            attendanceData: data,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error syncing local data to Firestore:", error);
+                });
+        }
+    } catch (error) {
+        console.error("Error parsing local storage data:", error);
+    }
+}
+
 // Create initial attendance data structure
 function createInitialData() {
     return {
@@ -77,19 +179,19 @@ function createInitialData() {
             {
                 id: 1,
                 subject: 'English',
-                status: 'present',
+                status: 'unmarked',
                 label: '1st class'
             },
             {
                 id: 2,
                 subject: 'Mathematics',
-                status: 'present',
+                status: 'unmarked',
                 label: '2nd class'
             },
             {
                 id: 3,
                 subject: 'Mathematics',
-                status: 'present',
+                status: 'unmarked',
                 label: '3rd class'
             }
         ]
@@ -129,15 +231,17 @@ async function getAttendanceData() {
 
 // Function to save data to Firestore
 async function saveAttendanceData(data) {
-    // Always save to localStorage as backup
+    // Always save to localStorage as backup with timestamp
     localStorage.setItem('attendanceData', JSON.stringify(data));
+    localStorage.setItem('attendanceDataTimestamp', Date.now().toString());
     
     if (!currentUser || !firebaseDb) return;
     
     try {
         const userRef = firebaseDb.collection('users').doc(currentUser.uid);
         await userRef.update({
-            attendanceData: data
+            attendanceData: data,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch (error) {
         console.error('Error saving attendance data:', error);
@@ -164,15 +268,19 @@ async function updateAttendance(classId, newStatus) {
             classToUpdate.status = newStatus;
             
             // Update subject count
-            if (oldStatus === 'present' && newStatus === 'absent') {
+            if (oldStatus === 'present') {
                 data.subjects[subject].present--;
-                data.subjects[subject].absent++;
-            } else if (oldStatus === 'absent' && newStatus === 'present') {
-                data.subjects[subject].present++;
+            } else if (oldStatus === 'absent') {
                 data.subjects[subject].absent--;
             }
             
-            // Add session record
+            if (newStatus === 'present') {
+                data.subjects[subject].present++;
+            } else if (newStatus === 'absent') {
+                data.subjects[subject].absent++;
+            }
+            
+            // Add session record with timestamp
             data.subjects[subject].sessions.push({
                 date: new Date().toISOString(),
                 status: newStatus
@@ -223,23 +331,30 @@ async function updateUI() {
         
         const currentPath = window.location.pathname;
         
-        // Update Home Page UI
-        if (currentPath.includes('index.html') || currentPath === '/') {
+        // Update Dashboard Page UI
+        if (currentPath.includes('dashboard.html')) {
             const classCards = document.querySelectorAll('.class-card');
             
             classCards.forEach((card, index) => {
                 const classData = data.todaysClasses[index];
                 if (!classData) return;
                 
-                const statusText = card.querySelector('.status span');
+                const statusElement = card.querySelector('.status span');
+                if (statusElement) {
+                    if (classData.status === 'unmarked') {
+                        statusElement.textContent = 'Mark your attendance';
+                        statusElement.className = 'status-unmarked';
+                    } else {
+                        statusElement.textContent = classData.status;
+                        statusElement.className = classData.status === 'present' ? 'status-present' : '';
+                    }
+                }
+                
                 const presentBtn = card.querySelector('.btn-present');
                 const absentBtn = card.querySelector('.btn-absent');
                 
-                statusText.textContent = classData.status;
-                statusText.className = classData.status === 'present' ? 'status-present' : '';
-                
-                presentBtn.classList.toggle('active', classData.status === 'present');
-                absentBtn.classList.toggle('active', classData.status === 'absent');
+                if (presentBtn) presentBtn.classList.toggle('active', classData.status === 'present');
+                if (absentBtn) absentBtn.classList.toggle('active', classData.status === 'absent');
             });
         }
         
@@ -253,23 +368,29 @@ async function updateUI() {
             }
             
             // Update subject cards
-            const subjectCards = document.querySelectorAll('.subject-card');
-            
-            let index = 0;
-            for (const subject in data.subjects) {
-                if (index >= subjectCards.length) break;
+            const subjectContainer = document.querySelector('.subject-attendance');
+            if (subjectContainer) {
+                subjectContainer.innerHTML = '<h3>Subject Attendance Percentage</h3>';
                 
-                const card = subjectCards[index];
-                const subjectData = data.subjects[subject];
-                
-                card.querySelector('.subject-name').textContent = subject;
-                card.querySelector('.present-count span').textContent = subjectData.present;
-                card.querySelector('.absent-count span').textContent = subjectData.absent;
-                
-                const percentage = calculatePercentage(subjectData.present, subjectData.absent);
-                card.querySelector('.percentage-bar .percentage').textContent = `${percentage}%`;
-                
-                index++;
+                for (const subject in data.subjects) {
+                    const subjectData = data.subjects[subject];
+                    const percentage = calculatePercentage(subjectData.present, subjectData.absent);
+                    
+                    const subjectCard = document.createElement('div');
+                    subjectCard.className = 'subject-card';
+                    subjectCard.innerHTML = `
+                        <h4 class="subject-name">${subject}</h4>
+                        <div class="attendance-stats">
+                            <div class="present-count">Total Present: <span>${subjectData.present}</span></div>
+                            <div class="absent-count">Total Absent: <span>${subjectData.absent}</span></div>
+                        </div>
+                        <div class="percentage-bar">
+                            <span class="percentage">${percentage}%</span>
+                        </div>
+                    `;
+                    
+                    subjectContainer.appendChild(subjectCard);
+                }
             }
         }
     } catch (error) {
@@ -277,59 +398,36 @@ async function updateUI() {
     }
 }
 
-// Add event listeners to attendance buttons
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        // Check if Firebase exists
-        if (typeof firebase === 'undefined') {
-            console.error("Firebase SDK not found");
-            alert("Firebase SDK not found. Please check your internet connection and try again.");
-            return;
-        }
-
-        // Initialize data and update UI
-        initializeData();
-        
-        // Add event listeners to buttons on home page
-        if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-            const classCards = document.querySelectorAll('.class-card');
-            
-            classCards.forEach((card, index) => {
-                const classId = index + 1;
-                const presentBtn = card.querySelector('.btn-present');
-                const absentBtn = card.querySelector('.btn-absent');
-                
-                presentBtn.addEventListener('click', function() {
-                    updateAttendance(classId, 'present');
-                });
-                
-                absentBtn.addEventListener('click', function() {
-                    updateAttendance(classId, 'absent');
-                });
-            });
-        }
-        
-        // Update current time in status bar
-        updateCurrentTime();
-        setInterval(updateCurrentTime, 60000); // Update time every minute
-    } catch (error) {
-        console.error('Error in DOM content loaded:', error);
-    }
-});
-
-// Function to update current time in status bar
+// Update current time display
 function updateCurrentTime() {
-    try {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const timeString = `${hours}:${minutes}`;
-        
-        const timeElements = document.querySelectorAll('.time');
-        timeElements.forEach(el => {
-            el.textContent = timeString;
-        });
-    } catch (error) {
-        console.error('Error updating time:', error);
-    }
-} 
+    const currentTimeElement = document.getElementById('currentTime');
+    if (!currentTimeElement) return;
+    
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    currentTimeElement.textContent = `${hours}:${minutes}`;
+}
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+    initializeData();
+    
+    // Set up online/offline status detection
+    window.addEventListener('online', function() {
+        console.log('Device is online. Syncing data with Firestore...');
+        syncLocalStorageToFirestore();
+    });
+    
+    window.addEventListener('offline', function() {
+        console.log('Device is offline. Data will be saved locally.');
+    });
+    
+    // Update UI immediately and then periodically
+    updateUI();
+    setInterval(updateUI, 60000); // Update every minute
+    
+    // Update time display
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 60000); // Update every minute
+}); 

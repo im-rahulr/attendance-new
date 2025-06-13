@@ -228,7 +228,7 @@
     
     <nav class="bottom-nav">
         <a href="dashboard.html" class="nav-item">Dashboard</a>
-        <a href="index.html" class="nav-item">Home</a>
+        <!-- <a href="index.html" class="nav-item">Home</a> -->
         <a href="report.html" class="nav-item">Report</a>
         <a href="profile.html" class="nav-item active">Profile</a>
     </nav>
@@ -237,6 +237,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
     <script src="auth.js"></script>
     <script>
@@ -324,6 +325,12 @@
                     });
                 }
                 
+                // Check if user has unmarked attendance
+                let hasUnmarkedAttendance = false;
+                if (data.todaysClasses) {
+                    hasUnmarkedAttendance = data.todaysClasses.some(cls => cls.status === 'unmarked');
+                }
+                
                 // Display statistics
                 document.getElementById('totalPresent').textContent = totalPresent;
                 document.getElementById('totalAbsent').textContent = totalAbsent;
@@ -331,6 +338,18 @@
                 const total = totalPresent + totalAbsent;
                 const rate = total > 0 ? ((totalPresent / total) * 100).toFixed(1) + '%' : 'N/A';
                 document.getElementById('attendanceRate').textContent = rate;
+                
+                // Show message if any attendance is unmarked
+                if (hasUnmarkedAttendance) {
+                    const successElement = document.getElementById('successMessage');
+                    successElement.textContent = "You have unmarked attendance. Please visit the Dashboard to mark your attendance.";
+                    successElement.style.display = 'block';
+                    
+                    // Hide after 5 seconds
+                    setTimeout(() => {
+                        successElement.style.display = 'none';
+                    }, 5000);
+                }
             }
             
             // Show default attendance stats when data is not available

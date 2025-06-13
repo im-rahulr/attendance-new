@@ -209,19 +209,19 @@ function setupAuthListeners() {
                                     {
                                         id: 1,
                                         subject: 'English',
-                                        status: 'present',
+                                        status: 'unmarked',
                                         label: '1st class'
                                     },
                                     {
                                         id: 2,
                                         subject: 'Mathematics',
-                                        status: 'present',
+                                        status: 'unmarked',
                                         label: '2nd class'
                                     },
                                     {
                                         id: 3,
                                         subject: 'Mathematics',
-                                        status: 'present',
+                                        status: 'unmarked',
                                         label: '3rd class'
                                     }
                                 ]
