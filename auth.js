@@ -44,10 +44,27 @@ function initializeFirebase(maxRetries = 3) {
       auth = firebase.auth();
       db = firebase.firestore();
       
+      // Set auth persistence to LOCAL to help with development environments
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .catch((error) => {
+          console.error("Auth persistence error:", error);
+        });
+      
       // Set network timeout settings
       firebase.firestore().settings({
         cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
       });
+      
+      // Handle the OAuth domain warning for local development
+      const isLocalhost = 
+        window.location.hostname === "localhost" || 
+        window.location.hostname === "127.0.0.1" ||
+        window.location.hostname.includes("192.168.");
+        
+      if (isLocalhost) {
+        console.warn("Running on localhost/development environment. Some OAuth features may not work.");
+        console.warn("To fix this, add your development domain to Firebase Console -> Authentication -> Settings -> Authorized domains");
+      }
       
       console.log("Firebase initialized successfully");
       return true;

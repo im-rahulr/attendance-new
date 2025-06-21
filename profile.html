@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Attendity</title>
+    <title>Profile - LowryBunks</title>
     <!-- Add Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
@@ -21,39 +21,45 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background-color: #D9ED92;
+            background-color: var(--profile-icon-bg);
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 30px;
             font-weight: bold;
             margin-right: 20px;
-            color: #333;
+            color: var(--profile-icon-text);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .profile-name {
             font-size: 24px;
             margin: 0;
             font-weight: 600;
+            color: var(--text-main);
+            transition: color 0.3s ease;
         }
         .profile-email {
-            color: #666;
+            color: var(--text-secondary);
             margin: 5px 0 0;
+            transition: color 0.3s ease;
         }
         .profile-section {
-            background-color: #fff;
+            background-color: var(--card-bg);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid #f0f0f0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         .section-title {
             font-size: 18px;
             margin-top: 0;
             margin-bottom: 20px;
             font-weight: 600;
-            color: #1C2D40;
+            color: var(--text-main);
+            transition: color 0.3s ease;
         }
         .profile-field {
             margin-bottom: 20px;
@@ -61,13 +67,16 @@
         .field-label {
             display: block;
             font-size: 14px;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 8px;
+            transition: color 0.3s ease;
         }
         .field-value {
             display: block;
             font-weight: 500;
             font-size: 16px;
+            color: var(--text-main);
+            transition: color 0.3s ease;
         }
         .edit-field {
             display: flex;
@@ -76,10 +85,13 @@
         .edit-field input {
             flex: 1;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 10px;
             font-family: 'Inter', sans-serif;
             font-size: 15px;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            transition: all 0.3s ease;
         }
         .edit-field input:focus {
             outline: none;
@@ -89,19 +101,21 @@
         .edit-field button {
             margin-left: 10px;
             padding: 0 20px;
-            background-color: #D9ED92;
+            background-color: var(--profile-icon-bg);
+            color: var(--profile-icon-text);
             border: none;
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
         .edit-field button:hover {
             background-color: #c5e45a;
             transform: translateY(-2px);
         }
         .action-button {
-            background-color: #D9ED92;
+            background-color: var(--profile-icon-bg);
+            color: var(--profile-icon-text);
             border: none;
             border-radius: 12px;
             padding: 14px 20px;
@@ -117,11 +131,12 @@
             transform: translateY(-2px);
         }
         .logout-button {
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: var(--stat-card-bg);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .logout-button:hover {
-            background-color: #e5e5e5;
+            background-color: rgba(255, 0, 0, 0.1);
         }
         .loading-overlay {
             position: fixed;
@@ -129,37 +144,51 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: var(--bg-color);
+            opacity: 0.8;
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            transition: background-color 0.3s ease;
         }
         .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #D9ED92;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--profile-icon-bg);
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
             margin-bottom: 15px;
+            transition: border-color 0.3s ease;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         .error-message {
-            background-color: #ffebee;
-            color: #c62828;
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #F44336;
             padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 20px;
             display: none;
         }
+        
+        /* Notification Badge */
+        .notification-badge {
+            display: inline-block;
+            background-color: #ff4757;
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
         .success-message {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
             padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 20px;
@@ -175,29 +204,32 @@
         .stat-card {
             flex: 1;
             min-width: 100px;
-            background-color: #f8f8f8;
+            background-color: var(--stat-card-bg);
             border-radius: 12px;
             padding: 15px;
             text-align: center;
+            transition: background-color 0.3s ease;
         }
         .stat-value {
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 5px;
-            color: #1C2D40;
+            color: var(--text-main);
+            transition: color 0.3s ease;
         }
         .stat-label {
-            font-size: 13px;
-            color: #666;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
         }
         .attendance-rate {
             background-color: #D9ED92;
         }
         /* Loader Animation */
         .loader {
-            --background: linear-gradient(135deg, #23C4F8, #275EFE);
-            --shadow: rgba(39, 94, 254, 0.28);
-            --text: #6C7486;
+            --background: linear-gradient(135deg, #D9ED92, #76c893);
+            --shadow: rgba(118, 200, 147, 0.28);
+            --text: var(--text-secondary);
             --page: rgba(255, 255, 255, 0.36);
             --page-fold: rgba(255, 255, 255, 0.52);
             --duration: 3s;
@@ -340,13 +372,79 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--profile-icon-bg);
+        }
+        
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--profile-icon-bg);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .slider.round {
+            border-radius: 34px;
+        }
+        
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .theme-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            transition: color 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <!-- App Header -->
         <div class="app-header">
-            <div class="app-title">Attendity</div>
+            <div class="app-title"><span class="cursive">Lowry</span>Bunks</div>
             <div class="profile-icon" id="profileIcon">JS</div>
         </div>
         
@@ -388,7 +486,25 @@
                     <span class="field-value" id="joinedDate">Loading...</span>
                 </div>
             </div>
-            
+            <div class="profile-field">
+                <button id="viewChangesBtn" class="action-button">Projects logs
+
+                </button>
+            </div>
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // ... existing code ...
+        
+                // New event listener for the View Changes button
+                document.getElementById('viewChangesBtn').addEventListener('click', function() {
+                    window.location.href = 'changes.html';
+                });
+        
+                // ... existing code ...
+            });
+        </script>
             <div class="profile-section">
                 <h3 class="section-title">Attendance Statistics</h3>
                 
@@ -409,21 +525,89 @@
             </div>
             
             <div class="profile-section">
-                <h3 class="section-title">Account Actions</h3>
+                <h3 class="section-title">Appearance & Account</h3>
+                
+                <div class="theme-toggle-container" style="display: flex; align-items: center; margin-bottom: 15px; justify-content: space-between; padding: 5px 0;">
+                    <span style="font-weight: 500;">Dark Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                
                 <button id="resetPasswordBtn" class="action-button">Reset Password</button>
                 <button id="logoutBtn" class="action-button logout-button">Logout</button>
             </div>
+            
+            <style>
+                /* Toggle Switch */
+                .switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 60px;
+                    height: 34px;
+                }
+                
+                .switch input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+                
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ccc;
+                    transition: .4s;
+                }
+                
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 26px;
+                    width: 26px;
+                    left: 4px;
+                    bottom: 4px;
+                    background-color: white;
+                    transition: .4s;
+                }
+                
+                input:checked + .slider {
+                    background-color: var(--profile-icon-bg);
+                }
+                
+                input:focus + .slider {
+                    box-shadow: 0 0 1px var(--profile-icon-bg);
+                }
+                
+                input:checked + .slider:before {
+                    transform: translateX(26px);
+                }
+                
+                .slider.round {
+                    border-radius: 34px;
+                }
+                
+                .slider.round:before {
+                    border-radius: 50%;
+                }
+            </style>
         </div>
         
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="dashboard" class="nav-item">Dashboard</a>
             <a href="report" class="nav-item">Report</a>
+            <a href="notifications" class="nav-item">Notifications<span id="notificationBadge" class="notification-badge" style="display: none;">0</span></a>
             <a href="profile" class="nav-item active">Profile</a>
         </div>
     </div>
     
-    <!-- Loading Overlay -->
+    <!-- Book Loading Animation -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loader">
             <div>
@@ -601,6 +785,35 @@
                                     document.getElementById('errorMessage').textContent = "Failed to send reset email. Please try again.";
                                     document.getElementById('loadingOverlay').style.display = 'none';
                                 });
+                        });
+                        
+                        // Theme toggle functionality
+                        const themeToggle = document.getElementById('themeToggle');
+                        
+                        // Check if dark mode is stored in localStorage
+                        const isDarkMode = localStorage.getItem('theme') === 'dark';
+                        
+                        // Set the initial state of the toggle switch
+                        themeToggle.checked = isDarkMode;
+                        
+                        // Apply the current theme
+                        if (isDarkMode) {
+                            document.documentElement.setAttribute('data-theme', 'dark');
+                        } else {
+                            document.documentElement.setAttribute('data-theme', 'light');
+                        }
+                        
+                        // Add event listener for theme toggle
+                        themeToggle.addEventListener('change', function() {
+                            if (this.checked) {
+                                // Switch to dark theme
+                                document.documentElement.setAttribute('data-theme', 'dark');
+                                localStorage.setItem('theme', 'dark');
+                            } else {
+                                // Switch to light theme
+                                document.documentElement.setAttribute('data-theme', 'light');
+                                localStorage.setItem('theme', 'light');
+                            }
                         });
                         
                         document.getElementById('logoutBtn').addEventListener('click', function() {

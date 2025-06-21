@@ -1,3 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
+/* Theme variables */
+:root {
+    /* Light theme (default) */
+    --bg-color: #f5f5f5;
+    --card-bg: #ffffff;
+    --text-main: #333333;
+    --text-secondary: #7C8DB5;
+    --border-color: #f0f0f0;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --header-bg: #ffffff;
+    --bottom-nav-bg: #ffffff;
+    --profile-icon-bg: #252B42;
+    --profile-icon-text: #ffffff;
+    --btn-present-bg: #E8F5E9;
+    --btn-present-text: #4CAF50;
+    --btn-present-active-bg: #4CAF50;
+    --btn-present-active-text: white;
+    --btn-absent-bg: #FFEBEE;
+    --btn-absent-text: #F44336;
+    --btn-absent-active-bg: #F44336;
+    --btn-absent-active-text: white;
+    --nav-active-bg: #E3F2FD;
+    --nav-active-text: #1976D2;
+    --nav-text: #666;
+    --stat-card-bg: #f8f8f8;
+    --stat-value: #1C2D40;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --card-bg: #1E1E1E;
+    --text-main: #E0E0E0;
+    --text-secondary: #AAAAAA;
+    --border-color: #333333;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --header-bg: #1A1A1A;
+    --bottom-nav-bg: #1A1A1A;
+    --profile-icon-bg: #D9ED92;
+    --profile-icon-text: #121212;
+    --btn-present-bg: rgba(76, 175, 80, 0.15);
+    --btn-present-text: #81C784;
+    --btn-present-active-bg: #2E7D32;
+    --btn-present-active-text: white;
+    --btn-absent-bg: rgba(244, 67, 54, 0.15);
+    --btn-absent-text: #E57373;
+    --btn-absent-active-bg: #C62828;
+    --btn-absent-active-text: white;
+    --nav-active-bg: rgba(25, 118, 210, 0.15);
+    --nav-active-text: #64B5F6;
+    --nav-text: #AAAAAA;
+    --stat-card-bg: #252525;
+    --stat-value: #E0E0E0;
+}
+
 /* Reset and Base Styles */
 * {
     box-sizing: border-box;
@@ -7,16 +64,20 @@
 }
 
 body {
-    background-color: #f5f5f5;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: 'Inter', sans-serif;
 }
 
 .app-container {
     max-width: 414px;
     height: 100vh;
     margin: 0 auto;
-    background-color: #ffffff;
+    background-color: var(--card-bg);
     position: relative;
     overflow-x: hidden;
+    transition: background-color 0.3s ease;
 }
 
 /* Status Bar */
@@ -24,8 +85,9 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 8px 16px;
-    background-color: #ffffff;
-    color: #333;
+    background-color: var(--header-bg);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .status-icons {
@@ -39,23 +101,33 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px;
+    background-color: var(--header-bg);
+    transition: background-color 0.3s ease;
 }
 
 .app-title {
     font-size: 24px;
+    font-weight: 700;
+    color: var(--text-main);
+    transition: color 0.3s ease;
+}
+
+.app-title .cursive {
+    font-family: 'Dancing Script', cursive;
     font-weight: 700;
 }
 
 .profile-icon {
     width: 36px;
     height: 36px;
-    background-color: #252B42;
-    color: white;
+    background-color: var(--profile-icon-bg);
+    color: var(--profile-icon-text);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Greeting Section */
@@ -67,11 +139,14 @@ body {
     font-size: 28px;
     font-weight: 700;
     margin-bottom: 4px;
+    color: var(--text-main);
+    transition: color 0.3s ease;
 }
 
 .welcome-text {
     font-size: 18px;
-    color: #7C8DB5;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
 }
 
 /* Classes Section */
@@ -83,16 +158,32 @@ body {
     margin-bottom: 16px;
     font-size: 20px;
     font-weight: 600;
+    color: var(--text-main);
+    transition: color 0.3s ease;
 }
 
 .class-card {
-    background-color: #FFFFFF;
+    background-color: var(--card-bg);
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid #f0f0f0;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.class-card.marked-present,
+.class-card.marked-absent {
+    opacity: 0.6;
+    filter: blur(1.5px);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.class-card.marked-present:hover,
+.class-card.marked-absent:hover {
+    opacity: 1;
+    filter: blur(0);
 }
 
 .class-info {
@@ -102,11 +193,15 @@ body {
 .subject {
     font-size: 18px;
     font-weight: 600;
+    color: var(--text-main);
+    transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
 .status {
     font-size: 14px;
     margin-top: 4px;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
 }
 
 .status-present {
@@ -135,26 +230,116 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-present {
-    background-color: #E8F5E9;
-    color: #4CAF50;
+    background-color: var(--btn-present-bg);
+    color: var(--btn-present-text);
 }
 
 .btn-present.active {
-    background-color: #4CAF50;
-    color: white;
+    background-color: var(--btn-present-active-bg);
+    color: var(--btn-present-active-text);
 }
 
 .btn-absent {
-    background-color: #FFEBEE;
-    color: #F44336;
+    background-color: var(--btn-absent-bg);
+    color: var(--btn-absent-text);
 }
 
 .btn-absent.active {
-    background-color: #F44336;
-    color: white;
+    background-color: var(--btn-absent-active-bg);
+    color: var(--btn-absent-active-text);
+}
+
+/* Button animation */
+.btn-present.animate, .btn-absent.animate {
+    animation: pulse 0.5s;
+    transform-origin: center;
+}
+
+.btn-present.animate {
+    box-shadow: 0 0 15px rgba(118, 200, 147, 0.8);
+}
+
+.btn-absent.animate {
+    box-shadow: 0 0 15px rgba(244, 67, 54, 0.8);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Ripple effect */
+.btn-present::after, .btn-absent::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-present.animate::after, .btn-absent.animate::after {
+    animation: ripple 0.7s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0) translate(-50%, -50%);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20) translate(-50%, -50%);
+        opacity: 0;
+    }
+}
+
+/* Flying emoji animation */
+.emoji-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    font-size: 24px;
+    opacity: 0;
+    user-select: none;
+}
+
+.emoji-animation {
+    position: absolute;
+    animation: flyingEmoji 1.5s forwards;
+}
+
+@keyframes flyingEmoji {
+    0% {
+        transform: translate(0, 0) scale(0.5) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    30% {
+        transform: translate(calc(var(--x-offset) * 0.3), calc(var(--y-offset) * 0.3)) scale(1) rotate(calc(var(--rotation) * 0.3));
+    }
+    100% {
+        transform: translate(var(--x-offset), var(--y-offset)) scale(0.5) rotate(var(--rotation));
+        opacity: 0;
+    }
 }
 
 /* Bottom Navigation */
@@ -167,14 +352,15 @@ body {
     max-width: 414px;
     display: flex;
     justify-content: space-around;
-    background-color: #ffffff;
+    background-color: var(--bottom-nav-bg);
     padding: 12px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease;
 }
 
 .nav-item {
     text-decoration: none;
-    color: #666;
+    color: var(--nav-text);
     font-weight: 500;
     padding: 8px 16px;
     border-radius: 8px;
@@ -182,8 +368,8 @@ body {
 }
 
 .nav-item.active {
-    background-color: #E3F2FD;
-    color: #1976D2;
+    background-color: var(--nav-active-bg);
+    color: var(--nav-active-text);
 }
 
 /* Report Page Styles */
@@ -202,12 +388,13 @@ body {
 }
 
 .total-attendance {
-    background-color: #5E72E4;
-    color: white;
+    background-color: var(--profile-icon-bg);
+    color: var(--profile-icon-text);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
     margin-bottom: 24px;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .total-attendance h3 {

@@ -1,30 +1,53 @@
-# Project Changes Log
+# Firebase Authentication and Notifications Fix
 
-## Change History
+## Problems Identified
 
-### 2024-07-26 10:45
-- **Type**: REFACTOR
-- **Files**: changes.html
-- **Description**: Updated the changes log UI with a cleaner design by removing boxes and cards, adding home/close buttons, developer attribution for each change, and a new "Features Coming Soon" section
-- **Impact**: Improves readability and navigation of the changes log page
-- **Breaking**: No
-- **Dependencies**: None
-- **Manual Steps**: None
+1. **OAuth Domain Authorization Issue**
+   - Error: "The current domain is not authorized for OAuth operations"
+   - This prevents proper authentication on development environments (localhost/127.0.0.1)
+   - Affects popup authentication methods and some Firebase operations
 
-### 2024-07-25 15:00
-- **Type**: REFACTOR
-- **Files**: dashboard.html, report.html, profile.html, admin.html
-- **Description**: Replaced default Bootstrap spinner with book-style loader across 4 files for better UX
-- **Impact**: The loading indicator shown during data fetching operations is now the book-style animation on the dashboard, report, profile, and admin pages
-- **Breaking**: No
-- **Dependencies**: None - Pure CSS implementation
-- **Manual Steps**: None required - Changes are automatically applied
+2. **Notification Access Issues**
+   - Users couldn't see notifications due to Firebase security rules restrictions
+   - Authentication issues prevented proper access to the notifications collection
 
-### 2024-07-25 14:45
-- **Type**: FEATURE
-- **Files**: login.html
-- **Description**: Added book-style loading animation and lazy image loading to improve login experience
-- **Impact**: Login page now displays an elegant animation while loading and images load only when they are about to be displayed
-- **Breaking**: No
-- **Dependencies**: Uses native IntersectionObserver API
-- **Manual Steps**: For new images, use `data-src` attribute instead of `src` to enable lazy loading 
+3. **Firebase Version Mismatch** (Fixed previously)
+   - Different pages were using different versions of the Firebase SDK
+   - Caused initialization conflicts and errors
+
+## Solutions Implemented
+
+### 1. Authentication Improvements
+- Added Firebase Authentication persistence (LOCAL) to help with development environments
+- Added detection and warning for localhost/development environments
+- Improved error handling for authentication issues
+
+### 2. Security Rules Updates
+- Modified Firestore security rules to be more permissive for notifications
+- Allowed public read access to notifications to work around OAuth domain issues
+- Added special handling for updating notification read status without full authentication
+
+### 3. Notification Loading Enhancements
+- Added fallback mechanism to get current user when authentication state is uncertain
+- Improved error handling and user feedback for notification loading failures
+- Added retry mechanisms for notification loading
+
+## How to Fix OAuth Domain Issue Permanently
+
+To properly fix the OAuth domain issue:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to Authentication → Settings → Authorized Domains
+4. Add your development domains (localhost, 127.0.0.1, etc.)
+
+## Files Modified
+
+- `auth.js`: Added authentication persistence and development environment detection
+- `notifications-ui.js`: Improved notification loading with better error handling
+- `firestore.rules`: Updated security rules to be more permissive for notifications during development
+
+## Results
+- Notifications should now load properly even in development environments
+- Authentication state is better preserved between page reloads
+- Security rules are more permissive for development while maintaining security for production

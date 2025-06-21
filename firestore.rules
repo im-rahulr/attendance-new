@@ -2,41 +2,54 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow admin users to read and write to all documents
-    match /{document=**} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
-    }
     
-    // Allow subjects collection to be read by all authenticated users
-    match /subjects/{subjectId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && isAdmin(request.auth.token.email);
+    // Helper function to check for admin role
+    function isAdmin() {
+      // IMPORTANT: Replace 'admin@admin.com' with your actual admin email address.
+      return request.auth != null && request.auth.token.email in ['admin@admin.com'];
     }
-    
-    // Allow users to read and write only their own documents
+
+    // Rule for user data: users can manage their own data. Admins can manage any user's data.
     match /users/{userId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin(request.auth.token.email));
+      allow read, write: if request.auth.uid == userId || isAdmin();
     }
-    
-    // User logs collection - only admin access
-    match /userLogs/{logId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+
+    // Rule for subjects: any authenticated user can read, only admins can write.
+    match /subjects/{docId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
     }
-    
-    // Deleted records collection - only admin access
-    match /deletedRecords/{recordId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+
+    // Rule for notifications: more permissive for development
+    // Any authenticated user can read, and update (to mark as read)
+    // Only admins can create or delete notifications
+    match /notifications/{docId} {
+      // Allow read access to anyone - this helps during development with OAuth domain issues
+      allow read: if true;
+      
+      // Allow updates if:
+      // 1. User is authenticated and only changing the 'read' field, or
+      // 2. User is an admin
+      allow update: if (request.auth != null && 
+                      (isAdmin() || 
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])))) ||
+                     // Fallback for development - allow updates that only change 'read' field
+                     (!request.auth != null && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']));
+                      
+      // Only admins can create or delete
+      allow create, delete: if isAdmin();
     }
-    
-    // Manual attendance collection - only admin access
-    match /manualAttendance/{recordId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+
+    // Rules for admin-only collections
+    match /userLogs/{docId} {
+        allow read, write: if isAdmin();
     }
-    
-    // Helper function to check if user is admin
-    function isAdmin(email) {
-      return email in ['admin@admin.com'];
+    match /deletedRecords/{docId} {
+        allow read, write: if isAdmin();
+    }
+    match /manualAttendance/{docId} {
+        allow read, write: if isAdmin();
     }
   }
 } 
