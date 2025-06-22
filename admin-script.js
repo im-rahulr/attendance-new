@@ -1,0 +1,1 @@
+// All admin panel javascript will be consolidated here. 

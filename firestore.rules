@@ -1,55 +1,9 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check for admin role
-    function isAdmin() {
-      // IMPORTANT: Replace 'admin@admin.com' with your actual admin email address.
-      return request.auth != null && request.auth.token.email in ['admin@admin.com'];
-    }
-
-    // Rule for user data: users can manage their own data. Admins can manage any user's data.
-    match /users/{userId} {
-      allow read, write: if request.auth.uid == userId || isAdmin();
-    }
-
-    // Rule for subjects: any authenticated user can read, only admins can write.
-    match /subjects/{docId} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-
-    // Rule for notifications: more permissive for development
-    // Any authenticated user can read, and update (to mark as read)
-    // Only admins can create or delete notifications
-    match /notifications/{docId} {
-      // Allow read access to anyone - this helps during development with OAuth domain issues
-      allow read: if true;
-      
-      // Allow updates if:
-      // 1. User is authenticated and only changing the 'read' field, or
-      // 2. User is an admin
-      allow update: if (request.auth != null && 
-                      (isAdmin() || 
-                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])))) ||
-                     // Fallback for development - allow updates that only change 'read' field
-                     (!request.auth != null && 
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']));
-                      
-      // Only admins can create or delete
-      allow create, delete: if isAdmin();
-    }
-
-    // Rules for admin-only collections
-    match /userLogs/{docId} {
-        allow read, write: if isAdmin();
-    }
-    match /deletedRecords/{docId} {
-        allow read, write: if isAdmin();
-    }
-    match /manualAttendance/{docId} {
-        allow read, write: if isAdmin();
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
-} 
+}
+ 
