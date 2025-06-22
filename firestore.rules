@@ -1,9 +1,42 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow admin users to read and write to all documents
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+    
+    // Allow subjects collection to be read by all authenticated users
+    match /subjects/{subjectId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+    
+    // Allow users to read and write only their own documents
+    match /users/{userId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin(request.auth.token.email));
+    }
+    
+    // User logs collection - only admin access
+    match /userLogs/{logId} {
+      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+    
+    // Deleted records collection - only admin access
+    match /deletedRecords/{recordId} {
+      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+    
+    // Manual attendance collection - only admin access
+    match /manualAttendance/{recordId} {
+      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin(email) {
+      return email in ['admin@admin.com'];
     }
   }
-}
- 
+} 

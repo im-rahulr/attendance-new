@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LowryBunks - Admin Panel</title>
+    <title>Admin Panel - Attendance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         :root {
             --primary: #4a154b;
             --primary-light: #6d2c70;
-            --primary-gradient: linear-gradient(135deg, #4a154b, #7e2987);
             --secondary: #1e88e5;
             --background: #f6f7fb;
             --card-bg: #fff;
@@ -21,380 +19,305 @@
             --text-main: #23272f;
             --text-muted: #7b7b93;
             --accent: #f2c94c;
-            --success: #4CAF50;
-            --warning: #FF9800;
-            --danger: #F44336;
         }
         
+        /* Loader Animation */
+        .loader {
+            --background: linear-gradient(135deg, #23C4F8, #275EFE);
+            --shadow: rgba(39, 94, 254, 0.28);
+            --text: #6C7486;
+            --page: rgba(255, 255, 255, 0.36);
+            --page-fold: rgba(255, 255, 255, 0.52);
+            --duration: 3s;
+            width: 200px;
+            height: 140px;
+            position: relative;
+        }
 
+        .loader:before, .loader:after {
+            --r: -6deg;
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            width: 120px;
+            top: 80%;
+            box-shadow: 0 16px 12px var(--shadow);
+            transform: rotate(var(--r));
+        }
+
+        .loader:before {
+            left: 4px;
+        }
+
+        .loader:after {
+            --r: 6deg;
+            right: 4px;
+        }
+
+        .loader div {
+            width: 100%;
+            height: 100%;
+            border-radius: 13px;
+            position: relative;
+            z-index: 1;
+            perspective: 600px;
+            box-shadow: 0 4px 6px var(--shadow);
+            background-image: var(--background);
+        }
+
+        .loader div ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            position: relative;
+        }
+
+        .loader div ul li {
+            --r: 180deg;
+            --o: 0;
+            --c: var(--page);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            transform-origin: 100% 50%;
+            color: var(--c);
+            opacity: var(--o);
+            transform: rotateY(var(--r));
+            -webkit-animation: var(--duration) ease infinite;
+            animation: var(--duration) ease infinite;
+        }
+
+        .loader div ul li:nth-child(2) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-2;
+            animation-name: page-2;
+        }
+
+        .loader div ul li:nth-child(3) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-3;
+            animation-name: page-3;
+        }
+
+        .loader div ul li:nth-child(4) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-4;
+            animation-name: page-4;
+        }
+
+        .loader div ul li:nth-child(5) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-5;
+            animation-name: page-5;
+        }
+
+        .loader div ul li svg {
+            width: 90px;
+            height: 120px;
+            display: block;
+        }
+
+        .loader div ul li:first-child {
+            --r: 0deg;
+            --o: 1;
+        }
+
+        .loader div ul li:last-child {
+            --o: 1;
+        }
+
+        .loader-text {
+            display: block;
+            left: 0;
+            right: 0;
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        @keyframes page-2 {
+            0% { transform: rotateY(180deg); opacity: 0; }
+            20% { opacity: 1; }
+            35%, 100% { opacity: 0; }
+            50%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-3 {
+            15% { transform: rotateY(180deg); opacity: 0; }
+            35% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+            65%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-4 {
+            30% { transform: rotateY(180deg); opacity: 0; }
+            50% { opacity: 1; }
+            65%, 100% { opacity: 0; }
+            80%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-5 {
+            45% { transform: rotateY(180deg); opacity: 0; }
+            65% { opacity: 1; }
+            80%, 100% { opacity: 0; }
+            95%, 100% { transform: rotateY(0deg); }
+        }
 
         body {
             background: var(--background);
             font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
             color: var(--text-main);
         }
-        
-        /* Enhanced Admin Header */
         .admin-header {
-            background: var(--primary-gradient);
+            background: var(--primary);
             color: #fff;
-            padding: 1.8rem 0;
+            padding: 1.5rem 0;
             margin-bottom: 2.5rem;
-            box-shadow: 0 4px 20px rgba(74, 21, 75, 0.15);
-            position: relative;
-            overflow: hidden;
+            box-shadow: var(--shadow);
         }
-        
-        .admin-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            z-index: 0;
-        }
-        
-        .admin-header::after {
-            content: '';
-            position: absolute;
-            bottom: -70%;
-            left: -5%;
-            width: 400px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            z-index: 0;
-        }
-        
         .admin-header .container-fluid {
             max-width: 1400px;
-            position: relative;
-            z-index: 1;
         }
-        
         .admin-header h2 {
             font-weight: 700;
             letter-spacing: 1px;
-            margin: 0;
-            position: relative;
         }
-        
-        .admin-header h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--accent);
-            border-radius: 3px;
-        }
-        
         .btn-outline-light {
-            border-radius: 12px;
+            border-radius: 8px;
             font-weight: 500;
-            padding: 10px 20px;
-            transition: all 0.3s ease;
         }
-        
-        .btn-outline-light:hover {
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        
         .admin-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 15px;
         }
-        
-        /* Enhanced Navigation Pills */
         .nav-pills {
             background: #fff;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            padding: 0.75rem 1.25rem;
+            padding: 0.5rem 1rem;
             margin-bottom: 2rem;
-            display: flex;
-            overflow-x: auto;
-            gap: 10px;
         }
-        
         .nav-pills .nav-link {
-            border-radius: 10px;
-            padding: 10px 18px;
-            font-weight: 500;
             color: var(--text-muted);
-            position: relative;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            border-radius: 10px;
+            margin-right: 8px;
+            transition: background 0.2s, color 0.2s;
         }
-        
-        .nav-pills .nav-link:hover {
-            color: var(--primary);
-            background-color: rgba(74, 21, 75, 0.05);
-        }
-        
         .nav-pills .nav-link.active {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(74, 21, 75, 0.2);
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(74, 21, 75, 0.08);
         }
-        
-        /* Enhanced Cards */
         .card {
             border: none;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            overflow: hidden;
+            background: var(--card-bg);
+            margin-bottom: 2rem;
         }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(80, 80, 120, 0.12);
-        }
-        
         .card-header {
-            background-color: transparent;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 1.25rem 1.5rem;
-        }
-        
-        .card-header h5 {
-            margin: 0;
+            background: transparent;
+            border-bottom: none;
             font-weight: 600;
+            font-size: 1.1rem;
             color: var(--primary);
         }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
-        /* Enhanced Tables */
-        .table {
-            margin-bottom: 0;
-        }
-        
-        .table thead th {
-            border-top: none;
-            border-bottom-width: 1px;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            padding: 1rem 1.25rem;
-        }
-        
-        .table tbody td {
-            padding: 1rem 1.25rem;
-            vertical-align: middle;
-            border-color: rgba(0, 0, 0, 0.05);
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: rgba(74, 21, 75, 0.02);
-        }
-        
-        /* Enhanced Buttons */
-        .btn {
-            border-radius: 10px;
-            padding: 8px 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-light);
-            border-color: var(--primary-light);
-            box-shadow: 0 4px 12px rgba(74, 21, 75, 0.2);
-        }
-        
-        .btn-success {
-            background-color: var(--success);
-            border-color: var(--success);
-        }
-        
-        .btn-success:hover {
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
-        }
-        
-        .btn-warning {
-            background-color: var(--warning);
-            border-color: var(--warning);
-        }
-        
-        .btn-warning:hover {
-            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
-        }
-        
-        .btn-danger {
-            background-color: var(--danger);
-            border-color: var(--danger);
-        }
-        
-        .btn-danger:hover {
-            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.2);
-        }
-        
-        /* Enhanced Summary Cards */
-        .summary-card {
-            background: white;
-            border-radius: 18px;
+        .stat-card {
+            text-align: center;
+            padding: 2.2rem 1rem 1.5rem 1rem;
+            border-radius: var(--border-radius);
+            background: var(--card-bg);
             box-shadow: var(--shadow);
-            padding: 1.5rem;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .summary-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(80, 80, 120, 0.12);
-        }
-        
-        .summary-card .icon {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            border-radius: 15px;
-        }
-        
-        .summary-card .users-icon {
-            background-color: rgba(74, 21, 75, 0.1);
-            color: var(--primary);
-        }
-        
-        .summary-card .attendance-icon {
-            background-color: rgba(30, 136, 229, 0.1);
-            color: var(--secondary);
-        }
-        
-        .summary-card .subjects-icon {
-            background-color: rgba(242, 201, 76, 0.1);
-            color: var(--accent);
-        }
-        
-        .summary-card h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .summary-card p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 0;
-        }
-        
-        .summary-card .card-bg {
-            position: absolute;
-            right: -20px;
-            bottom: -20px;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            opacity: 0.05;
-        }
-        
-        .summary-card .users-bg {
-            background-color: var(--primary);
-        }
-        
-        .summary-card .attendance-bg {
-            background-color: var(--secondary);
-        }
-        
-        .summary-card .subjects-bg {
-            background-color: var(--accent);
-        }
-        
-        /* Search Bar */
-        .search-container {
-            position: relative;
             margin-bottom: 1.5rem;
         }
-        
-        .search-container .form-control {
-            border-radius: 50px;
-            padding: 12px 20px;
-            padding-left: 45px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
+        .stat-card .icon {
+            font-size: 2.7rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
         }
-        
-        .search-container .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(74, 21, 75, 0.1);
+        .stat-card h3 {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: var(--primary);
         }
-        
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 12px;
+        .stat-card h5 {
             color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-        
-        /* Custom Form Controls */
-        .form-control {
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.25rem rgba(74, 21, 75, 0.15);
-        }
-        
-        .form-select {
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.25rem rgba(74, 21, 75, 0.15);
-        }
-        
-        /* Status Badges */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 50px;
             font-weight: 500;
-            font-size: 0.8rem;
         }
-        
-        .badge-active {
-            background-color: rgba(76, 175, 80, 0.15);
-            color: var(--success);
+        .table {
+            border-radius: 12px;
+            overflow: hidden;
         }
-        
-        .badge-inactive {
-            background-color: rgba(244, 67, 54, 0.15);
-            color: var(--danger);
+        .table th {
+            background: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            border: none;
         }
-        
-        #adminDashboard {
-            display: none;
+        .table td {
+            vertical-align: middle;
+        }
+        .table-hover tbody tr:hover {
+            background: #f3e6f7;
+        }
+        .btn-primary, .btn-info {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        .btn-info {
+            background: var(--secondary);
+            border: none;
+        }
+        .btn-info:hover {
+            background: #1565c0;
+        }
+        .progress {
+            background: #f3e6f7;
+            border-radius: 8px;
+            height: 20px;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            font-weight: 600;
+        }
+        .list-group-item {
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f7f9fa;
+            color: var(--text-main);
+        }
+        .list-group-item:last-child {
+            margin-bottom: 0;
+        }
+        .modal-header {
+            background: var(--primary);
+            color: #fff;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+        }
+        .modal-content {
+            border-radius: var(--border-radius);
+        }
+        .toast {
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        @media (max-width: 991px) {
+            .stat-card { margin-bottom: 1rem; }
+        }
+        @media (max-width: 767px) {
+            .admin-header, .admin-container { padding: 0 10px; }
+            .stat-card { padding: 1.2rem 0.5rem 1rem 0.5rem; }
         }
     </style>
 </head>
@@ -409,24 +332,55 @@
             window.location.href = '/admin.html';
         }
     </script>
-
-    <!-- Firebase app error handler -->
-    <div id="firebase-error" class="alert alert-danger" style="display:none; position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:9999; max-width:90%;">
-        <h4><i class="fas fa-exclamation-triangle me-2"></i>Firebase Error</h4>
-        <p id="firebase-error-message"></p>
-        <div id="firebase-error-details" class="mt-2 p-2 bg-light rounded" style="max-height:150px; overflow-y:auto; font-size:0.9em;"></div>
-        <button class="btn btn-sm btn-outline-danger mt-2" onclick="this.parentElement.style.display='none'">Dismiss</button>
-    </div>
     <div class="admin-header">
         <div class="container-fluid admin-container">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0"><i class="fas fa-user-shield me-2"></i><span class="cursive">Lowry</span>Bunks Admin</h2>
+                <h2 class="mb-0"><i class="fas fa-user-shield me-2"></i>Admin Panel</h2>
                 <button id="logoutBtn" class="btn btn-outline-light"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
             </div>
         </div>
     </div>
     
-
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="d-flex justify-content-center align-items-center" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1056; display: none !important;">
+        <div class="loader">
+            <div>
+                <ul>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <p class="mt-2 loader-text" id="loadingText">Loading...</p>
+    </div>
     
     <div class="container admin-container">
         <!-- Login Form (shown if not authenticated) -->
@@ -469,9 +423,6 @@
                     <button class="nav-link" id="userLogs-tab" data-bs-toggle="tab" data-bs-target="#userLogs" type="button" role="tab" aria-controls="userLogs" aria-selected="false"><i class="fas fa-history me-2"></i>User Logs</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications-content" type="button" role="tab" aria-controls="notifications-content" aria-selected="false"><i class="fas fa-bell me-2"></i>Notifications</button>
-                </li>
-                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="deleted-tab" data-bs-toggle="tab" data-bs-target="#deleted-content" type="button" role="tab" aria-controls="deleted-content" aria-selected="false"><i class="fas fa-trash-alt me-2"></i>Deleted Reports</button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -484,27 +435,24 @@
                 <div class="tab-pane fade show active" id="dashboard-content" role="tabpanel" aria-labelledby="dashboard-tab">
                     <div class="row g-4 mb-4">
                         <div class="col-md-4">
-                            <div class="summary-card">
-                                <div class="icon users-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-card">
+                                <div class="icon"><i class="fas fa-users"></i></div>
                                 <h3 id="totalUsersStat">0</h3>
-                                <p>Total Registered Users</p>
-                                <div class="card-bg users-bg"></div>
+                                <h5>Total Users</h5>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="summary-card">
-                                <div class="icon attendance-icon"><i class="fas fa-chart-pie"></i></div>
+                            <div class="stat-card">
+                                <div class="icon"><i class="fas fa-chart-pie"></i></div>
                                 <h3 id="avgAttendanceStat">0%</h3>
-                                <p>Average Attendance Rate</p>
-                                <div class="card-bg attendance-bg"></div>
+                                <h5>Avg. Attendance</h5>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="summary-card">
-                                <div class="icon subjects-icon"><i class="fas fa-book"></i></div>
+                            <div class="stat-card">
+                                <div class="icon"><i class="fas fa-book"></i></div>
                                 <h3 id="totalSubjectsStat">0</h3>
-                                <p>Total Active Subjects</p>
-                                <div class="card-bg subjects-bg"></div>
+                                <h5>Total Subjects</h5>
                             </div>
                         </div>
                     </div>
@@ -656,9 +604,11 @@
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-md-8">
-                                    <div class="search-container">
-                                        <i class="fas fa-search search-icon"></i>
+                                    <div class="input-group">
                                         <input type="text" id="logSearchInput" class="form-control" placeholder="Search logs by name, email, activity...">
+                                        <button class="btn btn-primary" id="searchLogsBtn">
+                                            <i class="fas fa-search"></i> Search
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -682,7 +632,7 @@
                                             <th>Device</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="userLogsBody">
+                                    <tbody>
                                         <!-- User logs will be loaded here -->
                                     </tbody>
                                 </table>
@@ -728,72 +678,13 @@
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="deletedReportsTableBody"></tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Notifications Management Content -->
-                <div class="tab-pane fade" id="notifications-content" role="tabpanel" aria-labelledby="notifications-tab">
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>All Notifications</h5>
-                            <div>
-                                <button id="refreshNotificationsBtn" class="btn btn-sm btn-outline-primary me-2">
-                                    <i class="fas fa-sync-alt me-1"></i>Refresh
-                                </button>
-                                <button id="deleteAllNotificationsBtn" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash me-1"></i>Delete All
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="notificationsSpinner" class="d-flex justify-content-center align-items-center p-5" style="display: none !important;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-hover" id="notificationsTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Message</th>
-                                            <th>Sent By</th>
-                                            <th>Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Notifications will be loaded here -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Send New Notification</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="notification-send-status"></div>
-                            <div class="form-group mb-3">
-                                <label for="notification-title" class="form-label">Title (Optional)</label>
-                                <input type="text" id="notification-title" class="form-control" placeholder="Enter notification title...">
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="notification-message" class="form-label">Message</label>
-                                <textarea id="notification-tab-message" class="form-control" rows="4" placeholder="Type your message here..."></textarea>
-                            </div>
-                            <button id="send-notification-tab-btn" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Send Notification
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Attendance Management Content -->
                 <div class="tab-pane fade" id="attendance-content" role="tabpanel" aria-labelledby="attendance-tab">
                     <div class="row">
@@ -867,7 +758,7 @@
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="recentAttendanceBody"></tbody>
+                                            <tbody></tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -876,33 +767,12 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Send Notification -->
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-bullhorn me-2"></i>Send a Notification</h5>
-                            <p class="card-subtitle mb-3 text-muted">Broadcast a message to all users. It will appear on their notifications page.</p>
-                            <div id="notification-status"></div>
-                            <div class="form-group">
-                                <textarea id="notification-message" class="form-control" rows="4" placeholder="Type your message here..."></textarea>
-                            </div>
-                            <button id="send-notification-btn" class="btn btn-primary mt-3">
-                                <i class="fas fa-paper-plane me-2"></i>Send Notification
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </main>
-</div>
+    </div>
     
     <!-- Toast -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div id="adminToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
+        <div id="adminToast" class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body" id="toastBody">Notification</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -1096,44 +966,2766 @@
         </div>
     </div>
     
-    <!-- Notification Details Modal -->
-    <div class="modal fade" id="notificationDetailsModal" tabindex="-1" aria-labelledby="notificationDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="notificationDetailsTitle">Notification Details</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="notificationDetailsContent"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger me-2" id="deleteNotificationBtn">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Excel export libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-
-    <!-- Firebase SDK (using compat version for consistency) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="theme.js"></script>
 
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container" style="z-index: 1100">
-        <!-- Toasts will be appended here -->
-    </div>
-
-    <!-- Load auth.js which contains the working Firebase configuration and admin functionality -->
-    <script src="auth.js"></script>
+    <script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+        authDomain: "attendance-a9a19.firebaseapp.com",
+        databaseURL: "https://attendance-a9a19-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "attendance-a9a19",
+        storageBucket: "attendance-a9a19.appspot.com",
+        messagingSenderId: "1055787262218",
+        appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+        measurementId: "G-3XPB4VLFYH"
+    };
     
+    // Initialize Firebase properly
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    } else {
+        firebase.app(); // If already initialized, use that one
+    }
+    
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // Initialize Realtime Database explicitly
+    const rtdb = firebase.database();
+    
+    // Enable offline persistence for Firestore
+    db.enablePersistence()
+      .catch((err) => {
+          console.error("Persistence error:", err.code);
+          if (err.code == 'failed-precondition') {
+              console.warn("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
+          } else if (err.code == 'unimplemented') {
+              console.warn("The current browser does not support all of the features required to enable persistence");
+          }
+    });
+    
+    // Admin emails (you can store these in Firestore instead)
+    const adminEmails = ["admin@admin.com"];
+    let attendanceChartInstance = null;
+    let userAttendanceChartInstance = null;
+    let currentUser = null;
+    
+    // Excel export function
+    function exportToExcel(data, filename, sheetName) {
+        if (!data || data.length === 0) {
+            showToast('No data to export', 'warning');
+            return;
+        }
+        
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet(sheetName);
+            
+            // Add column headers
+            if (data.length > 0) {
+                worksheet.columns = Object.keys(data[0]).map(key => {
+                    return { header: key, key: key, width: 20 };
+                });
+            }
+            
+            // Add row data
+            worksheet.addRows(data);
+            
+            // Apply styles to header row
+            worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
+            worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4A154B' } };
+            
+            // Save workbook
+            workbook.xlsx.writeBuffer()
+                .then(buffer => {
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    saveAs(blob, filename);
+                })
+                .catch(error => {
+                    console.error("Error generating Excel file:", error);
+                    showToast('Error generating Excel file: ' + error.message, 'danger');
+                });
+        } catch (error) {
+            console.error("Error creating Excel workbook:", error);
+            showToast('Error creating Excel workbook: ' + error.message, 'danger');
+        }
+    }
+    
+    // Load user logs with search and filter capabilities
+    function loadUserLogs(searchTerm = '', filterType = 'all') {
+        document.getElementById('logsSpinner').style.display = 'flex';
+        const tbody = document.querySelector('#userLogsTable tbody');
+        tbody.innerHTML = '';
+        
+        // Create base query
+        let query = db.collection('userLogs').orderBy('timestamp', 'desc');
+        
+        // Apply limit only if no search term is provided
+        if (!searchTerm) {
+            query = query.limit(100);
+        }
+        
+        query.get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No user logs found</td></tr>';
+                    document.getElementById('logsSpinner').style.display = 'none';
+                    return;
+                }
+                
+                // Filter results client-side based on search term and filter type
+                let filteredLogs = [];
+                
+                snapshot.forEach(doc => {
+                    const logData = doc.data();
+                    
+                    // Apply search filter if provided
+                    if (searchTerm) {
+                        const searchFields = [
+                            logData.userName || '',
+                            logData.userEmail || '',
+                            logData.activity || '',
+                            logData.page || '',
+                            logData.device || '',
+                            logData.browser || '',
+                            logData.os || '',
+                            logData.ipAddress || ''
+                        ].map(field => field.toLowerCase());
+                        
+                        const termFound = searchFields.some(field => field.includes(searchTerm.toLowerCase()));
+                        if (!termFound) return;
+                    }
+                    
+                    // Apply activity type filter if not 'all'
+                    if (filterType !== 'all') {
+                        const activity = (logData.activity || '').toLowerCase();
+                        
+                        if (filterType === 'login' && !activity.includes('login') && !activity.includes('logout')) {
+                            return;
+                        } else if (filterType === 'attendance' && !activity.includes('attendance') && !activity.includes('marked')) {
+                            return;
+                        } else if (filterType === 'view' && !activity.includes('viewed')) {
+                            return;
+                        }
+                    }
+                    
+                    // Add to filtered logs
+                    filteredLogs.push({ id: doc.id, data: logData });
+                });
+                
+                // Display message if no logs match filters
+                if (filteredLogs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No logs match your search criteria</td></tr>';
+                    document.getElementById('logsSpinner').style.display = 'none';
+                    return;
+                }
+                
+                // Sort by timestamp (newest first)
+                filteredLogs.sort((a, b) => {
+                    const timeA = a.data.timestamp ? a.data.timestamp.toDate().getTime() : 0;
+                    const timeB = b.data.timestamp ? b.data.timestamp.toDate().getTime() : 0;
+                    return timeB - timeA;
+                });
+                
+                // Display logs
+                filteredLogs.forEach(({ id, data: logData }) => {
+                    let timestamp = 'Unknown';
+                    if (logData.timestamp) {
+                        const date = logData.timestamp.toDate();
+                        timestamp = date.toLocaleString();
+                    }
+                    
+                    // Format activity with icon based on type
+                    let activityIcon = '';
+                    let activityText = logData.activity || 'Unknown';
+                    
+                    if (activityText.includes('login') || activityText.includes('Login')) {
+                        activityIcon = '<i class="fas fa-sign-in-alt text-success me-2"></i>';
+                    } else if (activityText.includes('attendance') || activityText.includes('Marked')) {
+                        activityIcon = '<i class="fas fa-check-circle text-primary me-2"></i>';
+                    } else if (activityText.includes('Viewed')) {
+                        activityIcon = '<i class="fas fa-eye text-info me-2"></i>';
+                    } else if (activityText.includes('logout') || activityText.includes('Logout')) {
+                        activityIcon = '<i class="fas fa-sign-out-alt text-warning me-2"></i>';
+                    } else {
+                        activityIcon = '<i class="fas fa-history text-secondary me-2"></i>';
+                    }
+                    
+                    // Add page information if available
+                    const pageInfo = logData.page ? `<small class="text-muted d-block">Page: ${logData.page}</small>` : '';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${logData.userName || 'Unknown'}</td>
+                        <td>${logData.userEmail || 'No email'}</td>
+                        <td>
+                            ${activityIcon}${activityText}
+                            ${pageInfo}
+                        </td>
+                        <td>${timestamp}</td>
+                        <td>${logData.ipAddress || 'Unknown'}</td>
+                        <td>
+                            ${logData.device || 'Unknown'}
+                            <small class="text-muted d-block">${logData.browser || ''} / ${logData.os || ''}</small>
+                        </td>
+                    `;
+                    try {
+                        tr.addEventListener('click', () => showActivityDetails(id, logData));
+                        tr.style.cursor = 'pointer';
+                    } catch (error) {
+                        console.error("Error adding click event to log row:", error);
+                    }
+                    tbody.appendChild(tr);
+                });
+                
+                document.getElementById('logsSpinner').style.display = 'none';
+                
+                // Show success message only for initial load, not for searches
+                if (!searchTerm && filterType === 'all') {
+                    showToast('User logs loaded successfully!', 'success');
+                }
+            })
+            .catch(error => {
+                console.error("Error loading user logs:", error);
+                document.getElementById('logsSpinner').style.display = 'none';
+                
+                // If permission denied, try to create the collection
+                if (error.code === 'permission-denied') {
+                    createUserLogsCollection();
+                } else {
+                    showToast('Error loading user logs: ' + error.message, 'danger');
+                }
+            });
+    }
+    
+    // Clear all user logs
+    function clearUserLogs() {
+        if (!confirm('Are you sure you want to clear all user logs? This action cannot be undone.')) {
+            return;
+        }
+        
+        const clearBtn = document.getElementById('clearLogsBtn');
+        if (clearBtn) {
+            clearBtn.disabled = true;
+            clearBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Clearing...';
+        }
+        
+        // Get all user logs
+        db.collection('userLogs').get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    showToast('No logs to clear.', 'info');
+                    return Promise.resolve();
+                }
+                
+                // Create a batch to delete logs in batches (Firestore has a limit of 500 operations per batch)
+                const batchSize = 450; // Leave some room for other operations
+                let batches = [];
+                let currentBatch = db.batch();
+                let operationCount = 0;
+                
+                // Process each log
+                snapshot.forEach(doc => {
+                    // Skip the initial log document
+                    if (doc.id === 'initial') return;
+                    
+                    currentBatch.delete(doc.ref);
+                    operationCount++;
+                    
+                    // If we reach batch limit, create a new batch
+                    if (operationCount >= batchSize) {
+                        batches.push(currentBatch.commit());
+                        currentBatch = db.batch();
+                        operationCount = 0;
+                    }
+                });
+                
+                // Commit any remaining operations
+                if (operationCount > 0) {
+                    batches.push(currentBatch.commit());
+                }
+                
+                // Execute all batches
+                return Promise.all(batches);
+            })
+            .then(() => {
+                // Create a new initial log entry
+                return db.collection('userLogs').doc('initial').set({
+                    userId: currentUser.uid,
+                    userName: 'Admin',
+                    userEmail: currentUser.email,
+                    activity: 'Cleared all user logs',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    ipAddress: '127.0.0.1',
+                    device: 'Admin Panel',
+                    browser: 'Admin Browser',
+                    os: 'Admin OS'
+                });
+            })
+            .then(() => {
+                showToast('User logs cleared successfully!', 'success');
+                loadUserLogs(); // Reload the logs
+            })
+            .catch(error => {
+                console.error("Error clearing user logs:", error);
+                showToast('Error clearing logs: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                if (clearBtn) {
+                    clearBtn.disabled = false;
+                    clearBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Clear Logs';
+                }
+            });
+    }
+    
+    // Export user logs to Excel
+    function exportUserLogs() {
+        const exportBtn = document.getElementById('exportLogsBtn');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Exporting...';
+        }
+        
+        // Get search and filter values
+        const searchTerm = document.getElementById('logSearchInput')?.value || '';
+        const filterType = document.getElementById('logFilterSelect')?.value || 'all';
+        
+        // Create base query
+        let query = db.collection('userLogs').orderBy('timestamp', 'desc');
+        
+        query.get()
+            .then(snapshot => {
+                const logsData = [];
+                
+                // Filter results client-side based on search term and filter type
+                snapshot.forEach(doc => {
+                    const logData = doc.data();
+                    
+                    // Apply search filter if provided
+                    if (searchTerm) {
+                        const searchFields = [
+                            logData.userName || '',
+                            logData.userEmail || '',
+                            logData.activity || '',
+                            logData.page || '',
+                            logData.device || '',
+                            logData.browser || '',
+                            logData.os || '',
+                            logData.ipAddress || ''
+                        ].map(field => field.toLowerCase());
+                        
+                        const termFound = searchFields.some(field => field.includes(searchTerm.toLowerCase()));
+                        if (!termFound) return;
+                    }
+                    
+                    // Apply activity type filter if not 'all'
+                    if (filterType !== 'all') {
+                        const activity = (logData.activity || '').toLowerCase();
+                        
+                        if (filterType === 'login' && !activity.includes('login') && !activity.includes('logout')) {
+                            return;
+                        } else if (filterType === 'attendance' && !activity.includes('attendance') && !activity.includes('marked')) {
+                            return;
+                        } else if (filterType === 'view' && !activity.includes('viewed')) {
+                            return;
+                        }
+                    }
+                    
+                    let timestamp = 'Unknown';
+                    if (logData.timestamp) {
+                        const date = logData.timestamp.toDate();
+                        timestamp = date.toLocaleString();
+                    }
+                    
+                    // Format log data for Excel with more details
+                    const logExcelData = {
+                        'Log ID': doc.id,
+                        'User ID': logData.userId || 'Unknown',
+                        'Name': logData.userName || 'Unknown',
+                        'Email': logData.userEmail || 'No email',
+                        'Activity': logData.activity || 'Unknown',
+                        'Timestamp': timestamp,
+                        'Date': logData.timestamp ? logData.timestamp.toDate().toLocaleDateString() : 'Unknown',
+                        'Time': logData.timestamp ? logData.timestamp.toDate().toLocaleTimeString() : 'Unknown',
+                        'IP Address': logData.ipAddress || 'Unknown',
+                        'Page': logData.page || 'Unknown',
+                        'Browser': logData.browser || 'Unknown',
+                        'OS': logData.os || 'Unknown',
+                        'Device': logData.device || 'Unknown'
+                    };
+                    
+                    // Add any additional data if available
+                    if (logData.additionalData) {
+                        if (typeof logData.additionalData === 'object') {
+                            Object.entries(logData.additionalData).forEach(([key, value]) => {
+                                logExcelData[`Additional_${key}`] = typeof value === 'object' ? JSON.stringify(value) : value;
+                            });
+                        } else {
+                            logExcelData['Additional Data'] = String(logData.additionalData);
+                        }
+                    }
+                    
+                    logsData.push(logExcelData);
+                });
+                
+                // Sort by timestamp (newest first)
+                logsData.sort((a, b) => {
+                    const dateA = new Date(a['Timestamp'] !== 'Unknown' ? a['Timestamp'] : 0);
+                    const dateB = new Date(b['Timestamp'] !== 'Unknown' ? b['Timestamp'] : 0);
+                    return dateB - dateA;
+                });
+                
+                if (logsData.length === 0) {
+                    throw new Error('No logs match your search criteria');
+                }
+                
+                // Export to Excel
+                const now = new Date();
+                const dateString = now.toISOString().split('T')[0];
+                const filename = `user_logs_${dateString}.xlsx`;
+                
+                // Use try-catch to handle potential Excel export errors
+                try {
+                    exportToExcel(logsData, filename, 'User Logs');
+                    showToast('User logs exported successfully!', 'success');
+                } catch (error) {
+                    console.error("Error in Excel export:", error);
+                    showToast('Error exporting to Excel: ' + error.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error("Error exporting user logs:", error);
+                showToast('Failed to export user logs: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                if (exportBtn) {
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i>Export Logs';
+                }
+            });
+    }
+    
+    // Load user logs
+    function loadUserLogs() {
+        document.getElementById('logsSpinner').style.display = 'flex';
+        const tbody = document.querySelector('#userLogsTable tbody');
+        tbody.innerHTML = '';
+        
+        db.collection('userLogs').orderBy('timestamp', 'desc').limit(100).get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No user logs found</td></tr>';
+                    document.getElementById('logsSpinner').style.display = 'none';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const logData = doc.data();
+                    
+                    let timestamp = 'Unknown';
+                    if (logData.timestamp) {
+                        const date = logData.timestamp.toDate();
+                        timestamp = date.toLocaleString();
+                    }
+                    
+                    // Format activity with icon based on type
+                    let activityIcon = '';
+                    let activityText = logData.activity || 'Unknown';
+                    
+                    if (activityText.includes('login') || activityText.includes('Login')) {
+                        activityIcon = '<i class="fas fa-sign-in-alt text-success me-2"></i>';
+                    } else if (activityText.includes('attendance') || activityText.includes('Marked')) {
+                        activityIcon = '<i class="fas fa-check-circle text-primary me-2"></i>';
+                    } else if (activityText.includes('Viewed')) {
+                        activityIcon = '<i class="fas fa-eye text-info me-2"></i>';
+                    } else if (activityText.includes('logout') || activityText.includes('Logout')) {
+                        activityIcon = '<i class="fas fa-sign-out-alt text-warning me-2"></i>';
+                    } else {
+                        activityIcon = '<i class="fas fa-history text-secondary me-2"></i>';
+                    }
+                    
+                    // Add page information if available
+                    const pageInfo = logData.page ? `<small class="text-muted d-block">Page: ${logData.page}</small>` : '';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${logData.userName || 'Unknown'}</td>
+                        <td>${logData.userEmail || 'No email'}</td>
+                        <td>
+                            ${activityIcon}${activityText}
+                            ${pageInfo}
+                        </td>
+                        <td>${timestamp}</td>
+                        <td>${logData.ipAddress || 'Unknown'}</td>
+                        <td>
+                            ${logData.device || 'Unknown'}
+                            <small class="text-muted d-block">${logData.browser || ''} / ${logData.os || ''}</small>
+                        </td>
+                    `;
+                    tr.addEventListener('click', () => showActivityDetails(doc.id, logData));
+                    tr.style.cursor = 'pointer';
+                    tbody.appendChild(tr);
+                });
+                
+                document.getElementById('logsSpinner').style.display = 'none';
+                showToast('User logs loaded successfully!', 'success');
+            })
+            .catch(error => {
+                console.error("Error loading user logs:", error);
+                document.getElementById('logsSpinner').style.display = 'none';
+                
+                // If permission denied, try to create the collection
+                if (error.code === 'permission-denied') {
+                    createUserLogsCollection();
+                } else {
+                    showToast('Error loading user logs: ' + error.message, 'danger');
+                }
+            });
+    }
+    
+    // Create user logs collection if it doesn't exist
+    function createUserLogsCollection() {
+        if (!currentUser) {
+            showToast('Authentication error. Please reload the page.', 'danger');
+            return;
+        }
+        
+        showToast('Creating user logs collection...', 'info');
+        db.collection('userLogs').doc('initial').set({
+            userId: currentUser.uid,
+            userName: 'Admin',
+            userEmail: currentUser.email,
+            activity: 'Created user logs collection',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            ipAddress: '127.0.0.1',
+            device: 'Admin Panel',
+            browser: 'Admin Browser',
+            os: 'Admin OS'
+        })
+        .then(() => {
+            showToast('User logs collection created successfully!', 'success');
+            loadUserLogs();
+        })
+        .catch(error => {
+            showToast('Error creating user logs collection: ' + error.message, 'danger');
+            console.error("Error creating user logs collection:", error);
+        });
+    }
+    
+    // Load deleted reports
+    function loadDeletedReports() {
+        document.getElementById('deletedSpinner').style.display = 'flex';
+        const tbody = document.querySelector('#deletedReportsTable tbody');
+        tbody.innerHTML = '';
+        
+        db.collection('deletedRecords').orderBy('deletedAt', 'desc').get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deleted records found</td></tr>';
+                    document.getElementById('deletedSpinner').style.display = 'none';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const recordData = doc.data();
+                    
+                    let deletedAt = 'Unknown';
+                    if (recordData.deletedAt) {
+                        const date = recordData.deletedAt.toDate();
+                        deletedAt = date.toLocaleString();
+                    }
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${recordData.itemType || 'Unknown'}</td>
+                        <td>${recordData.originalId || 'Unknown'}</td>
+                        <td>${JSON.stringify(recordData.itemData || {}).substring(0, 50)}...</td>
+                        <td>${recordData.deletedByName || 'Unknown'}</td>
+                        <td>${deletedAt}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info view-deleted-btn">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    `;
+                    tr.querySelector('.view-deleted-btn').addEventListener('click', () => showDeletedItemDetails(doc.id, recordData));
+                    tbody.appendChild(tr);
+                });
+                
+                document.getElementById('deletedSpinner').style.display = 'none';
+                showToast('Deleted records loaded successfully!', 'success');
+            })
+            .catch(error => {
+                console.error("Error loading deleted records:", error);
+                document.getElementById('deletedSpinner').style.display = 'none';
+                
+                // If permission denied, try to create the collection
+                if (error.code === 'permission-denied') {
+                    createDeletedRecordsCollection();
+                } else {
+                    showToast('Error loading deleted records: ' + error.message, 'danger');
+                }
+            });
+    }
+    
+    // Create deleted records collection if it doesn't exist
+    function createDeletedRecordsCollection() {
+        if (!currentUser) {
+            showToast('Authentication error. Please reload the page.', 'danger');
+            return;
+        }
+        
+        showToast('Creating deleted records collection...', 'info');
+        db.collection('deletedRecords').doc('initial').set({
+            itemType: 'initialRecord',
+            originalId: 'initial',
+            itemData: { message: 'Initial record to establish collection' },
+            deletedById: currentUser.uid,
+            deletedByName: 'Admin',
+            deletedByEmail: currentUser.email,
+            deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            showToast('Deleted records collection created successfully!', 'success');
+            loadDeletedReports();
+        })
+        .catch(error => {
+            showToast('Error creating deleted records collection: ' + error.message, 'danger');
+            console.error("Error creating deleted records collection:", error);
+        });
+    }
+    
+    // Load user and subject data for attendance form
+    function loadAttendanceFormData() {
+        // Load users for the dropdown
+        const userSelect = document.getElementById('attendanceUserSelect');
+        if (!userSelect) {
+            console.error("Cannot find attendanceUserSelect element");
+            return;
+        }
+        userSelect.innerHTML = '<option value="">Select a user...</option>';
+        
+        db.collection('users').orderBy('name').get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    const userData = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = userData.name || userData.email || 'Unknown User';
+                    userSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading users for attendance:", error);
+                showToast('Error loading users: ' + error.message, 'danger');
+            });
+        
+        // Load subjects for the dropdown
+        const subjectSelect = document.getElementById('attendanceSubjectSelect');
+        if (!subjectSelect) {
+            console.error("Cannot find attendanceSubjectSelect element");
+            return;
+        }
+        subjectSelect.innerHTML = '<option value="">Select a subject...</option>';
+        
+        db.collection('subjects').orderBy('name').get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    const subjectData = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.setAttribute('data-name', subjectData.name);
+                    option.textContent = subjectData.name;
+                    subjectSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading subjects for attendance:", error);
+                showToast('Error loading subjects: ' + error.message, 'danger');
+            });
+        
+        // Set today's date as default
+        const dateInput = document.getElementById('attendanceDate');
+        if (dateInput) {
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            dateInput.value = dateString;
+        }
+    }
+    
+    // Load recent attendance records
+    function loadRecentAttendance() {
+        const spinner = document.getElementById('attendanceSpinner');
+        if (!spinner) {
+            console.error("Cannot find attendanceSpinner element");
+            return;
+        }
+        spinner.style.display = 'flex';
+        
+        const tbody = document.querySelector('#recentAttendanceTable tbody');
+        if (!tbody) {
+            console.error("Cannot find recentAttendanceTable tbody element");
+            if (spinner) spinner.style.display = 'none';
+            return;
+        }
+        tbody.innerHTML = '';
+        
+        db.collection('manualAttendance').orderBy('date', 'desc').limit(50).get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No manual attendance records found</td></tr>';
+                    spinner.style.display = 'none';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const recordData = doc.data();
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${recordData.userName || 'Unknown'}</td>
+                        <td>${recordData.subjectName || 'Unknown'}</td>
+                        <td>${recordData.date || 'Unknown'}</td>
+                        <td><span class="badge ${recordData.status === 'present' ? 'bg-success' : 'bg-danger'}">${recordData.status}</span></td>
+                        <td>${recordData.addedByName || 'Unknown'}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary edit-attendance-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-attendance-btn ms-1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    try {
+                        const editBtn = tr.querySelector('.edit-attendance-btn');
+                        if (editBtn) {
+                            editBtn.addEventListener('click', () => editAttendanceRecord(doc.id, recordData));
+                        }
+                        
+                        const deleteBtn = tr.querySelector('.delete-attendance-btn');
+                        if (deleteBtn) {
+                            deleteBtn.addEventListener('click', () => deleteAttendanceRecord(doc.id, recordData));
+                        }
+                    } catch (error) {
+                        console.error("Error adding event listeners to attendance buttons:", error);
+                    }
+                    
+                    tbody.appendChild(tr);
+                });
+                
+                spinner.style.display = 'none';
+            })
+            .catch(error => {
+                console.error("Error loading attendance records:", error);
+                spinner.style.display = 'none';
+                
+                // If permission denied, try to create the collection
+                if (error.code === 'permission-denied') {
+                    createManualAttendanceCollection();
+                } else {
+                    showToast('Error loading attendance records: ' + error.message, 'danger');
+                }
+            });
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add global error handling
+        window.addEventListener('error', function(event) {
+            console.error('Global error caught:', event.error);
+            showToast('An error occurred. Check console for details.', 'danger');
+        });
+        
+        // Add React error handling
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            showToast('A promise error occurred. Check console for details.', 'danger');
+        });
+        
+        // Check if running on Netlify
+        checkNetlifyEnvironment();
+        
+        // Auth state change listener
+        auth.onAuthStateChanged(function(user) {
+            const adminLoginContainer = document.getElementById('adminLoginContainer');
+            const adminDashboard = document.getElementById('adminDashboard');
+            
+            if (user) {
+                currentUser = user;
+                // Check if user is admin
+                if (checkAdmin(user.email)) {
+                    console.log("Admin authenticated:", user.email);
+                    adminLoginContainer.style.display = 'none';
+                    adminDashboard.style.display = 'block';
+                    
+                    // Load data for the dashboard
+                    loadUserData();
+                    loadSubjects();
+                    loadUserLogs();
+                    loadDeletedReports();
+                    loadAttendanceFormData();
+                    loadRecentAttendance();
+                    
+                    // Add listener for save subject changes button
+                    const saveSubjectBtn = document.getElementById('saveSubjectChanges');
+                    if (saveSubjectBtn) {
+                        saveSubjectBtn.addEventListener('click', updateSubject);
+                    }
+                    
+                    // Add listener for save attendance changes button
+                    const saveAttendanceBtn = document.getElementById('saveAttendanceChanges');
+                    if (saveAttendanceBtn) {
+                        saveAttendanceBtn.addEventListener('click', updateAttendanceRecord);
+                    }
+                    
+                    // Add listener for add attendance button
+                    const addAttendanceBtn = document.getElementById('addAttendanceBtn');
+                    if (addAttendanceBtn) {
+                        addAttendanceBtn.addEventListener('click', addManualAttendance);
+                    }
+                    
+                    // Add listener for Excel export buttons
+                    const exportExcelBtn = document.getElementById('exportExcelBtn');
+                    if (exportExcelBtn) {
+                        exportExcelBtn.addEventListener('click', exportUserData);
+                    }
+                    
+                    const exportLogsBtn = document.getElementById('exportLogsBtn');
+                    if (exportLogsBtn) {
+                        exportLogsBtn.addEventListener('click', exportUserLogs);
+                    }
+                    
+                    const exportDeletedBtn = document.getElementById('exportDeletedBtn');
+                    if (exportDeletedBtn) {
+                        exportDeletedBtn.addEventListener('click', exportDeletedReports);
+                    }
+                    
+                    // Add listeners for refresh buttons
+                    const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+                    if (refreshLogsBtn) {
+                        refreshLogsBtn.addEventListener('click', () => loadUserLogs());
+                    }
+                    
+                    const refreshDeletedBtn = document.getElementById('refreshDeletedBtn');
+                    if (refreshDeletedBtn) {
+                        refreshDeletedBtn.addEventListener('click', loadDeletedReports);
+                    }
+                    
+                    // Add listener for clear logs button
+                    const clearLogsBtn = document.getElementById('clearLogsBtn');
+                    if (clearLogsBtn) {
+                        clearLogsBtn.addEventListener('click', clearUserLogs);
+                    }
+                    
+                    // Add listener for search logs button
+                    const searchLogsBtn = document.getElementById('searchLogsBtn');
+                    if (searchLogsBtn) {
+                        searchLogsBtn.addEventListener('click', () => {
+                            const searchTerm = document.getElementById('logSearchInput').value;
+                            const filterType = document.getElementById('logFilterSelect').value;
+                            loadUserLogs(searchTerm, filterType);
+                        });
+                    }
+                    
+                    // Add listener for log search input (search on Enter key)
+                    const logSearchInput = document.getElementById('logSearchInput');
+                    if (logSearchInput) {
+                        logSearchInput.addEventListener('keyup', (event) => {
+                            if (event.key === 'Enter') {
+                                const searchTerm = logSearchInput.value;
+                                const filterType = document.getElementById('logFilterSelect').value;
+                                loadUserLogs(searchTerm, filterType);
+                            }
+                        });
+                    }
+                    
+                    // Add listener for log filter select (filter changes)
+                    const logFilterSelect = document.getElementById('logFilterSelect');
+                    if (logFilterSelect) {
+                        logFilterSelect.addEventListener('change', () => {
+                            const searchTerm = document.getElementById('logSearchInput').value;
+                            const filterType = logFilterSelect.value;
+                            loadUserLogs(searchTerm, filterType);
+                        });
+                    }
+                } else {
+                    console.log("Non-admin user:", user.email);
+                    adminLoginContainer.style.display = 'block';
+                    adminDashboard.style.display = 'none';
+                    document.getElementById('loginError').style.display = 'block';
+                    document.getElementById('loginError').textContent = 'You do not have admin privileges.';
+                }
+            } else {
+                console.log("No user authenticated");
+                adminLoginContainer.style.display = 'block';
+                adminDashboard.style.display = 'none';
+            }
+        });
+        
+        // Admin login button
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        adminLoginBtn.addEventListener('click', () => {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!email || !password) {
+                document.getElementById('loginError').textContent = 'Please enter email and password';
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+            
+            adminLoginBtn.disabled = true;
+            adminLoginBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    if (!checkAdmin(userCredential.user.email)) {
+                        auth.signOut();
+                        document.getElementById('loginError').textContent = 'Access denied. You need admin privileges.';
+                        document.getElementById('loginError').style.display = 'block';
+                    } else {
+                        document.getElementById('loginError').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loginError').textContent = error.message;
+                    document.getElementById('loginError').style.display = 'block';
+                })
+                .finally(() => {
+                    adminLoginBtn.disabled = false;
+                    adminLoginBtn.textContent = 'Login';
+                });
+        });
+        
+        // Logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                auth.signOut().then(() => {
+                    showToast('Logged out successfully', 'info');
+                });
+            });
+        }
+        
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                loadUserData();
+            });
+        }
+
+        // Add subject button
+        const addSubjectBtn = document.getElementById('addSubjectBtn');
+        if (addSubjectBtn) {
+            addSubjectBtn.addEventListener('click', addSubject);
+        }
+    });
+
+    // Export user data to Excel - simplified version
+    function exportUserData(userId = null) {
+        const exportBtn = document.getElementById('exportExcelBtn');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Exporting...';
+        }
+        
+        try {
+            // Simple approach - get users directly
+            if (userId) {
+                // Single user export
+                db.collection('users').doc(userId).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            showToast('User not found', 'danger');
+                            return;
+                        }
+                        
+                        const userData = [];
+                        try {
+                            const processedData = processUserForExport(doc);
+                            if (processedData) userData.push(processedData);
+                        } catch (err) {
+                            console.error("Error processing user:", err);
+                        }
+                        
+                        if (userData.length === 0) {
+                            showToast('No data to export for this user', 'warning');
+                            return;
+                        }
+                        
+                        const now = new Date();
+                        const dateString = now.toISOString().split('T')[0];
+                        const filename = `user_attendance_${userId}_${dateString}.xlsx`;
+                        
+                        try {
+                            exportToExcel(userData, filename, 'User Attendance');
+                            showToast('Export successful!', 'success');
+                        } catch (err) {
+                            console.error("Excel export error:", err);
+                            showToast('Excel export failed: ' + err.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error getting user:", error);
+                        showToast('Failed to get user data: ' + error.message, 'danger');
+                    })
+                    .finally(() => {
+                        if (exportBtn) {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i> Export to Excel';
+                        }
+                    });
+            } else {
+                // All users export
+                db.collection('users').get()
+                    .then(snapshot => {
+                        if (snapshot.empty) {
+                            showToast('No users found', 'warning');
+                            return;
+                        }
+                        
+                        const userData = [];
+                        snapshot.forEach(doc => {
+                            try {
+                                const processedData = processUserForExport(doc);
+                                if (processedData) userData.push(processedData);
+                            } catch (err) {
+                                console.error(`Error processing user ${doc.id}:`, err);
+                                // Continue with other users
+                            }
+                        });
+                        
+                        if (userData.length === 0) {
+                            showToast('No valid user data to export', 'warning');
+                            return;
+                        }
+                        
+                        const now = new Date();
+                        const dateString = now.toISOString().split('T')[0];
+                        const filename = `users_attendance_${dateString}.xlsx`;
+                        
+                        try {
+                            exportToExcel(userData, filename, 'User Attendance');
+                            showToast('Export successful!', 'success');
+                        } catch (err) {
+                            console.error("Excel export error:", err);
+                            showToast('Excel export failed: ' + err.message, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error getting users:", error);
+                        showToast('Failed to get user data: ' + error.message, 'danger');
+                    })
+                    .finally(() => {
+                        if (exportBtn) {
+                            exportBtn.disabled = false;
+                            exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i> Export to Excel';
+                        }
+                    });
+            }
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            showToast('An unexpected error occurred: ' + error.message, 'danger');
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i> Export to Excel';
+            }
+        }
+    }
+    
+    // Helper function to process user data for export
+    function processUserForExport(doc) {
+        try {
+            const userData = doc.data() || {};
+            
+            // Basic user info
+            const result = {
+                'User ID': doc.id,
+                'Name': userData.name || 'Unknown',
+                'Email': userData.email || 'No email',
+                'Total Present': 0,
+                'Total Absent': 0,
+                'Attendance (%)': 0,
+                'Last Updated': 'Never'
+            };
+            
+            // Process last updated
+            if (userData.lastUpdated) {
+                try {
+                    if (typeof userData.lastUpdated.toDate === 'function') {
+                        result['Last Updated'] = userData.lastUpdated.toDate().toLocaleString();
+                    } else {
+                        result['Last Updated'] = String(userData.lastUpdated);
+                    }
+                } catch (e) {
+                    console.error("Error formatting date:", e);
+                }
+            }
+            
+            // Process attendance data
+            let totalPresent = 0;
+            let totalAbsent = 0;
+            
+            if (userData.attendanceData && userData.attendanceData.subjects) {
+                const subjects = userData.attendanceData.subjects;
+                
+                // Process each subject
+                for (const subjectName in subjects) {
+                    if (!subjects.hasOwnProperty(subjectName)) continue;
+                    
+                    const subject = subjects[subjectName];
+                    if (!subject) continue;
+                    
+                    const present = subject.present || 0;
+                    const absent = subject.absent || 0;
+                    
+                    totalPresent += present;
+                    totalAbsent += absent;
+                    
+                    // Add subject details
+                    result[`${subjectName} (Present)`] = present;
+                    result[`${subjectName} (Absent)`] = absent;
+                    
+                    // Calculate percentage
+                    const total = present + absent;
+                    result[`${subjectName} (%)`] = total > 0 ? Math.round((present / total) * 100) : 0;
+                    
+                    // Add last session info if available
+                    if (subject.sessions && Array.isArray(subject.sessions) && subject.sessions.length > 0) {
+                        try {
+                            const lastSession = subject.sessions[subject.sessions.length - 1];
+                            if (lastSession && lastSession.date) {
+                                result[`${subjectName} (Last Session)`] = new Date(lastSession.date).toLocaleString();
+                            } else {
+                                result[`${subjectName} (Last Session)`] = 'None';
+                            }
+                        } catch (e) {
+                            result[`${subjectName} (Last Session)`] = 'Error';
+                        }
+                    } else {
+                        result[`${subjectName} (Last Session)`] = 'None';
+                    }
+                }
+            }
+            
+            // Update totals
+            result['Total Present'] = totalPresent;
+            result['Total Absent'] = totalAbsent;
+            
+            // Calculate overall percentage
+            const total = totalPresent + totalAbsent;
+            result['Attendance (%)'] = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+            
+            return result;
+        } catch (error) {
+            console.error(`Error processing user ${doc.id}:`, error);
+            return null;
+        }
+    }
+    
+    // Export user logs to Excel
+    function exportUserLogs() {
+        const exportBtn = document.getElementById('exportLogsBtn');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Exporting...';
+        }
+        
+        db.collection('userLogs').orderBy('timestamp', 'desc').get()
+            .then(snapshot => {
+                const logsData = [];
+                
+                snapshot.forEach(doc => {
+                    const logData = doc.data();
+                    
+                    let timestamp = 'Unknown';
+                    if (logData.timestamp) {
+                        const date = logData.timestamp.toDate();
+                        timestamp = date.toLocaleString();
+                    }
+                    
+                    // Format log data for Excel with more details
+                    const logExcelData = {
+                        'Log ID': doc.id,
+                        'User ID': logData.userId || 'Unknown',
+                        'Name': logData.userName || 'Unknown',
+                        'Email': logData.userEmail || 'No email',
+                        'Activity': logData.activity || 'Unknown',
+                        'Timestamp': timestamp,
+                        'Date': logData.timestamp ? logData.timestamp.toDate().toLocaleDateString() : 'Unknown',
+                        'Time': logData.timestamp ? logData.timestamp.toDate().toLocaleTimeString() : 'Unknown',
+                        'IP Address': logData.ipAddress || 'Unknown',
+                        'Page': logData.page || 'Unknown',
+                        'Browser': logData.browser || 'Unknown',
+                        'OS': logData.os || 'Unknown',
+                        'Device': logData.device || 'Unknown'
+                    };
+                    
+                    // Add any additional data if available
+                    if (logData.additionalData) {
+                        if (typeof logData.additionalData === 'object') {
+                            Object.entries(logData.additionalData).forEach(([key, value]) => {
+                                logExcelData[`Additional_${key}`] = typeof value === 'object' ? JSON.stringify(value) : value;
+                            });
+                        } else {
+                            logExcelData['Additional Data'] = String(logData.additionalData);
+                        }
+                    }
+                    
+                    logsData.push(logExcelData);
+                });
+                
+                // Export to Excel
+                const now = new Date();
+                const dateString = now.toISOString().split('T')[0];
+                exportToExcel(logsData, `user_logs_${dateString}.xlsx`, 'User Logs');
+                
+                showToast('User logs exported successfully!', 'success');
+            })
+            .catch(error => {
+                console.error("Error exporting user logs:", error);
+                showToast('Failed to export user logs: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                if (exportBtn) {
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i> Export Logs';
+                }
+            });
+    }
+    
+    // Export deleted reports to Excel
+    function exportDeletedReports() {
+        const exportBtn = document.getElementById('exportDeletedBtn');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Exporting...';
+        }
+        
+        db.collection('deletedRecords').orderBy('deletedAt', 'desc').get()
+            .then(snapshot => {
+                const deletedData = [];
+                
+                if (snapshot.empty) {
+                    throw new Error('No deleted records found');
+                }
+                
+                snapshot.forEach(doc => {
+                    const recordData = doc.data();
+                    
+                    let deletedAt = 'Unknown';
+                    if (recordData.deletedAt) {
+                        try {
+                            const date = recordData.deletedAt.toDate();
+                            deletedAt = date.toLocaleString();
+                        } catch (error) {
+                            console.error("Error formatting deletedAt date:", error);
+                            deletedAt = 'Invalid Date';
+                        }
+                    }
+                    
+                    // Format deleted record data for Excel with more details
+                    const deletedExcelData = {
+                        'Record ID': doc.id,
+                        'Item Type': recordData.itemType || 'Unknown',
+                        'Original ID': recordData.originalId || 'Unknown',
+                        'Deleted By': recordData.deletedByName || 'Unknown',
+                        'Deleted By Email': recordData.deletedByEmail || 'Unknown',
+                        'Deleted At': deletedAt,
+                        'Date': recordData.deletedAt ? recordData.deletedAt.toDate().toLocaleDateString() : 'Unknown',
+                        'Time': recordData.deletedAt ? recordData.deletedAt.toDate().toLocaleTimeString() : 'Unknown'
+                    };
+                    
+                    // Add item data details
+                    if (recordData.itemData) {
+                        if (typeof recordData.itemData === 'object') {
+                            // For each property in itemData, add it as a column
+                            Object.entries(recordData.itemData).forEach(([key, value]) => {
+                                // Skip complex objects and arrays, or stringify them
+                                if (typeof value !== 'object' || value === null) {
+                                    deletedExcelData[`Item_${key}`] = value;
+                                } else {
+                                    deletedExcelData[`Item_${key}`] = JSON.stringify(value);
+                                }
+                            });
+                        } else {
+                            deletedExcelData['Item Data'] = String(recordData.itemData);
+                        }
+                    }
+                    
+                    deletedData.push(deletedExcelData);
+                });
+                
+                if (deletedData.length === 0) {
+                    throw new Error('No deleted records to export');
+                }
+                
+                // Export to Excel
+                const now = new Date();
+                const dateString = now.toISOString().split('T')[0];
+                
+                try {
+                    exportToExcel(deletedData, `deleted_records_${dateString}.xlsx`, 'Deleted Records');
+                    showToast('Deleted records exported successfully!', 'success');
+                } catch (error) {
+                    console.error("Error in Excel export:", error);
+                    showToast('Error exporting to Excel: ' + error.message, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error("Error exporting deleted records:", error);
+                showToast('Failed to export deleted records: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                if (exportBtn) {
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = '<i class="fas fa-file-excel me-1"></i> Export Data';
+                }
+            });
+    }
+    
+    // Load user data from Firestore
+    function loadUserData() {
+        document.getElementById('spinner').style.display = 'flex';
+        document.getElementById('adminTableContainer').style.display = 'none';
+        
+        console.log("Fetching users data from Firestore...");
+        
+        db.collection('users').get()
+            .then(snapshot => {
+                console.log("Users data received, count:", snapshot.size);
+                const users = [];
+                let totalAttendanceSum = 0;
+
+                snapshot.forEach(doc => {
+                    const userData = doc.data();
+                    const attendance = userData.attendanceData?.subjects || {};
+                    
+                    let totalPresent = 0;
+                    let totalAbsent = 0;
+                    
+                    Object.values(attendance).forEach(subject => {
+                        totalPresent += subject.present || 0;
+                        totalAbsent += subject.absent || 0;
+                    });
+                    
+                    const total = totalPresent + totalAbsent;
+                    const percent = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+                    totalAttendanceSum += percent;
+
+                    let lastUpdated = 'Never';
+                    if (userData.lastUpdated) {
+                        try {
+                            const date = userData.lastUpdated.toDate();
+                            lastUpdated = date.toLocaleString();
+                        } catch (e) {
+                            console.warn("Error formatting date for user:", doc.id, e);
+                            lastUpdated = 'Invalid date';
+                        }
+                    }
+                    
+                    users.push({
+                        id: doc.id,
+                        name: userData.name || 'Unknown',
+                        email: userData.email || 'No email',
+                        attendancePercent: percent,
+                        lastUpdated: lastUpdated,
+                        attendanceData: userData.attendanceData
+                    });
+                });
+                
+                // Populate table
+                const tbody = document.querySelector('#adminTable tbody');
+                tbody.innerHTML = '';
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center">No users found</td></tr>`;
+                    console.warn("No users found in the database");
+                    
+                    // Check if we need to create sample data
+                    if (currentUser && confirm("No user data found. Would you like to create sample user data?")) {
+                        createSampleUserData();
+                    }
+                } else {
+                    users.forEach((user, idx) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${idx+1}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                        style="width: ${user.attendancePercent}%;" 
+                                        aria-valuenow="${user.attendancePercent}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        ${user.attendancePercent}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${user.lastUpdated}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info view-details-btn">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        `;
+                        try {
+                            const viewBtn = tr.querySelector('.view-details-btn');
+                            if (viewBtn) {
+                                viewBtn.addEventListener('click', () => showUserDetails(user));
+                            }
+                        } catch (e) {
+                            console.error("Error adding event listener to view button:", e);
+                        }
+                        tbody.appendChild(tr);
+                    });
+                }
+                
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('adminTableContainer').style.display = '';
+                
+                // Update stats
+                document.getElementById('totalUsersStat').textContent = users.length;
+                const avgAttendance = users.length > 0 ? Math.round(totalAttendanceSum / users.length) : 0;
+                document.getElementById('avgAttendanceStat').textContent = `${avgAttendance}%`;
+                
+                try {
+                    updateDashboardChart(users);
+                } catch (e) {
+                    console.error("Error updating dashboard chart:", e);
+                }
+
+                showToast('User data loaded successfully!', 'success');
+            })
+            .catch(error => {
+                console.error("Error loading users:", error);
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('adminTableContainer').style.display = '';
+                document.querySelector('#adminTable tbody').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+                
+                // Check if permission denied - could be Firebase rules issue
+                if (error.code === 'permission-denied') {
+                    showToast('Permission denied. Please check your Firebase rules.', 'danger');
+                    console.error("This is likely a Firebase rules issue. Make sure your rules allow reading/writing data from your Netlify domain.");
+                    
+                    // Check if admin user exists and if we're authenticated
+                    if (currentUser) {
+                        // Try to create the collection with basic permissions
+                        createInitialUserData();
+                    }
+                } else {
+                    showToast('Failed to load user data: ' + error.message, 'danger');
+                }
+            });
+    }
+    
+    // Create initial user data function
+    function createInitialUserData() {
+        console.log("Attempting to create initial user data...");
+        
+        // First check if the current user is admin
+        if (!currentUser || !checkAdmin(currentUser.email)) {
+            console.error("Cannot create initial data: not authenticated as admin");
+            return;
+        }
+        
+        db.collection('users').doc('initial').set({
+            name: 'Initial User',
+            email: 'initial@example.com',
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            attendanceData: {
+                subjects: {}
+            },
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            console.log("Initial user created successfully");
+            showToast('Initial user created. You should now be able to see data.', 'success');
+            loadUserData(); // Try loading data again
+        })
+        .catch(error => {
+            console.error("Error creating initial user:", error);
+            showToast('Error creating initial user: ' + error.message, 'danger');
+        });
+    }
+    
+    // Sample data creation function
+    function createSampleUserData() {
+        console.log("Creating sample user data...");
+        showToast('Creating sample data...', 'info');
+        
+        const sampleUsers = [
+            {
+                name: 'John Doe',
+                email: 'john@example.com',
+                attendanceData: {
+                    subjects: {
+                        'Computer Science': {
+                            present: 15,
+                            absent: 2
+                        },
+                        'Mathematics': {
+                            present: 12,
+                            absent: 5
+                        }
+                    }
+                }
+            },
+            {
+                name: 'Jane Smith',
+                email: 'jane@example.com',
+                attendanceData: {
+                    subjects: {
+                        'Computer Science': {
+                            present: 14,
+                            absent: 3
+                        },
+                        'Mathematics': {
+                            present: 16,
+                            absent: 1
+                        }
+                    }
+                }
+            }
+        ];
+        
+        const batch = db.batch();
+        
+        sampleUsers.forEach((user, index) => {
+            const userRef = db.collection('users').doc(`sample_user_${index}`);
+            batch.set(userRef, {
+                ...user,
+                createdBy: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+        
+        batch.commit()
+            .then(() => {
+                console.log("Sample data created");
+                showToast('Sample data created successfully!', 'success');
+                loadUserData();
+            })
+            .catch(error => {
+                console.error("Error creating sample data:", error);
+                showToast('Error creating sample data: ' + error.message, 'danger');
+            });
+    }
+
+    // Show user details in modal
+    function showUserDetails(user) {
+        document.getElementById('modalUserName').textContent = user.name;
+        document.getElementById('modalUserEmail').textContent = user.email;
+
+        const subjectsTbody = document.getElementById('modalUserSubjects');
+        subjectsTbody.innerHTML = '';
+        const subjects = user.attendanceData?.subjects || {};
+        const labels = [];
+        const presentData = [];
+
+        if(Object.keys(subjects).length > 0) {
+            for(const subjectName in subjects) {
+                const subject = subjects[subjectName];
+                const total = (subject.present || 0) + (subject.absent || 0);
+                subjectsTbody.innerHTML += `
+                    <tr>
+                        <td>${subjectName}</td>
+                        <td>${subject.present || 0}</td>
+                        <td>${subject.absent || 0}</td>
+                        <td>${total}</td>
+                    </tr>
+                `;
+                labels.push(subjectName);
+                presentData.push(subject.present || 0);
+            }
+        } else {
+            subjectsTbody.innerHTML = '<tr><td colspan="4" class="text-center">No attendance data available.</td></tr>';
+        }
+
+        updateUserAttendanceChart(labels, presentData);
+
+        const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+        modal.show();
+    }
+
+    // Load subjects
+    function loadSubjects() {
+        const spinner = document.getElementById('subjectsSpinner');
+        const list = document.getElementById('subjectsList');
+        spinner.style.display = 'flex';
+        list.innerHTML = '';
+
+        console.log("Loading subjects...");
+        
+        // Make sure we have a reference to the authenticated user
+        if (!currentUser) {
+            spinner.style.display = 'none';
+            showToast('Authentication error. Please reload the page.', 'danger');
+            return;
+        }
+
+        // First check if the subjects collection exists, if not create it
+        db.collection('subjects').get()
+            .then(snapshot => {
+                spinner.style.display = 'none';
+                console.log("Subjects data received, count:", snapshot.size);
+                
+                if(snapshot.empty) {
+                    list.innerHTML = '<li class="list-group-item">No subjects found. Add your first subject above.</li>';
+                    document.getElementById('totalSubjectsStat').textContent = 0;
+                    
+                    // Offer to create sample subjects
+                    if (confirm("No subjects found. Would you like to create sample subjects?")) {
+                        createSampleSubjects();
+                    }
+                    return;
+                }
+                
+                document.getElementById('totalSubjectsStat').textContent = snapshot.size;
+                snapshot.forEach(doc => {
+                    const subject = doc.data();
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    
+                    // Create subject information container
+                    const subjectInfo = document.createElement('div');
+                    const subjectName = document.createElement('div');
+                    subjectName.className = 'fw-bold';
+                    subjectName.textContent = subject.name;
+                    subjectInfo.appendChild(subjectName);
+                    
+                    // Display class days if available
+                    if (subject.classDays && subject.classDays.length > 0) {
+                        const classDays = document.createElement('small');
+                        classDays.className = 'text-muted';
+                        classDays.textContent = `Days: ${subject.classDays.join(', ')}`;
+                        subjectInfo.appendChild(classDays);
+                    }
+                    
+                    // Display class order if available
+                    if (subject.classOrder) {
+                        const classOrder = document.createElement('small');
+                        classOrder.className = 'text-muted d-block';
+                        classOrder.textContent = `Order: ${subject.classOrder}`;
+                        subjectInfo.appendChild(classOrder);
+                    }
+                    
+                    li.appendChild(subjectInfo);
+                    
+                    // Add buttons container
+                    const btnGroup = document.createElement('div');
+                    btnGroup.className = 'btn-group';
+                    
+                    // Add edit button
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-sm btn-outline-primary me-2';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.onclick = () => editSubject(doc.id, subject);
+                    btnGroup.appendChild(editBtn);
+                    
+                    // Add delete button
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteBtn.onclick = () => deleteSubject(doc.id, subject.name);
+                    btnGroup.appendChild(deleteBtn);
+
+                    li.appendChild(btnGroup);
+                    list.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading subjects:", error);
+                spinner.style.display = 'none';
+                list.innerHTML = `
+                    <li class="list-group-item text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading subjects: ${error.message}
+                    </li>
+                `;
+                
+                // If permission denied, try to create the collection
+                if (error.code === 'permission-denied') {
+                    showToast('Creating subjects collection...', 'info');
+                    console.log("Permission denied when accessing subjects. Creating initial collection...");
+                    // Create an initial empty document to establish the collection
+                    db.collection('subjects').doc('initial').set({
+                        createdBy: currentUser.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        name: 'Initial Subject',
+                        classDays: ['Monday'],
+                        classOrder: 1
+                    })
+                    .then(() => {
+                        showToast('Subjects collection created. You can now add subjects.', 'success');
+                        console.log("Subjects collection created successfully");
+                        loadSubjects(); // Try loading again
+                    })
+                    .catch(innerError => {
+                        showToast('Error creating subjects: ' + innerError.message, 'danger');
+                        console.error("Error creating subjects collection:", innerError);
+                    });
+                } else {
+                    showToast('Error loading subjects: ' + error.message, 'danger');
+                }
+            });
+    }
+
+    // Create sample subjects function
+    function createSampleSubjects() {
+        console.log("Creating sample subjects...");
+        showToast('Creating sample subjects...', 'info');
+        
+        const sampleSubjects = [
+            {
+                name: 'Computer Science',
+                classDays: ['Monday', 'Wednesday', 'Friday'],
+                classOrder: 1
+            },
+            {
+                name: 'Mathematics',
+                classDays: ['Tuesday', 'Thursday'],
+                classOrder: 2 
+            },
+            {
+                name: 'Physics',
+                classDays: ['Monday', 'Thursday'],
+                classOrder: 3
+            }
+        ];
+        
+        const batch = db.batch();
+        
+        sampleSubjects.forEach((subject, index) => {
+            const subjectRef = db.collection('subjects').doc(`sample_subject_${index}`);
+            batch.set(subjectRef, {
+                ...subject,
+                createdBy: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+        
+        batch.commit()
+            .then(() => {
+                console.log("Sample subjects created");
+                showToast('Sample subjects created successfully!', 'success');
+                loadSubjects();
+            })
+            .catch(error => {
+                console.error("Error creating sample subjects:", error);
+                showToast('Error creating sample subjects: ' + error.message, 'danger');
+            });
+    }
+
+    // Add subject
+    function addSubject() {
+        const subjectNameInput = document.getElementById('subjectName');
+        const name = subjectNameInput.value.trim();
+        if(!name) {
+            showToast('Please enter a subject name.', 'warning');
+            return;
+        }
+
+        // Get all selected days
+        const selectedDays = [];
+        document.querySelectorAll('.class-day-checkbox:checked').forEach(checkbox => {
+            selectedDays.push(checkbox.value);
+        });
+
+        if(selectedDays.length === 0) {
+            showToast('Please select at least one class day.', 'warning');
+            return;
+        }
+        
+        // Get class order
+        const classOrder = parseInt(document.getElementById('classOrder').value) || null;
+
+        const addBtn = document.getElementById('addSubjectBtn');
+        addBtn.disabled = true;
+        addBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+
+        // Check if we have the current user
+        if (!currentUser) {
+            showToast('Authentication error. Please reload the page.', 'danger');
+            addBtn.disabled = false;
+            addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Subject';
+            return;
+        }
+
+        db.collection('subjects').add({ 
+            name: name,
+            classDays: selectedDays,
+            classOrder: classOrder,
+            createdBy: currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            showToast('Subject added successfully!', 'success');
+            subjectNameInput.value = '';
+            document.getElementById('classOrder').value = '';
+            // Clear checkbox selections
+            document.querySelectorAll('.class-day-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            loadSubjects();
+        })
+        .catch(error => {
+            console.error("Error adding subject: ", error);
+            
+            // If permission denied, try to create the collection first
+            if (error.code === 'permission-denied') {
+                db.collection('subjects').doc('initial').set({
+                    createdBy: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    name: 'Initial Subject',
+                    classDays: ['Monday'],
+                    classOrder: 1
+                })
+                .then(() => {
+                    // Now try to add the actual subject
+                    return db.collection('subjects').add({ 
+                        name: name,
+                        classDays: selectedDays,
+                        classOrder: classOrder,
+                        createdBy: currentUser.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    showToast('Subject added successfully!', 'success');
+                    subjectNameInput.value = '';
+                    document.getElementById('classOrder').value = '';
+                    // Clear checkbox selections
+                    document.querySelectorAll('.class-day-checkbox').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    loadSubjects();
+                })
+                .catch(innerError => {
+                    showToast('Error adding subject: ' + innerError.message, 'danger');
+                    console.error("Error in second attempt:", innerError);
+                });
+            } else {
+                showToast('Error adding subject: ' + error.message, 'danger');
+            }
+        })
+        .finally(() => {
+            addBtn.disabled = false;
+            addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Subject';
+        });
+    }
+
+    // Delete subject
+    function deleteSubject(id, name) {
+        if (!confirm(`Are you sure you want to delete the subject "${name}"? This cannot be undone.`)) {
+            return;
+        }
+
+        db.collection('subjects').doc(id).delete()
+            .then(() => {
+                showToast(`Subject "${name}" deleted successfully.`, 'success');
+                loadSubjects();
+            })
+            .catch(error => {
+                showToast('Error deleting subject: ' + error.message, 'danger');
+                console.error("Error deleting subject:", error);
+            });
+    }
+ 
+    // Update Dashboard Chart
+    function updateDashboardChart(users) {
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        const fallback = document.getElementById('attendanceChartFallback');
+        // Filter out users with no attendance data
+        const usersWithData = users.filter(u => u.attendancePercent > 0);
+        if (attendanceChartInstance) attendanceChartInstance.destroy();
+        if (usersWithData.length === 0) {
+            fallback.style.display = '';
+            return;
+        } else {
+            fallback.style.display = 'none';
+        }
+        attendanceChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: usersWithData.map(u => u.name),
+                datasets: [{
+                    label: 'Attendance %',
+                    data: usersWithData.map(u => u.attendancePercent),
+                    backgroundColor: 'rgba(74, 21, 75, 0.8)',
+                    borderRadius: 8,
+                    maxBarThickness: 48
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#7b7b93', font: { weight: 600 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#f3e6f7' },
+                        ticks: { color: '#7b7b93', font: { weight: 600 }, stepSize: 20 }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateUserAttendanceChart(labels, data) {
+        const ctx = document.getElementById('userAttendanceChart').getContext('2d');
+        
+        // If no data, show a message
+        if (labels.length === 0 || data.every(val => val === 0)) {
+            if (userAttendanceChartInstance) {
+                userAttendanceChartInstance.destroy();
+                userAttendanceChartInstance = null;
+            }
+            
+            // Display a message in the chart area
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('No attendance data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            return;
+        }
+        
+        if (userAttendanceChartInstance) {
+            userAttendanceChartInstance.destroy();
+        }
+        
+        userAttendanceChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Present Days',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+    
+    // Edit subject 
+    function editSubject(id, subject) {
+        // Populate the edit form with subject data
+        document.getElementById('editSubjectId').value = id;
+        document.getElementById('editSubjectName').value = subject.name || '';
+        
+        // Set class order if available
+        document.getElementById('editClassOrder').value = subject.classOrder || '';
+        
+        // Reset all checkboxes first
+        document.querySelectorAll('.edit-class-day-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Check the days that this subject is taught
+        if (subject.classDays && Array.isArray(subject.classDays)) {
+            subject.classDays.forEach(day => {
+                const checkbox = document.getElementById('edit' + day);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('editSubjectModal'));
+        modal.show();
+    }
+    
+    // Update subject changes
+    function updateSubject() {
+        const id = document.getElementById('editSubjectId').value;
+        const name = document.getElementById('editSubjectName').value.trim();
+        
+        if (!name) {
+            showToast('Please enter a subject name.', 'warning');
+            return;
+        }
+        
+        // Get all selected days
+        const selectedDays = [];
+        document.querySelectorAll('.edit-class-day-checkbox:checked').forEach(checkbox => {
+            selectedDays.push(checkbox.value);
+        });
+        
+        if (selectedDays.length === 0) {
+            showToast('Please select at least one class day.', 'warning');
+            return;
+        }
+        
+        // Get class order
+        const classOrder = parseInt(document.getElementById('editClassOrder').value) || null;
+        
+        const saveBtn = document.getElementById('saveSubjectChanges');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        
+        db.collection('subjects').doc(id).update({
+            name: name,
+            classDays: selectedDays,
+            classOrder: classOrder,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editSubjectModal')).hide();
+            showToast('Subject updated successfully!', 'success');
+            loadSubjects();
+        })
+        .catch(error => {
+            console.error("Error updating subject:", error);
+            showToast('Error updating subject: ' + error.message, 'danger');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Save Changes';
+        });
+    }
+
+    // Edit attendance record
+    function editAttendanceRecord(recordId, recordData) {
+        // Populate the edit form with record data
+        document.getElementById('editAttendanceId').value = recordId;
+        document.getElementById('editAttendanceUser').value = recordData.userName;
+        document.getElementById('editAttendanceSubject').value = recordData.subjectName;
+        document.getElementById('editAttendanceDate').value = recordData.date;
+        document.getElementById('editAttendanceNotes').value = recordData.notes || '';
+        
+        // Set status radio button
+        if (recordData.status === 'present') {
+            document.getElementById('editStatusPresent').checked = true;
+        } else {
+            document.getElementById('editStatusAbsent').checked = true;
+        }
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('editAttendanceModal'));
+        modal.show();
+    }
+    
+    // Update attendance record
+    function updateAttendanceRecord() {
+        const recordId = document.getElementById('editAttendanceId').value;
+        const date = document.getElementById('editAttendanceDate').value;
+        const status = document.querySelector('input[name="editAttendanceStatus"]:checked').value;
+        const notes = document.getElementById('editAttendanceNotes').value.trim();
+        
+        if (!date) {
+            showToast('Please select a date.', 'warning');
+            return;
+        }
+        
+        const saveBtn = document.getElementById('saveAttendanceChanges');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        
+        // First get the original record to check if status has changed
+        db.collection('manualAttendance').doc(recordId).get()
+            .then(doc => {
+                const originalData = doc.data();
+                const statusChanged = originalData.status !== status;
+                const userId = originalData.userId;
+                const subjectName = originalData.subjectName;
+                
+                // Update the attendance record
+                return db.collection('manualAttendance').doc(recordId).update({
+                    date: date,
+                    status: status,
+                    notes: notes,
+                    updatedById: currentUser.uid,
+                    updatedByName: 'Admin',
+                    updatedByEmail: currentUser.email,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => ({ statusChanged, userId, subjectName, originalStatus: originalData.status }));
+            })
+            .then(({ statusChanged, userId, subjectName, originalStatus }) => {
+                // If status changed, update the user's attendance data
+                if (statusChanged && userId && subjectName) {
+                    return db.collection('users').doc(userId).get().then(doc => {
+                        const userData = doc.data() || {};
+                        const attendanceData = userData.attendanceData || { subjects: {} };
+                        
+                        // Initialize subject data if it doesn't exist
+                        if (!attendanceData.subjects[subjectName]) {
+                            attendanceData.subjects[subjectName] = { present: 0, absent: 0 };
+                        }
+                        
+                        // Decrement the original status count
+                        if (originalStatus === 'present') {
+                            attendanceData.subjects[subjectName].present = Math.max(0, (attendanceData.subjects[subjectName].present || 0) - 1);
+                        } else {
+                            attendanceData.subjects[subjectName].absent = Math.max(0, (attendanceData.subjects[subjectName].absent || 0) - 1);
+                        }
+                        
+                        // Increment the new status count
+                        if (status === 'present') {
+                            attendanceData.subjects[subjectName].present += 1;
+                        } else {
+                            attendanceData.subjects[subjectName].absent += 1;
+                        }
+                        
+                        // Update the user document with the new attendance data
+                        return db.collection('users').doc(userId).update({
+                            attendanceData: attendanceData,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    });
+                }
+                return Promise.resolve();
+            })
+            .then(() => {
+                bootstrap.Modal.getInstance(document.getElementById('editAttendanceModal')).hide();
+                showToast('Attendance record updated successfully!', 'success');
+                loadRecentAttendance();
+                
+                // Also refresh user data to update stats
+                loadUserData();
+            })
+            .catch(error => {
+                console.error("Error updating attendance:", error);
+                showToast('Error updating attendance: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save Changes';
+            });
+    }
+    
+    // Delete attendance record
+    function deleteAttendanceRecord(recordId, recordData) {
+        if (!confirm(`Are you sure you want to delete this attendance record for ${recordData.userName}?`)) {
+            return;
+        }
+        
+        // First, save the record to the deleted records collection
+        db.collection('deletedRecords').add({
+            itemType: 'manualAttendance',
+            originalId: recordId,
+            itemData: recordData,
+            deletedById: currentUser.uid,
+            deletedByName: 'Admin',
+            deletedByEmail: currentUser.email,
+            deletedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            // Now delete the record
+            return db.collection('manualAttendance').doc(recordId).delete();
+        })
+        .then(() => {
+            // Update the user's attendance data
+            return db.collection('users').doc(recordData.userId).get().then(doc => {
+                const userData = doc.data() || {};
+                const attendanceData = userData.attendanceData || { subjects: {} };
+                
+                // Initialize subject data if it doesn't exist
+                if (!attendanceData.subjects[recordData.subjectName]) {
+                    attendanceData.subjects[recordData.subjectName] = { present: 0, absent: 0 };
+                }
+                
+                // Decrement the status count
+                if (recordData.status === 'present') {
+                    attendanceData.subjects[recordData.subjectName].present = Math.max(0, (attendanceData.subjects[recordData.subjectName].present || 0) - 1);
+                } else {
+                    attendanceData.subjects[recordData.subjectName].absent = Math.max(0, (attendanceData.subjects[recordData.subjectName].absent || 0) - 1);
+                }
+                
+                // Update the user document with the new attendance data
+                return db.collection('users').doc(recordData.userId).update({
+                    attendanceData: attendanceData,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+        })
+        .then(() => {
+            showToast('Attendance record deleted successfully!', 'success');
+            loadRecentAttendance();
+            
+            // Also refresh user data to update stats
+            loadUserData();
+        })
+        .catch(error => {
+            console.error("Error deleting attendance:", error);
+            showToast('Error deleting attendance: ' + error.message, 'danger');
+        });
+    }
+    
+    // Toast notifications
+    function showToast(msg, type = 'primary') {
+        const toast = document.getElementById('adminToast');
+        const toastBody = document.getElementById('toastBody');
+        toast.className = `toast align-items-center text-bg-${type} border-0`;
+        toastBody.textContent = msg;
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+    
+    // Check if user is admin
+    function checkAdmin(email) {
+        return adminEmails.includes(email);
+    }
+    
+    // Check if running on Netlify and show Firebase rules information
+    function checkNetlifyEnvironment() {
+        console.log("Checking if running on Netlify...");
+        
+        // Check if we're on Netlify by looking at the hostname
+        const isNetlify = window.location.hostname.includes('netlify.app') || 
+                          window.location.hostname.includes('netlify.com');
+                          
+        // Check for potential CORS issues
+        checkCorsIssues();
+                          
+        if (isNetlify) {
+            console.log("Running on Netlify domain:", window.location.hostname);
+            
+            // Create a dismissible warning at the top of the page
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'alert alert-warning alert-dismissible fade show mx-3 mt-3';
+            warningDiv.innerHTML = `
+                <strong>Netlify Deployment Notice:</strong> 
+                If you're seeing this message and data is not loading, you need to update your Firebase Security Rules.
+                Add the domain <code>${window.location.hostname}</code> to your authorized domains in Firebase console.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-info" id="showFirebaseRulesBtn">Show Firebase Rules Tips</button>
+                </div>
+            `;
+            
+            // Insert the warning at the top of the body
+            document.body.insertBefore(warningDiv, document.body.firstChild);
+            
+            // Add event listener to the button
+            document.getElementById('showFirebaseRulesBtn').addEventListener('click', showFirebaseRulesTips);
+        }
+    }
+    
+    // Show Firebase rules tips
+    function showFirebaseRulesTips() {
+        // Create modal if it doesn't exist
+        if (!document.getElementById('rulesModal')) {
+            const modalDiv = document.createElement('div');
+            modalDiv.className = 'modal fade';
+            modalDiv.id = 'rulesModal';
+            modalDiv.setAttribute('tabindex', '-1');
+            modalDiv.setAttribute('aria-labelledby', 'rulesModalLabel');
+            modalDiv.setAttribute('aria-hidden', 'true');
+            
+            modalDiv.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="rulesModalLabel">Firebase Rules for Netlify Deployment</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>To make your Firebase database work with your Netlify deployment, you need to update your security rules:</p>
+                            
+                            <h6 class="mt-3">Step 1: Add Netlify domain to Firebase Authentication</h6>
+                            <ol>
+                                <li>Go to the <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+                                <li>Select your project</li>
+                                <li>Go to Authentication → Settings → Authorized Domains</li>
+                                <li>Add your Netlify domain: <code>${window.location.hostname}</code></li>
+                            </ol>
+                            
+                            <h6 class="mt-3">Step 2: Update Firestore Rules</h6>
+                            <p>Go to Firestore Database → Rules and update with rules like these:</p>
+                            <pre class="bg-light p-3 border rounded"><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow admin operations on all documents
+    match /{document=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@admin.com', 'youremail@example.com'];
+    }
+    
+    // Allow authenticated users to read their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow authenticated users to read subject data
+    match /subjects/{document=**} {
+      allow read: if request.auth != null;
+    }
+  }
+}</code></pre>
+
+                            <div class="alert alert-info mt-3">
+                                <strong>Tip:</strong> Make sure to replace <code>youremail@example.com</code> with your actual admin email.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+        }
+        
+        // Show the modal
+        const rulesModal = new bootstrap.Modal(document.getElementById('rulesModal'));
+        rulesModal.show();
+    }
+
+    // Check for potential CORS issues
+    function checkCorsIssues() {
+        // Make a simple test request to Firestore
+        console.log("Testing Firestore connectivity...");
+        db.collection('test_connection').doc('test').get()
+            .then(() => {
+                console.log("✅ Firestore connection successful");
+            })
+            .catch(error => {
+                console.error("❌ Firestore connection error:", error);
+                
+                // Check if it's a CORS error
+                if (error.code === 'permission-denied' || error.name === 'FirebaseError') {
+                    console.warn("This may be a Firebase rules or CORS issue");
+                    
+                    // Create a toast notification
+                    showToast('Firebase connectivity issue detected. Check console for details.', 'warning');
+                }
+            });
+    }
+    
+    // Create manual attendance collection if it doesn't exist
+    function createManualAttendanceCollection() {
+        if (!currentUser) {
+            showToast('Authentication error. Please reload the page.', 'danger');
+            return;
+        }
+        
+        showToast('Creating manual attendance collection...', 'info');
+        db.collection('manualAttendance').doc('initial').set({
+            userId: 'initial',
+            userName: 'Initial User',
+            userEmail: 'initial@example.com',
+            subjectId: 'initial',
+            subjectName: 'Initial Subject',
+            date: new Date().toISOString().split('T')[0],
+            status: 'present',
+            notes: 'Initial record to establish collection',
+            addedById: currentUser.uid,
+            addedByName: 'Admin',
+            addedByEmail: currentUser.email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            showToast('Manual attendance collection created successfully!', 'success');
+            loadRecentAttendance();
+        })
+        .catch(error => {
+            showToast('Error creating manual attendance collection: ' + error.message, 'danger');
+            console.error("Error creating manual attendance collection:", error);
+        });
+    }
+
+    // Add manual attendance record
+    function addManualAttendance() {
+        const userId = document.getElementById('attendanceUserSelect').value;
+        const subjectId = document.getElementById('attendanceSubjectSelect').value;
+        const date = document.getElementById('attendanceDate').value;
+        const status = document.querySelector('input[name="attendanceStatus"]:checked')?.value;
+        const notes = document.getElementById('attendanceNotes').value.trim();
+        
+        if (!userId) {
+            showToast('Please select a user.', 'warning');
+            return;
+        }
+        
+        if (!subjectId) {
+            showToast('Please select a subject.', 'warning');
+            return;
+        }
+        
+        if (!date) {
+            showToast('Please select a date.', 'warning');
+            return;
+        }
+        
+        if (!status) {
+            showToast('Please select a status.', 'warning');
+            return;
+        }
+        
+        const addBtn = document.getElementById('addAttendanceBtn');
+        addBtn.disabled = true;
+        addBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+        
+        // Get user and subject details
+        Promise.all([
+            db.collection('users').doc(userId).get(),
+            db.collection('subjects').doc(subjectId).get()
+        ])
+        .then(([userDoc, subjectDoc]) => {
+            if (!userDoc.exists) {
+                throw new Error('User not found');
+            }
+            
+            if (!subjectDoc.exists) {
+                throw new Error('Subject not found');
+            }
+            
+            const userData = userDoc.data();
+            const subjectData = subjectDoc.data();
+            
+            // Create attendance record
+            return db.collection('manualAttendance').add({
+                userId: userId,
+                userName: userData.name || userData.email || 'Unknown',
+                userEmail: userData.email || 'No email',
+                subjectId: subjectId,
+                subjectName: subjectData.name || 'Unknown Subject',
+                date: date,
+                status: status,
+                notes: notes,
+                addedById: currentUser.uid,
+                addedByName: 'Admin',
+                addedByEmail: currentUser.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => ({ userData, subjectData }));
+        })
+        .then(({ userData, subjectData }) => {
+            // Update the user's attendance data
+            const attendanceData = userData.attendanceData || { subjects: {} };
+            const subjectName = subjectData.name;
+            
+            // Initialize subject data if it doesn't exist
+            if (!attendanceData.subjects[subjectName]) {
+                attendanceData.subjects[subjectName] = { present: 0, absent: 0 };
+            }
+            
+            // Update the attendance count
+            if (status === 'present') {
+                attendanceData.subjects[subjectName].present = (attendanceData.subjects[subjectName].present || 0) + 1;
+            } else {
+                attendanceData.subjects[subjectName].absent = (attendanceData.subjects[subjectName].absent || 0) + 1;
+            }
+            
+            // Update the user document with the new attendance data
+            return db.collection('users').doc(userId).update({
+                attendanceData: attendanceData,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            showToast('Attendance record added successfully!', 'success');
+            
+            // Clear form
+            document.getElementById('attendanceUserSelect').value = '';
+            document.getElementById('attendanceSubjectSelect').value = '';
+            document.getElementById('attendanceNotes').value = '';
+            document.getElementById('statusPresent').checked = true;
+            
+            // Reload attendance data
+            loadRecentAttendance();
+            
+            // Also refresh user data to update stats
+            loadUserData();
+        })
+        .catch(error => {
+            console.error("Error adding attendance:", error);
+            showToast('Error adding attendance: ' + error.message, 'danger');
+        })
+        .finally(() => {
+            addBtn.disabled = false;
+            addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Attendance';
+        });
+    }
+
+    // Show activity details in a modal
+    function showActivityDetails(logId, logData) {
+        // Set up the modal content
+        document.getElementById('activityDetailsTitle').textContent = `Activity Details: ${logData.activity || 'Unknown'}`;
+        
+        const detailsContainer = document.getElementById('activityDetailsContent');
+        if (!detailsContainer) return;
+        
+        // Format timestamp
+        let timestamp = 'Unknown';
+        if (logData.timestamp) {
+            const date = logData.timestamp.toDate();
+            timestamp = date.toLocaleString();
+        }
+        
+        // Build HTML content with all available details
+        let htmlContent = `
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th style="width: 30%">User:</th>
+                            <td>${logData.userName || 'Unknown'} (${logData.userEmail || 'No email'})</td>
+                        </tr>
+                        <tr>
+                            <th>Activity:</th>
+                            <td>${logData.activity || 'Unknown'}</td>
+                        </tr>
+                        <tr>
+                            <th>Timestamp:</th>
+                            <td>${timestamp}</td>
+                        </tr>
+                        <tr>
+                            <th>Page:</th>
+                            <td>${logData.page || 'Unknown'}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">System Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th style="width: 30%">IP Address:</th>
+                            <td>${logData.ipAddress || 'Unknown'}</td>
+                        </tr>
+                        <tr>
+                            <th>Browser:</th>
+                            <td>${logData.browser || 'Unknown'}</td>
+                        </tr>
+                        <tr>
+                            <th>Operating System:</th>
+                            <td>${logData.os || 'Unknown'}</td>
+                        </tr>
+                        <tr>
+                            <th>Device:</th>
+                            <td>${logData.device || 'Unknown'}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Add additional data if available
+        if (logData.additionalData) {
+            htmlContent += `
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Additional Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="mb-0" style="max-height: 200px; overflow-y: auto;">${JSON.stringify(logData.additionalData, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+        }
+        
+        detailsContainer.innerHTML = htmlContent;
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('activityDetailsModal'));
+        modal.show();
+    }
+
+    // Show deleted item details in a modal
+    function showDeletedItemDetails(recordId, recordData) {
+        // Set up the modal content
+        document.getElementById('deletedDetailsTitle').textContent = `Deleted ${recordData.itemType || 'Item'} Details`;
+        
+        const detailsContainer = document.getElementById('deletedDetailsContent');
+        if (!detailsContainer) return;
+        
+        // Format timestamp
+        let deletedAt = 'Unknown';
+        if (recordData.deletedAt) {
+            const date = recordData.deletedAt.toDate();
+            deletedAt = date.toLocaleString();
+        }
+        
+        // Build HTML content with all available details
+        let htmlContent = `
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Deletion Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <th style="width: 30%">Item Type:</th>
+                            <td>${recordData.itemType || 'Unknown'}</td>
+                        </tr>
+                        <tr>
+                            <th>Original ID:</th>
+                            <td>${recordData.originalId || 'Unknown'}</td>
+                        </tr>
+                        <tr>
+                            <th>Deleted By:</th>
+                            <td>${recordData.deletedByName || 'Unknown'} (${recordData.deletedByEmail || 'No email'})</td>
+                        </tr>
+                        <tr>
+                            <th>Deleted At:</th>
+                            <td>${deletedAt}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Add item data if available
+        if (recordData.itemData) {
+            htmlContent += `
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Item Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="mb-0" style="max-height: 300px; overflow-y: auto;">${JSON.stringify(recordData.itemData, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            
+            // Add restore button if it's a restorable item type
+            if (['subject', 'manualAttendance'].includes(recordData.itemType)) {
+                htmlContent += `
+                    <div class="mt-3">
+                        <button id="restoreItemBtn" class="btn btn-warning">
+                            <i class="fas fa-undo-alt me-2"></i>Restore Item
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        detailsContainer.innerHTML = htmlContent;
+        
+        // Add event listener to restore button if it exists
+        const restoreBtn = document.getElementById('restoreItemBtn');
+        if (restoreBtn) {
+            restoreBtn.addEventListener('click', () => restoreDeletedItem(recordId, recordData));
+        }
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('deletedDetailsModal'));
+        modal.show();
+    }
+    
+    // Restore a deleted item
+    function restoreDeletedItem(recordId, recordData) {
+        if (!confirm(`Are you sure you want to restore this ${recordData.itemType}?`)) {
+            return;
+        }
+        
+        const restoreBtn = document.getElementById('restoreItemBtn');
+        if (restoreBtn) {
+            restoreBtn.disabled = true;
+            restoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Restoring...';
+        }
+        
+        // Different restore logic based on item type
+        let restorePromise;
+        
+        if (recordData.itemType === 'subject') {
+            // Restore a subject
+            restorePromise = db.collection('subjects').doc(recordData.originalId).set(recordData.itemData);
+        } else if (recordData.itemType === 'manualAttendance') {
+            // Restore attendance record
+            restorePromise = db.collection('manualAttendance').doc(recordData.originalId).set(recordData.itemData);
+        } else {
+            // Generic restore
+            restorePromise = Promise.reject(new Error('Cannot restore this item type'));
+        }
+        
+        restorePromise
+            .then(() => {
+                // Delete the record from deleted records
+                return db.collection('deletedRecords').doc(recordId).delete();
+            })
+            .then(() => {
+                showToast(`${recordData.itemType} restored successfully!`, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('deletedDetailsModal')).hide();
+                
+                // Reload relevant data
+                loadDeletedReports();
+                if (recordData.itemType === 'subject') {
+                    loadSubjects();
+                } else if (recordData.itemType === 'manualAttendance') {
+                    loadRecentAttendance();
+                }
+            })
+            .catch(error => {
+                console.error("Error restoring item:", error);
+                showToast('Error restoring item: ' + error.message, 'danger');
+            })
+            .finally(() => {
+                if (restoreBtn) {
+                    restoreBtn.disabled = false;
+                    restoreBtn.innerHTML = '<i class="fas fa-undo-alt me-2"></i>Restore Item';
+                }
+            });
+    }
+
+    // Show/hide loading overlay
+    function showLoading(show = true) {
+        const overlay = document.getElementById('loadingOverlay');
+        if(show) {
+            overlay.classList.remove('d-none');
+            overlay.classList.add('d-flex');
+        } else {
+            overlay.classList.add('d-none');
+            overlay.classList.remove('d-flex');
+        }
+    }
+    </script>
 </body>
 </html> 

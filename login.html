@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LowryBunks - Login</title>
+    <title>Attendance App - Login</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Embedded CSS (since external CSS may not load on Netlify) -->
     <style>
         :root {
@@ -31,6 +31,13 @@
 
         h1, h2, h3, h4, h5, h6 {
             font-weight: 700;
+        }
+
+        /* lowrybunks styling */
+        .lowry-style {
+            font-family: 'Dancing Script', cursive;
+            font-weight: 600;
+            font-size: 1.1em;
         }
 
         /* Auth Container Styles */
@@ -190,8 +197,8 @@
 
         /* Loader Animation */
         .loader {
-            --background: linear-gradient(135deg, #D9ED92, #76c893);
-            --shadow: rgba(118, 200, 147, 0.28);
+            --background: linear-gradient(135deg, #23C4F8, #275EFE);
+            --shadow: rgba(39, 94, 254, 0.28);
             --text: #6C7486;
             --page: rgba(255, 255, 255, 0.36);
             --page-fold: rgba(255, 255, 255, 0.52);
@@ -463,7 +470,7 @@
         </div>
 
         <div class="auth-container content-container" id="mainContent">
-            <h1 class="text-center mb-4">Welcome to Attendity</h1>
+            <h1 class="text-center mb-4">Welcome to <span class="lowry-style">lowry</span>bunks</h1>
             <p class="text-center mb-5">Access your attendance portal</p>
             
             <div class="tab-container mb-4">
@@ -560,6 +567,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
+    <script src="theme.js"></script>
     <script src="auth.js"></script>
     
     <!-- Lazy loading and loader script -->

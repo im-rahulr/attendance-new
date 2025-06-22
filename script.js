@@ -3,35 +3,6 @@ let currentUser = null;
 let firebaseAuth;
 let firebaseDb;
 let firebaseRtdb; // Realtime Database reference for presence
-let unreadNotifications = 0; // To track unread notifications count
-
-// Apply dark theme if set and add page-specific event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if dark mode is stored in localStorage
-    const isDarkMode = localStorage.getItem('theme') === 'dark';
-    
-    // Apply the current theme (default to dark)
-    if (isDarkMode === null) {
-        // Set dark mode as default
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-    } else if (isDarkMode) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-        document.documentElement.setAttribute('data-theme', 'light');
-    }
-
-    // Event listener for admin page notification button
-    const sendBtn = document.getElementById('send-notification-btn');
-    if (sendBtn) {
-        sendBtn.addEventListener('click', sendAdminNotification);
-    }
-
-    // Load admin notifications on the notifications page
-    if (window.location.pathname.includes('notifications.html')) {
-        loadAdminNotifications();
-    }
-});
 
 // Initialize attendance data if not exists
 function initializeData() {
@@ -64,9 +35,6 @@ function initializeData() {
             if (firebaseRtdb) {
                 setupPresence(user.uid);
             }
-            
-            // Check for unread notifications
-            checkNotifications(user.uid);
             
             try {
                 // Get current day of the week
@@ -259,12 +227,7 @@ function initializeData() {
                 }
             }
         } else {
-            // No user is signed in.
-            console.log("No user signed in.");
-            // Redirect to login page if not already there
-            if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('index.html')) {
-                window.location.href = 'login.html';
-            }
+            console.log("No authenticated user in initializeData");
             hideLoading();
         }
     });
@@ -438,174 +401,54 @@ async function getAttendanceData(forceServer = false) {
 // Function to save data to Firestore
 async function saveAttendanceData(data) {
     console.log("Saving attendance data:", data);
-
-    // Ensure we have a valid data object
-    if (!data || !data.todaysClasses) {
-        console.error("Invalid or incomplete attendance data provided for saving.");
-        showToast("Error: Incomplete data, cannot save.");
-        return null; // Return null to indicate failure
-    }
     
-    // Log the status of each class being saved for debugging
-    data.todaysClasses.forEach(cls => {
-        console.log(`[Save] Subject: ${cls.subject}, Status: ${cls.status}`);
-    });
-
-    // Always save to localStorage as a reliable backup
+    // Always save to localStorage as backup with timestamp
     localStorage.setItem('attendanceData', JSON.stringify(data));
     localStorage.setItem('attendanceDataTimestamp', Date.now().toString());
     
     if (!currentUser || !firebaseDb) {
-        console.log("Not connected to Firebase. Data saved to local storage only.");
-        return data; // Still return data for optimistic UI update
+        console.log("No current user or Firestore, saved to localStorage only");
+        return data;
     }
     
     try {
         const userRef = firebaseDb.collection('users').doc(currentUser.uid);
-        
-        // Use .set() with merge:true for a more robust save operation than .update()
-        // This will create the document if it doesn't exist and merge the new data.
-        await userRef.set({
+        await userRef.update({
             attendanceData: data,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        });
         
-        console.log("Data saved to Firestore successfully.");
-        
-        // CRITICAL: Fetch the data directly from the server after saving to ensure it's fresh
-        const updatedDoc = await userRef.get({ source: 'server' });
-        if (updatedDoc.exists) {
-            const freshData = updatedDoc.data().attendanceData;
-            console.log("Verification successful. Returning fresh data from server.");
-            // Update localStorage with the server-verified data
-            localStorage.setItem('attendanceData', JSON.stringify(freshData));
-            return freshData;
-        } else {
-             console.error("Verification failed: Document does not exist after saving.");
-             return data; // Fallback to locally updated data
-        }
-
-    } catch (error) {
-        console.error('Error saving attendance data to Firestore:', error);
-        showToast("Error saving data to the cloud. Saved locally.");
-        // Data is already in localStorage, so return it for UI consistency
+        console.log("Data saved to Firestore successfully");
+        // Return the updated data for immediate UI updates
         return data;
+    } catch (error) {
+        console.error('Error saving attendance data:', error);
+        // Data is already saved to localStorage as backup
+        return data; // Still return data for UI updates
     }
 }
 
-// Function to create flying emoji animation
-function createFlyingEmojis(sourceElement, status) {
-    // Create container if it doesn't exist
-    let container = document.querySelector('.emoji-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'emoji-container';
-        document.body.appendChild(container);
-    }
-    
-    // Get button position
-    const rect = sourceElement.getBoundingClientRect();
-    const startX = rect.left + rect.width / 2;
-    const startY = rect.top + rect.height / 2;
-    
-    // Set container position
-    container.style.left = startX + 'px';
-    container.style.top = startY + 'px';
-    
-    // Select emojis based on status
-    const emojis = status === 'present' ? 
-        ['✅', '👍', '🎯', '🌟', '😊'] : 
-        ['❌', '😢', '💤', '🤒', '🏠'];
-    
-    // Create multiple emojis
-    for (let i = 0; i < 7; i++) {
-        const emoji = document.createElement('div');
-        emoji.className = 'emoji-animation';
-        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        
-        // Random direction and rotation
-        const xOffset = (Math.random() * 200 - 100) + 'px';
-        const yOffset = (Math.random() * -200 - 50) + 'px'; // Mostly upward
-        const rotation = (Math.random() * 360 - 180) + 'deg';
-        
-        // Set CSS variables for animation
-        emoji.style.setProperty('--x-offset', xOffset);
-        emoji.style.setProperty('--y-offset', yOffset);
-        emoji.style.setProperty('--rotation', rotation);
-        
-        // Add to container
-        container.appendChild(emoji);
-        
-        // Remove after animation completes
-        setTimeout(() => {
-            emoji.remove();
-        }, 1500);
-    }
-    
-    // Show container
-    container.style.opacity = '1';
-    
-    // Hide container after all animations complete
-    setTimeout(() => {
-        container.style.opacity = '0';
-    }, 1500);
-}
-
+// Function to update attendance status
 async function updateAttendance(classId, newStatus) {
     console.log(`Updating attendance for class ${classId} to ${newStatus}`);
     try {
-        // Ensure we have a valid class ID and status
-        if (!classId || !newStatus) {
-            console.error("Invalid class ID or status");
-            return;
-        }
-        
-        // Add animation to the clicked button
+        // Add animation to the button
         const buttons = document.querySelectorAll(`button[data-class-id="${classId}"]`);
         const clickedButton = buttons[newStatus === 'present' ? 0 : 1];
-        const otherButton = buttons[newStatus === 'present' ? 1 : 0];
         
-        // Add interactive animation effect
+        // Add ripple effect
         if (clickedButton) {
-            // Animate the clicked button
             clickedButton.classList.add('animate');
-            
-            // Update button states immediately for better UX
-            clickedButton.classList.add('active');
-            if (otherButton) otherButton.classList.remove('active');
-            
-            // Update the status text immediately
-            const classCard = clickedButton.closest('.class-card');
-            if (!classCard) {
-                console.error("Could not find parent class card");
-                return;
-            }
-            
-            const statusSpan = classCard.querySelector('.status span');
-            if (statusSpan) {
-                statusSpan.textContent = newStatus === 'present' ? 'Present' : 'Absent';
-                statusSpan.className = newStatus === 'present' ? 'status-present' : 'status-absent';
-            }
-            
-            // Update card class for styling. This now also controls the blur/fade effect.
-            classCard.classList.remove('marked-present', 'marked-absent');
-            const markedClass = newStatus === 'present' ? 'marked-present' : 'marked-absent';
-            classCard.classList.add(markedClass);
-            
-            // Create flying emoji animation
-            createFlyingEmojis(clickedButton, newStatus);
-            
-            // Remove animation class after effect completes
             setTimeout(() => {
                 clickedButton.classList.remove('animate');
             }, 700);
         }
         
-        // Instead of showing loading overlay, show a toast message
-        showToast(`Marking ${newStatus}...`);
+        showLoading(`Marking ${newStatus}...`);
         
         const data = await getAttendanceData(true); // Force server fetch
         if (!data) {
+            hideLoading();
             showToast("Could not find attendance data");
             return;
         }
@@ -656,6 +499,7 @@ async function updateAttendance(classId, newStatus) {
             });
             
             const updatedData = await saveAttendanceData(data);
+            hideLoading();
             showToast(`Marked ${newStatus} for ${subject}`);
             
             // Update UI immediately with the updated data
@@ -669,10 +513,12 @@ async function updateAttendance(classId, newStatus) {
                 }
             }
         } else {
+            hideLoading();
             showToast("Class not found");
         }
     } catch (error) {
         console.error('Error updating attendance:', error);
+        hideLoading();
         showToast('Failed to update attendance. Please try again.');
     }
 }
@@ -818,18 +664,21 @@ async function updateUI(forceServer = false, providedData = null) {
                     sortedClasses.forEach(classData => {
                         const classCard = document.createElement('div');
                         classCard.className = 'class-card';
-                        
+
                         let statusText = 'Mark your attendance';
                         let statusClass = 'status-unmarked';
-                        
+
+                        // Add visual indicator for marked attendance
                         if (classData.status === 'present') {
                             statusText = 'Present';
                             statusClass = 'status-present';
+                            classCard.classList.add('attendance-marked');
                         } else if (classData.status === 'absent') {
                             statusText = 'Absent';
                             statusClass = 'status-absent';
+                            classCard.classList.add('attendance-marked');
                         }
-                        
+
                         classCard.innerHTML = `
                             <div class="class-info">
                                 <div class="subject">${classData.subject}</div>
@@ -841,7 +690,7 @@ async function updateUI(forceServer = false, providedData = null) {
                                 <button class="btn-absent ${classData.status === 'absent' ? 'active' : ''}" data-class-id="${classData.id}">Absent</button>
                             </div>
                         `;
-                        
+
                         // Add event listeners to the buttons
                         classesSection.appendChild(classCard);
                     });
@@ -1351,7 +1200,6 @@ function deleteSubject(subjectId) {
         .then((doc) => {
             if (doc.exists) {
                 const subjectData = doc.data();
-                const subjectName = subjectData.name;
                 
                 // Store in deletedRecords collection
                 return db.collection('deletedRecords').add({
@@ -1360,49 +1208,8 @@ function deleteSubject(subjectId) {
                     deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     deletedBy: firebase.auth().currentUser ? firebase.auth().currentUser.email : 'unknown'
                 }).then(() => {
-                    // First, find all users that have this subject in their attendance data
-                    return db.collection('users').get();
-                }).then((usersSnapshot) => {
-                    // Batch operation for users cleanup
-                    const batch = db.batch();
-                    
-                    usersSnapshot.forEach((userDoc) => {
-                        const userData = userDoc.data();
-                        
-                        // Check if user has attendance data and this specific subject
-                        if (userData.attendanceData && 
-                            userData.attendanceData.subjects && 
-                            userData.attendanceData.subjects[subjectName]) {
-                            
-                            // Create a new subjects object without the deleted subject
-                            const updatedSubjects = {};
-                            Object.keys(userData.attendanceData.subjects).forEach(subject => {
-                                if (subject !== subjectName) {
-                                    updatedSubjects[subject] = userData.attendanceData.subjects[subject];
-                                }
-                            });
-                            
-                            // Update user's today's classes if needed
-                            let updatedTodaysClasses = userData.attendanceData.todaysClasses || [];
-                            if (Array.isArray(updatedTodaysClasses)) {
-                                updatedTodaysClasses = updatedTodaysClasses.filter(cls => cls.subject !== subjectName);
-                            }
-                            
-                            // Update user document
-                            const userRef = db.collection('users').doc(userDoc.id);
-                            batch.update(userRef, {
-                                'attendanceData.subjects': updatedSubjects,
-                                'attendanceData.todaysClasses': updatedTodaysClasses,
-                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
-                    });
-                    
-                    // Commit batch update
-                    return batch.commit().then(() => {
-                        // Now delete the subject
-                        return db.collection('subjects').doc(subjectId).delete();
-                    });
+                    // Now delete the subject
+                    return db.collection('subjects').doc(subjectId).delete();
                 });
             } else {
                 return db.collection('subjects').doc(subjectId).delete();
@@ -1575,155 +1382,7 @@ function getOSInfo(userAgent) {
 }
 
 function getDeviceInfo(userAgent) {
-    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) return 'iOS Device';
-    if (/Android/.test(userAgent)) return 'Android Device';
-    if (/Windows Phone|IEMobile/.test(userAgent)) return 'Windows Phone';
-    return 'Desktop/Other';
-}
-
-// Function to check for unread notifications and update badge
-function checkNotifications(userId) {
-    if (!firebaseDb || !userId) return;
-    
-    console.log("Checking for unread notifications");
-    
-    // First try to get from localStorage for immediate display
-    const storedCount = localStorage.getItem('unreadNotificationCount');
-    if (storedCount) {
-        unreadNotifications = parseInt(storedCount);
-        updateNotificationBadge();
-    }
-    
-    // Then fetch from Firestore for accurate count
-    firebaseDb.collection('users').doc(userId).collection('notifications')
-        .where('read', '==', false)
-        .get()
-        .then((snapshot) => {
-            unreadNotifications = snapshot.size;
-            localStorage.setItem('unreadNotificationCount', unreadNotifications);
-            updateNotificationBadge();
-        })
-        .catch((error) => {
-            console.error("Error checking notifications:", error);
-        });
-}
-
-// Function to update the notification badge on all pages
-function updateNotificationBadge() {
-    const notificationBadges = document.querySelectorAll('#notificationBadge');
-    
-    notificationBadges.forEach(badge => {
-        if (unreadNotifications > 0) {
-            badge.textContent = unreadNotifications > 99 ? '99+' : unreadNotifications;
-            badge.style.display = 'inline-block';
-        } else {
-            badge.style.display = 'none';
-        }
-    });
-}
-
-// Function to add a new notification (can be called from anywhere in the app)
-async function addNotification(userId, title, message, data = {}) {
-    const notificationsRef = firebaseDb.collection('users').doc(userId).collection('notifications');
-    try {
-        await notificationsRef.add({
-            title,
-            message,
-            data,
-            read: false,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("Notification added successfully");
-    } catch (error) {
-        console.error("Error adding notification:", error);
-    }
-}
-
-// ============== ADMIN NOTIFICATION SYSTEM ==============
-
-// Function to send a notification from the admin panel
-async function sendAdminNotification() {
-    const messageInput = document.getElementById('notification-message');
-    const message = messageInput.value.trim();
-    const statusDiv = document.getElementById('notification-status');
-
-    if (!message) {
-        statusDiv.innerHTML = `<div class="alert alert-danger">Please enter a message.</div>`;
-        return;
-    }
-
-    if (!currentUser) {
-        statusDiv.innerHTML = `<div class="alert alert-danger">You must be logged in to send notifications.</div>`;
-        return;
-    }
-
-    try {
-        // Get admin user's name
-        const userDoc = await firebaseDb.collection('users').doc(currentUser.uid).get();
-        const adminName = userDoc.exists ? userDoc.data().name : 'Admin';
-
-        await firebaseDb.collection('admin_notifications').add({
-            message: message,
-            postedBy: adminName,
-            adminId: currentUser.uid,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            verified: true // Mark notifications from admins as verified
-        });
-
-        messageInput.value = '';
-        statusDiv.innerHTML = `<div class="alert alert-success">Notification sent successfully!</div>`;
-        setTimeout(() => {
-            statusDiv.innerHTML = '';
-        }, 3000);
-
-    } catch (error) {
-        console.error("Error sending notification:", error);
-        statusDiv.innerHTML = `<div class="alert alert-danger">Failed to send notification. Please try again.</div>`;
-    }
-}
-
-// Function to load admin notifications on the notifications page
-async function loadAdminNotifications() {
-    const container = document.getElementById('admin-notifications-list');
-    if (!container) return;
-
-    try {
-        const snapshot = await firebaseDb.collection('admin_notifications').orderBy('createdAt', 'desc').get();
-        
-        if (snapshot.empty) {
-            container.innerHTML = '<p class="text-muted text-center">No announcements from admin yet.</p>';
-            return;
-        }
-
-        let notificationsHTML = '';
-        snapshot.forEach(doc => {
-            const notification = doc.data();
-            const date = notification.createdAt ? notification.createdAt.toDate().toLocaleString() : 'Just now';
-            
-            notificationsHTML += `
-                <div class="notification-item">
-                    <div class="notification-header">
-                        <h5 class="notification-title">
-                            Posted by: ${notification.postedBy}
-                            ${notification.verified ? '<i class="fas fa-check-circle text-primary ms-2" title="Verified Admin"></i>' : ''}
-                        </h5>
-                        <span class="notification-time">${date}</span>
-                    </div>
-                    <div class="notification-content">
-                        ${notification.message}
-                    </div>
-                </div>
-            `;
-        });
-
-        container.innerHTML = notificationsHTML;
-
-    } catch (error) {
-        console.error("Error loading admin notifications:", error);
-        container.innerHTML = '<p class="text-danger text-center">Could not load notifications.</p>';
-    }
-}
-
-// Initialize Firebase
-// Call initializeData on page load
-window.onload = initializeData; 
+    if (userAgent.includes("Mobile")) return "Mobile";
+    if (userAgent.includes("Tablet")) return "Tablet";
+    return "Desktop";
+} 

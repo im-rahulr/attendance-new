@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LowryBunks - Dashboard</title>
+    <title>Dashboard - lowrybunks</title>
     <!-- Add Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
         .user-profile {
@@ -40,14 +43,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--bg-color);
-            opacity: 0.8;
+            background-color: rgba(12, 10, 10, 0.8);
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            transition: background-color 0.3s ease;
         }
         .status-unmarked {
             color: #ff9800;
@@ -64,11 +65,11 @@
 
         /* Loader Animation */
         .loader {
-            --background: linear-gradient(135deg, #D9ED92, #76c893);
-            --shadow: rgba(118, 200, 147, 0.28);
-            --text: var(--text-secondary);
+            --background: linear-gradient(135deg, #17c33c, #1f872f);
+            --shadow: rgba(31, 80, 14, 0.28);
+            --text: #6C7486;
             --page: rgba(255, 255, 255, 0.36);
-            --page-fold: rgba(255, 255, 255, 0.52);
+            --page-fold: rgba(239, 228, 228, 0.52);
             --duration: 3s;
             width: 200px;
             height: 140px;
@@ -213,13 +214,13 @@
         }
         
         .btn-present.active {
-            background-color: #4caf50;
-            color: white;
+            background-color: #55f05a89;
+            color: rgb(14, 1, 1);
         }
         
         .btn-absent.active {
-            background-color: #f44336;
-            color: white;
+            background-color: #f6655b;
+            color: rgb(23, 6, 6);
         }
 
         .btn-present:after, .btn-absent:after {
@@ -250,25 +251,14 @@
                 opacity: 0;
             }
         }
-        
-        /* Notification Badge */
-        .notification-badge {
-            display: inline-block;
-            background-color: #ff4757;
-            color: white;
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
     </style>
 </head>
-<body>
+<body data-theme="dark">
     <div class="app-container">
         <!-- App Header -->
         <div class="app-header">
-            <div class="app-title"><span class="cursive">Lowry</span>Bunks</div>
-            <div class="profile-icon" id="profileIcon">JS</div>
+            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+            <!-- <div class="profile-icon" id="profileIcon">JS</div> -->
         </div>
         
         <!-- Greeting Section -->
@@ -279,20 +269,19 @@
         
         <!-- Today's Classes Section -->
         <div class="classes-section">
-            <h2 class="section-title">Today's Classes</h2>
+            <h2 class="section-title">Today's classes</h2>
             <!-- Class cards will be dynamically generated here by script.js -->
         </div>
         
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <a href="dashboard" class="nav-item active">Dashboard</a>
-            <a href="report" class="nav-item">Report</a>
-            <a href="notifications" class="nav-item">Notifications<span id="notificationBadge" class="notification-badge" style="display: none;">0</span></a>
-            <a href="profile" class="nav-item">Profile</a>
+            <a href="dashboard.html" class="nav-item active">Dashboard</a>
+            <a href="report.html" class="nav-item">Report</a>
+            <a href="profile.html" class="nav-item">Profile</a>
         </div>
     </div>
     
-    <!-- Book Loading Animation -->
+    <!-- New Loading Spinner -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader">
             <div>
@@ -334,8 +323,8 @@
     </div>
     
     <!-- Bootstrap Toast -->
-    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1030">
-        <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
+        <div id="liveToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body" id="toastMessage">
                     Attendance updated successfully!
@@ -345,16 +334,241 @@
         </div>
     </div>
     
-    <!-- Firebase and other libraries -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom Scripts -->
+    
+    <!-- Custom JS -->
+    <script src="theme.js"></script>
     <script src="auth.js"></script>
     <script src="script.js"></script>
-    <script src="dashboard-ui.js"></script>
+    
+    <script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+        authDomain: "attendance-a9a19.firebaseapp.com",
+        projectId: "attendance-a9a19",
+        storageBucket: "attendance-a9a19.appspot.com",
+        messagingSenderId: "1055787262218",
+        appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+        measurementId: "G-3XPB4VLFYH"
+    };
+    
+    // Initialize Firebase if not already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    // Override the showLoading and hideLoading functions from script.js
+    window.showLoading = function(message = "Loading...") {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
+        
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+    };
+    
+    window.hideLoading = function() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    };
+    
+    // Override the showToast function from script.js
+    window.showToast = function(message, duration = 3000) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        if (toastMessage) {
+            toastMessage.textContent = message;
+        }
+        
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, { delay: duration });
+            toast.show();
+        }
+    };
+    
+    // Update dashboard UI with data
+    function updateDashboardUI(data) {
+        console.log("Updating dashboard UI with data:", data);
+        
+        if (!data || !data.todaysClasses) {
+            console.log("No attendance data available");
+            return;
+        }
+        
+        const classesSection = document.querySelector('.classes-section');
+        if (!classesSection) return;
+        
+        // Keep the title
+        const title = classesSection.querySelector('.section-title');
+        classesSection.innerHTML = '';
+        if (title) {
+            classesSection.appendChild(title);
+        }
+        
+        // Check if there are any classes
+        if (data.todaysClasses.length === 0) {
+            const noClassesMsg = document.createElement('div');
+            noClassesMsg.className = 'alert alert-info';
+            noClassesMsg.textContent = 'No subjects have been added by the administrator yet.';
+            classesSection.appendChild(noClassesMsg);
+            return;
+        }
+        
+        // Add class cards dynamically based on subjects
+        data.todaysClasses.forEach(classData => {
+            const classCard = document.createElement('div');
+            classCard.className = 'class-card';
 
+            let statusText = 'Mark your Dancing Script', attendance';
+            let statusClass = 'status-unmarked';
+
+            // Add visual indicator for marked attendance
+            if (classData.status === 'present') {
+                statusText = 'Present';
+                statusClass = 'status-present';
+                classCard.classList.add('attendance-marked');
+            } else if (classData.status === 'absent') {
+                statusText = 'Absent';
+                statusClass = 'status-absent';
+                classCard.classList.add('attendance-marked');
+            }
+
+            classCard.innerHTML = `
+                <div class="class-info">
+                    <div class="subject">${classData.subject}</div>
+                    <div class="status">Status: <span class="${statusClass}">${statusText}</span></div>
+                </div>
+                <div class="class-label">${classData.label}</div>
+                <div class="attendance-buttons">
+                    <button class="btn-present ${classData.status === 'present' ? 'active' : ''}" data-class-id="${classData.id}">Present</button>
+                    <button class="btn-absent ${classData.status === 'absent' ? 'active' : ''}" data-class-id="${classData.id}">Absent</button>
+                </div>
+            `;
+
+            classesSection.appendChild(classCard);
+        });
+        
+        // Re-attach event listeners to buttons
+        document.querySelectorAll('.btn-present, .btn-absent').forEach(button => {
+            button.addEventListener('click', function() {
+                const classId = parseInt(this.getAttribute('data-class-id'));
+                const status = this.classList.contains('btn-present') ? 'present' : 'absent';
+                if (typeof updateAttendance === 'function') {
+                    updateAttendance(classId, status);
+                }
+            });
+        });
+    }
+    
+    // Setup real-time listener for user's attendance data
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Content Loaded - Setting up listeners");
+        
+        // Initialize data to ensure the dashboard is populated
+        if (typeof initializeData === 'function') {
+            initializeData();
+        }
+        
+        // Check if Firebase Auth and Firestore are initialized
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+            // Set up real-time listener for the current user
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    console.log("User authenticated:", user.uid);
+                    
+                    // Set user's initials in profile icon
+                    const profileIcon = document.getElementById('profileIcon');
+                    if (profileIcon) {
+                        const name = user.displayName || user.email || 'User';
+                        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+                        profileIcon.textContent = initials;
+                    }
+                    
+                    // Set user's name in greeting
+                    const userName = document.getElementById('userName');
+                    if (userName) {
+                        userName.textContent = user.displayName || 'User';
+                    }
+                    
+                    // Set up real-time listener for user's attendance data
+                    const userRef = firebase.firestore().collection('users').doc(user.uid);
+                    
+                    // Listen for real-time updates
+                    userRef.onSnapshot(
+                        function(doc) {
+                            console.log("Received Firestore update");
+                            if (doc.exists && doc.data().attendanceData) {
+                                const data = doc.data().attendanceData;
+                                console.log("Attendance data received:", data);
+                                updateDashboardUI(data);
+                            } else {
+                                console.log("No attendance data in document");
+                            }
+                        },
+                        function(error) {
+                            console.error("Real-time listener error:", error);
+                        }
+                    );
+                } else {
+                    console.log("No authenticated user");
+                }
+            });
+        } else {
+            console.error("Firebase not properly initialized");
+        }
+    });
+    
+    // Force refresh on page load
+    window.addEventListener('load', function() {
+        console.log("Window loaded - Forcing data refresh");
+        
+        // Show loading indicator
+        showLoading("Loading your attendance data...");
+        
+        // Check if user is authenticated
+        if (firebase.auth().currentUser) {
+            console.log("User is already authenticated on page load");
+            const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+            
+            // Force a refresh from server
+            userRef.get({ source: "server" })
+                .then(function(doc) {
+                    if (doc.exists && doc.data().attendanceData) {
+                        console.log("Got fresh data from server");
+                        updateDashboardUI(doc.data().attendanceData);
+                    } else {
+                        console.log("No data found on server");
+                    }
+                    hideLoading();
+                })
+                .catch(function(error) {
+                    console.error("Error fetching data on page load:", error);
+                    hideLoading();
+                    showToast("Error loading attendance data. Please try again.");
+                });
+        } else {
+            console.log("Waiting for auth state to resolve");
+            // The onAuthStateChanged handler will take care of it
+            setTimeout(function() {
+                hideLoading();
+            }, 2000);
+        }
+    });
+    </script>
 </body>
 </html> 
