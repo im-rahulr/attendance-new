@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Fix Test</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background-color: #e8f5e9; color: #2e7d32; }
+        .error { background-color: #ffebee; color: #c62828; }
+        .warning { background-color: #fff3e0; color: #ef6c00; }
+        .info { background-color: #e3f2fd; color: #1565c0; }
+        button {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #1565c0; }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .subject-demo {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .no-data { opacity: 0.6; border-style: dashed; }
+        .has-data { border-left: 4px solid #1976d2; }
+    </style>
+</head>
+<body>
+    <h1>Attendance Tracking Fix Test</h1>
+    <p>This page tests the fixes for the attendance tracking bug where subjects were being marked as having attendance recorded even when no actual attendance data existed.</p>
+
+    <div class="test-card">
+        <h2>Test 1: hasAttendanceData Function</h2>
+        <p>Testing the function that determines if a subject has actual attendance data.</p>
+        <button onclick="testHasAttendanceData()">Run Test</button>
+        <div id="test1Results"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 2: getAttendanceStatus Function</h2>
+        <p>Testing the function that returns attendance status information.</p>
+        <button onclick="testGetAttendanceStatus()">Run Test</button>
+        <div id="test2Results"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 3: Subject Display Logic</h2>
+        <p>Testing how subjects with and without attendance data are displayed.</p>
+        <button onclick="testSubjectDisplay()">Run Test</button>
+        <div id="test3Results"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 4: Data Validation</h2>
+        <p>Testing the attendance data validation functions.</p>
+        <button onclick="testDataValidation()">Run Test</button>
+        <div id="test4Results"></div>
+    </div>
+
+    <script>
+        // Include the functions from script.js for testing
+        function hasAttendanceData(subjectData) {
+            if (!subjectData) return false;
+            
+            const present = subjectData.present || 0;
+            const absent = subjectData.absent || 0;
+            const sessions = subjectData.sessions || [];
+            
+            return sessions.length > 0 || present > 0 || absent > 0;
+        }
+
+        function getAttendanceStatus(subjectData) {
+            if (!hasAttendanceData(subjectData)) {
+                return {
+                    status: 'no-data',
+                    message: 'No attendance recorded yet',
+                    hasData: false
+                };
+            }
+            
+            const present = subjectData.present || 0;
+            const absent = subjectData.absent || 0;
+            const total = present + absent;
+            const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+            
+            return {
+                status: percentage >= 75 ? 'good' : 'warning',
+                message: `${percentage}% attendance (${present}/${total})`,
+                hasData: true,
+                percentage: percentage,
+                present: present,
+                absent: absent,
+                total: total
+            };
+        }
+
+        function validateAttendanceData(data) {
+            if (!data || !data.subjects || !data.todaysClasses) {
+                return { valid: false, error: "Invalid attendance data structure" };
+            }
+            
+            for (const classData of data.todaysClasses) {
+                if (!data.subjects[classData.subject]) {
+                    return { valid: false, error: `Subject ${classData.subject} not found in subjects data` };
+                }
+            }
+            
+            return { valid: true };
+        }
+
+        function testHasAttendanceData() {
+            const results = document.getElementById('test1Results');
+            results.innerHTML = '';
+
+            const testCases = [
+                { name: 'Empty subject data', data: {}, expected: false },
+                { name: 'Null subject data', data: null, expected: false },
+                { name: 'Zero counts, no sessions', data: { present: 0, absent: 0, sessions: [] }, expected: false },
+                { name: 'Has present count', data: { present: 5, absent: 0, sessions: [] }, expected: true },
+                { name: 'Has absent count', data: { present: 0, absent: 3, sessions: [] }, expected: true },
+                { name: 'Has sessions', data: { present: 0, absent: 0, sessions: [{ date: '2023-01-01', status: 'present' }] }, expected: true },
+                { name: 'Mixed data', data: { present: 2, absent: 1, sessions: [{ date: '2023-01-01', status: 'present' }] }, expected: true }
+            ];
+
+            let passed = 0;
+            testCases.forEach(testCase => {
+                const result = hasAttendanceData(testCase.data);
+                const success = result === testCase.expected;
+                if (success) passed++;
+
+                const div = document.createElement('div');
+                div.className = `test-result ${success ? 'success' : 'error'}`;
+                div.innerHTML = `
+                    <strong>${testCase.name}:</strong> 
+                    Expected: ${testCase.expected}, Got: ${result} 
+                    ${success ? '✓' : '✗'}
+                `;
+                results.appendChild(div);
+            });
+
+            const summary = document.createElement('div');
+            summary.className = `test-result ${passed === testCases.length ? 'success' : 'warning'}`;
+            summary.innerHTML = `<strong>Summary:</strong> ${passed}/${testCases.length} tests passed`;
+            results.appendChild(summary);
+        }
+
+        function testGetAttendanceStatus() {
+            const results = document.getElementById('test2Results');
+            results.innerHTML = '';
+
+            const testCases = [
+                { 
+                    name: 'No attendance data', 
+                    data: { present: 0, absent: 0, sessions: [] },
+                    expectedStatus: 'no-data',
+                    expectedHasData: false
+                },
+                { 
+                    name: 'Good attendance (80%)', 
+                    data: { present: 8, absent: 2, sessions: [] },
+                    expectedStatus: 'good',
+                    expectedHasData: true
+                },
+                { 
+                    name: 'Poor attendance (60%)', 
+                    data: { present: 6, absent: 4, sessions: [] },
+                    expectedStatus: 'warning',
+                    expectedHasData: true
+                }
+            ];
+
+            let passed = 0;
+            testCases.forEach(testCase => {
+                const result = getAttendanceStatus(testCase.data);
+                const statusMatch = result.status === testCase.expectedStatus;
+                const hasDataMatch = result.hasData === testCase.expectedHasData;
+                const success = statusMatch && hasDataMatch;
+                if (success) passed++;
+
+                const div = document.createElement('div');
+                div.className = `test-result ${success ? 'success' : 'error'}`;
+                div.innerHTML = `
+                    <strong>${testCase.name}:</strong><br>
+                    Status - Expected: ${testCase.expectedStatus}, Got: ${result.status} ${statusMatch ? '✓' : '✗'}<br>
+                    HasData - Expected: ${testCase.expectedHasData}, Got: ${result.hasData} ${hasDataMatch ? '✓' : '✗'}<br>
+                    Message: ${result.message}
+                `;
+                results.appendChild(div);
+            });
+
+            const summary = document.createElement('div');
+            summary.className = `test-result ${passed === testCases.length ? 'success' : 'warning'}`;
+            summary.innerHTML = `<strong>Summary:</strong> ${passed}/${testCases.length} tests passed`;
+            results.appendChild(summary);
+        }
+
+        function testSubjectDisplay() {
+            const results = document.getElementById('test3Results');
+            results.innerHTML = '';
+
+            // Simulate subject data
+            const subjects = {
+                'Mathematics': { present: 8, absent: 2, sessions: [{ date: '2023-01-01', status: 'present' }] },
+                'Physics': { present: 0, absent: 0, sessions: [] },
+                'Chemistry': { present: 5, absent: 8, sessions: [{ date: '2023-01-01', status: 'absent' }] },
+                'English': { present: 0, absent: 0, sessions: [] }
+            };
+
+            Object.keys(subjects).forEach(subjectName => {
+                const subjectData = subjects[subjectName];
+                const status = getAttendanceStatus(subjectData);
+                
+                const div = document.createElement('div');
+                div.className = `subject-demo ${status.hasData ? 'has-data' : 'no-data'}`;
+                div.innerHTML = `
+                    <h4>${subjectName}</h4>
+                    <p><strong>Status:</strong> ${status.status}</p>
+                    <p><strong>Message:</strong> ${status.message}</p>
+                    <p><strong>Has Data:</strong> ${status.hasData ? 'Yes' : 'No'}</p>
+                    ${status.hasData ? `<p><strong>Percentage:</strong> ${status.percentage}%</p>` : ''}
+                `;
+                results.appendChild(div);
+            });
+
+            const info = document.createElement('div');
+            info.className = 'test-result info';
+            info.innerHTML = `
+                <strong>Visual Test:</strong> Subjects with data should have solid borders and full information. 
+                Subjects without data should have dashed borders and show "No attendance recorded yet".
+            `;
+            results.appendChild(info);
+        }
+
+        function testDataValidation() {
+            const results = document.getElementById('test4Results');
+            results.innerHTML = '';
+
+            const testCases = [
+                {
+                    name: 'Valid data structure',
+                    data: {
+                        subjects: { 'Math': { present: 5, absent: 2 } },
+                        todaysClasses: [{ id: 1, subject: 'Math', status: 'present' }]
+                    },
+                    expectedValid: true
+                },
+                {
+                    name: 'Missing subjects',
+                    data: { todaysClasses: [{ id: 1, subject: 'Math', status: 'present' }] },
+                    expectedValid: false
+                },
+                {
+                    name: 'Missing todaysClasses',
+                    data: { subjects: { 'Math': { present: 5, absent: 2 } } },
+                    expectedValid: false
+                },
+                {
+                    name: 'Subject mismatch',
+                    data: {
+                        subjects: { 'Physics': { present: 5, absent: 2 } },
+                        todaysClasses: [{ id: 1, subject: 'Math', status: 'present' }]
+                    },
+                    expectedValid: false
+                }
+            ];
+
+            let passed = 0;
+            testCases.forEach(testCase => {
+                const result = validateAttendanceData(testCase.data);
+                const success = result.valid === testCase.expectedValid;
+                if (success) passed++;
+
+                const div = document.createElement('div');
+                div.className = `test-result ${success ? 'success' : 'error'}`;
+                div.innerHTML = `
+                    <strong>${testCase.name}:</strong> 
+                    Expected: ${testCase.expectedValid}, Got: ${result.valid} 
+                    ${success ? '✓' : '✗'}
+                    ${result.error ? `<br><em>Error: ${result.error}</em>` : ''}
+                `;
+                results.appendChild(div);
+            });
+
+            const summary = document.createElement('div');
+            summary.className = `test-result ${passed === testCases.length ? 'success' : 'warning'}`;
+            summary.innerHTML = `<strong>Summary:</strong> ${passed}/${testCases.length} tests passed`;
+            results.appendChild(summary);
+        }
+    </script>
+</body>
+</html>

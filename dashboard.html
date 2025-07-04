@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Custom CSS -->
      <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -251,6 +253,48 @@
                 opacity: 0;
             }
         }
+
+        /* Notification badge styles */
+        .notification-badge {
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 70px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item span:not(.notification-badge) {
+            font-size: 11px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -275,9 +319,23 @@
         
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <a href="dashboard.html" class="nav-item active">Dashboard</a>
-            <a href="report.html" class="nav-item">Report</a>
-            <a href="profile.html" class="nav-item">Profile</a>
+            <a href="dashboard.html" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-badge" id="navNotificationBadge" style="display: none;">0</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
         </div>
     </div>
     
@@ -346,6 +404,7 @@
     <!-- Custom JS -->
     <script src="theme.js"></script>
     <script src="auth.js"></script>
+    <script src="notifications.js"></script>
     <script src="script.js"></script>
     
     <script>
@@ -547,10 +606,55 @@
             
             // Force a refresh from server
             userRef.get({ source: "server" })
-                .then(function(doc) {
+                .then(async function(doc) {
                     if (doc.exists && doc.data().attendanceData) {
                         console.log("Got fresh data from server");
-                        updateDashboardUI(doc.data().attendanceData);
+                        let attendanceData = doc.data().attendanceData;
+
+                        // Check if daily reset is needed
+                        if (typeof needsDailyReset === 'function' && needsDailyReset(attendanceData)) {
+                            console.log("Dashboard: Daily reset needed");
+
+                            // Get today's classes from admin subjects
+                            try {
+                                const subjectsSnapshot = await firebase.firestore().collection('subjects').get();
+                                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                                const today = new Date();
+                                const currentDay = daysOfWeek[today.getDay()];
+
+                                const todaysClasses = [];
+                                subjectsSnapshot.forEach(subjectDoc => {
+                                    const subjectData = subjectDoc.data();
+                                    const classDays = subjectData.classDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+                                    if (classDays.includes(currentDay)) {
+                                        todaysClasses.push({
+                                            id: todaysClasses.length + 1,
+                                            subject: subjectData.name,
+                                            status: 'unmarked',
+                                            classOrder: subjectData.classOrder || 999
+                                        });
+                                    }
+                                });
+
+                                // Apply daily reset
+                                if (typeof resetDailyAttendance === 'function') {
+                                    attendanceData = resetDailyAttendance(attendanceData, todaysClasses);
+
+                                    // Update the data in Firestore
+                                    await userRef.update({
+                                        attendanceData: attendanceData,
+                                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+
+                                    console.log("Dashboard: Daily reset completed and saved");
+                                }
+                            } catch (error) {
+                                console.error("Dashboard: Error during daily reset:", error);
+                            }
+                        }
+
+                        updateDashboardUI(attendanceData);
                     } else {
                         console.log("No data found on server");
                     }

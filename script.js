@@ -113,11 +113,26 @@ function initializeData() {
                         
                         // Keep existing attendance data for all subjects
                         const updatedSubjects = { ...existingSubjects };
-                        
-                        // Add any new subjects for today
+
+                        // Add any new subjects for today with proper validation
                         Object.keys(adminSubjects).forEach(subject => {
                             if (!updatedSubjects[subject]) {
-                                updatedSubjects[subject] = adminSubjects[subject];
+                                updatedSubjects[subject] = {
+                                    present: 0,
+                                    absent: 0,
+                                    sessions: []
+                                };
+                            } else {
+                                // Ensure existing subjects have proper structure
+                                if (!updatedSubjects[subject].sessions) {
+                                    updatedSubjects[subject].sessions = [];
+                                }
+                                if (typeof updatedSubjects[subject].present !== 'number') {
+                                    updatedSubjects[subject].present = 0;
+                                }
+                                if (typeof updatedSubjects[subject].absent !== 'number') {
+                                    updatedSubjects[subject].absent = 0;
+                                }
                             }
                         });
                         
@@ -127,7 +142,7 @@ function initializeData() {
                             const existingClass = existingData.todaysClasses.find(
                                 cls => cls.subject === newClass.subject
                             );
-                            
+
                             if (existingClass) {
                                 // Preserve the status from existing class
                                 return {
@@ -137,12 +152,21 @@ function initializeData() {
                             }
                             return newClass;
                         });
-                        
-                        // Update with new data structure
-                        const updatedData = {
+
+                        // Create initial data structure
+                        let updatedData = {
                             subjects: updatedSubjects,
-                            todaysClasses: updatedClasses
+                            todaysClasses: updatedClasses,
+                            lastResetDate: existingData.lastResetDate // Preserve existing reset date
                         };
+
+                        // Check if daily reset is needed
+                        if (needsDailyReset(updatedData)) {
+                            console.log("Daily reset needed - resetting today's class statuses");
+                            updatedData = resetDailyAttendance(updatedData, todaysClasses);
+                        } else {
+                            console.log("No daily reset needed - using existing class statuses");
+                        }
                         
                         console.log("Updating user data with:", updatedData);
                         await userRef.update({
@@ -167,7 +191,8 @@ function initializeData() {
                         console.log("User exists but no attendance data");
                         const initialData = {
                             subjects: adminSubjects,
-                            todaysClasses: todaysClasses
+                            todaysClasses: todaysClasses,
+                            lastResetDate: new Date().toISOString()
                         };
                         
                         await userRef.update({
@@ -193,7 +218,8 @@ function initializeData() {
                     console.log("Creating new user document");
                     const initialData = {
                         subjects: adminSubjects,
-                        todaysClasses: todaysClasses
+                        todaysClasses: todaysClasses,
+                        lastResetDate: new Date().toISOString()
                     };
                     
                     await userRef.set({
@@ -247,6 +273,41 @@ function getOrdinalSuffix(num) {
         return "rd";
     }
     return "th";
+}
+
+// Function to check if attendance data needs daily reset
+function needsDailyReset(attendanceData) {
+    if (!attendanceData || !attendanceData.lastResetDate) {
+        return true; // No reset date means it needs reset
+    }
+
+    const today = new Date();
+    const todayDateString = today.toDateString(); // e.g., "Mon Dec 25 2023"
+    const lastResetDate = new Date(attendanceData.lastResetDate);
+    const lastResetDateString = lastResetDate.toDateString();
+
+    return todayDateString !== lastResetDateString;
+}
+
+// Function to reset daily attendance data while preserving historical data
+function resetDailyAttendance(attendanceData, todaysClasses) {
+    console.log("Resetting daily attendance data for new day");
+
+    // Reset all today's classes to 'unmarked' status
+    const resetClasses = todaysClasses.map(classItem => ({
+        ...classItem,
+        status: 'unmarked'
+    }));
+
+    // Update attendance data with reset classes and new reset date
+    const updatedData = {
+        ...attendanceData,
+        todaysClasses: resetClasses,
+        lastResetDate: new Date().toISOString()
+    };
+
+    console.log("Daily attendance reset completed");
+    return updatedData;
 }
 
 // Setup presence system to track online/offline status
@@ -428,6 +489,22 @@ async function saveAttendanceData(data) {
     }
 }
 
+// Function to validate attendance data integrity
+function validateAttendanceData(data) {
+    if (!data || !data.subjects || !data.todaysClasses) {
+        return { valid: false, error: "Invalid attendance data structure" };
+    }
+
+    // Check if all subjects in todaysClasses exist in subjects
+    for (const classData of data.todaysClasses) {
+        if (!data.subjects[classData.subject]) {
+            return { valid: false, error: `Subject ${classData.subject} not found in subjects data` };
+        }
+    }
+
+    return { valid: true };
+}
+
 // Function to update attendance status
 async function updateAttendance(classId, newStatus) {
     console.log(`Updating attendance for class ${classId} to ${newStatus}`);
@@ -435,7 +512,7 @@ async function updateAttendance(classId, newStatus) {
         // Add animation to the button
         const buttons = document.querySelectorAll(`button[data-class-id="${classId}"]`);
         const clickedButton = buttons[newStatus === 'present' ? 0 : 1];
-        
+
         // Add ripple effect
         if (clickedButton) {
             clickedButton.classList.add('animate');
@@ -443,65 +520,95 @@ async function updateAttendance(classId, newStatus) {
                 clickedButton.classList.remove('animate');
             }, 700);
         }
-        
+
         showLoading(`Marking ${newStatus}...`);
-        
+
         const data = await getAttendanceData(true); // Force server fetch
         if (!data) {
             hideLoading();
             showToast("Could not find attendance data");
             return;
         }
-        
+
+        // Validate data integrity
+        const validation = validateAttendanceData(data);
+        if (!validation.valid) {
+            hideLoading();
+            showToast(`Data validation error: ${validation.error}`);
+            console.error("Attendance data validation failed:", validation.error);
+            return;
+        }
+
         const classToUpdate = data.todaysClasses.find(cls => cls.id === classId);
-        
+
         if (classToUpdate) {
             const oldStatus = classToUpdate.status;
             const subject = classToUpdate.subject;
-            
+
             // Don't do anything if status is the same
             if (oldStatus === newStatus) {
                 hideLoading();
                 showToast(`Already marked ${newStatus}`);
                 return;
             }
-            
+
             console.log(`Changing status from ${oldStatus} to ${newStatus} for ${subject}`);
-            
+
+            // Ensure subject data structure exists and is valid
+            if (!data.subjects[subject]) {
+                data.subjects[subject] = { present: 0, absent: 0, sessions: [] };
+            }
+            if (!data.subjects[subject].sessions) {
+                data.subjects[subject].sessions = [];
+            }
+
             // Update class status
             classToUpdate.status = newStatus;
-            
-            // Update subject count
+
+            // Update subject count with validation
             if (oldStatus === 'present') {
-                data.subjects[subject].present--;
+                data.subjects[subject].present = Math.max(0, (data.subjects[subject].present || 0) - 1);
             } else if (oldStatus === 'absent') {
-                data.subjects[subject].absent--;
+                data.subjects[subject].absent = Math.max(0, (data.subjects[subject].absent || 0) - 1);
             }
-            
+
             if (newStatus === 'present') {
-                data.subjects[subject].present++;
+                data.subjects[subject].present = (data.subjects[subject].present || 0) + 1;
             } else if (newStatus === 'absent') {
-                data.subjects[subject].absent++;
+                data.subjects[subject].absent = (data.subjects[subject].absent || 0) + 1;
             }
-            
-            // Add session record with timestamp
-            data.subjects[subject].sessions.push({
+
+            // Add session record with timestamp and validation
+            const sessionRecord = {
                 date: new Date().toISOString(),
-                status: newStatus
-            });
-            
+                status: newStatus,
+                classId: classId
+            };
+
+            data.subjects[subject].sessions.push(sessionRecord);
+
             // Log the activity
             logUserActivity('Marked attendance', {
                 subject: subject,
                 status: newStatus,
                 classId: classId,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                previousStatus: oldStatus
             });
-            
+
+            // Validate data again before saving
+            const finalValidation = validateAttendanceData(data);
+            if (!finalValidation.valid) {
+                hideLoading();
+                showToast(`Data validation error before save: ${finalValidation.error}`);
+                console.error("Final attendance data validation failed:", finalValidation.error);
+                return;
+            }
+
             const updatedData = await saveAttendanceData(data);
             hideLoading();
             showToast(`Marked ${newStatus} for ${subject}`);
-            
+
             // Update UI immediately with the updated data
             if (updatedData) {
                 // If we're using the dashboard.html updateDashboardUI function
@@ -528,6 +635,44 @@ function calculatePercentage(present, absent) {
     const total = present + absent;
     if (total === 0) return 0;
     return Math.round((present / total) * 100);
+}
+
+// Function to check if a subject has any actual attendance data
+function hasAttendanceData(subjectData) {
+    if (!subjectData) return false;
+
+    const present = subjectData.present || 0;
+    const absent = subjectData.absent || 0;
+    const sessions = subjectData.sessions || [];
+
+    // Check if there are any recorded sessions or non-zero counts
+    return sessions.length > 0 || present > 0 || absent > 0;
+}
+
+// Function to get attendance status for a subject
+function getAttendanceStatus(subjectData) {
+    if (!hasAttendanceData(subjectData)) {
+        return {
+            status: 'no-data',
+            message: 'No attendance recorded yet',
+            hasData: false
+        };
+    }
+
+    const present = subjectData.present || 0;
+    const absent = subjectData.absent || 0;
+    const total = present + absent;
+    const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+
+    return {
+        status: percentage >= 75 ? 'good' : 'warning',
+        message: `${percentage}% attendance (${present}/${total})`,
+        hasData: true,
+        percentage: percentage,
+        present: present,
+        absent: absent,
+        total: total
+    };
 }
 
 // Function to calculate total attendance percentage
@@ -667,6 +812,11 @@ async function updateUI(forceServer = false, providedData = null) {
 
                         let statusText = 'Mark your attendance';
                         let statusClass = 'status-unmarked';
+                        let attendanceInfo = '';
+
+                        // Check if this subject has any attendance data
+                        const subjectData = data.subjects[classData.subject];
+                        const attendanceStatus = getAttendanceStatus(subjectData);
 
                         // Add visual indicator for marked attendance
                         if (classData.status === 'present') {
@@ -679,10 +829,26 @@ async function updateUI(forceServer = false, providedData = null) {
                             classCard.classList.add('attendance-marked');
                         }
 
+                        // Add attendance summary info if there's data
+                        if (attendanceStatus.hasData) {
+                            attendanceInfo = `
+                                <div class="attendance-summary ${attendanceStatus.status}">
+                                    <small>${attendanceStatus.message}</small>
+                                </div>
+                            `;
+                        } else {
+                            attendanceInfo = `
+                                <div class="attendance-summary no-data">
+                                    <small>No attendance history yet</small>
+                                </div>
+                            `;
+                        }
+
                         classCard.innerHTML = `
                             <div class="class-info">
                                 <div class="subject">${classData.subject}</div>
                                 <div class="status">Status: <span class="${statusClass}">${statusText}</span></div>
+                                ${attendanceInfo}
                             </div>
                             <div class="class-label">${classData.label}</div>
                             <div class="attendance-buttons">

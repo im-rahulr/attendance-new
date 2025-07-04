@@ -266,6 +266,119 @@ body {
     opacity: 0.7;
 }
 
+/* Attendance summary styles */
+.attendance-summary {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.attendance-summary.good {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.attendance-summary.warning {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.attendance-summary.no-data {
+    background-color: rgba(158, 158, 158, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+/* Dark theme adjustments for attendance summary */
+[data-theme="dark"] .attendance-summary.good {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #81C784;
+}
+
+[data-theme="dark"] .attendance-summary.warning {
+    background-color: rgba(255, 152, 0, 0.15);
+    color: #FFB74D;
+}
+
+[data-theme="dark"] .attendance-summary.no-data {
+    background-color: rgba(158, 158, 158, 0.15);
+    color: var(--text-muted);
+}
+
+/* Report page styles for subjects with/without data */
+.subjects-section-header {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent-primary);
+    padding-bottom: 8px;
+}
+
+.subjects-section-header.no-data-header {
+    color: var(--text-secondary);
+    border-bottom-color: var(--text-muted);
+    opacity: 0.8;
+}
+
+.subject-card.no-data {
+    background-color: var(--bg-tertiary);
+    border: 1px dashed var(--border-color);
+    opacity: 0.8;
+}
+
+.subject-card.has-data {
+    border-left: 4px solid var(--accent-primary);
+}
+
+.no-data-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+}
+
+.no-data-message p {
+    margin-bottom: 8px;
+}
+
+.no-subjects-message {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--bg-tertiary);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+}
+
+.legend-item.no-data {
+    justify-content: center;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Dark theme adjustments for report styles */
+[data-theme="dark"] .subjects-section-header {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .subjects-section-header.no-data-header {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .subject-card.no-data {
+    background-color: rgba(40, 42, 45, 0.3);
+    border-color: rgba(158, 158, 158, 0.3);
+}
+
+[data-theme="dark"] .no-subjects-message {
+    background-color: rgba(40, 42, 45, 0.3);
+    border-color: rgba(158, 158, 158, 0.3);
+}
+
 .attendance-buttons {
     display: flex;
     gap: 8px;
@@ -324,16 +437,44 @@ body {
     text-decoration: none;
     color: var(--text-secondary);
     font-weight: 500;
-    padding: 10px 18px;
+    padding: 8px 12px;
     border-radius: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 80px;
+    gap: 4px;
+    min-width: 70px;
     text-align: center;
-    font-size: 14px;
+    font-size: 12px;
+}
+
+.nav-item i {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.nav-item span:not(.notification-badge) {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* Notification badge styles */
+.notification-badge {
+    background-color: var(--error-color);
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    min-width: 16px;
+    text-align: center;
+    z-index: 10;
 }
 
 .nav-item:hover {

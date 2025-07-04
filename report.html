@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
     <style>
@@ -181,6 +183,48 @@
             80%, 100% { opacity: 0; }
             95%, 100% { transform: rotateY(0deg); }
         }
+
+        /* Notification badge styles */
+        .notification-badge {
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 70px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item span:not(.notification-badge) {
+            font-size: 11px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -188,7 +232,7 @@
         <!-- App Header -->
         <div class="app-header">
             <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
-            <div class="profile-icon" id="profileIcon">JS</div>
+            <!-- <div class="profile-icon" id="profileIcon">JS</div> -->
         </div>
         
         <!-- Report Content -->
@@ -226,9 +270,23 @@
         
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <a href="dashboard.html" class="nav-item">Dashboard</a>
-            <a href="report.html" class="nav-item active">Report</a>
-            <a href="profile.html" class="nav-item">Profile</a>
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-badge" id="navNotificationBadge" style="display: none;">0</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
         </div>
     </div>
     
@@ -305,6 +363,7 @@
     <!-- Custom JS -->
     <script src="theme.js"></script>
     <script src="auth.js"></script>
+    <script src="notifications.js"></script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -484,17 +543,38 @@
                 subjectsLegend.innerHTML = '';
             }
             
-            // Calculate total attendance statistics
+            // Function to check if a subject has any actual attendance data
+            function hasAttendanceData(subjectData) {
+                if (!subjectData) return false;
+
+                const present = subjectData.present || 0;
+                const absent = subjectData.absent || 0;
+                const sessions = subjectData.sessions || [];
+
+                // Check if there are any recorded sessions or non-zero counts
+                return sessions.length > 0 || present > 0 || absent > 0;
+            }
+
+            // Calculate total attendance statistics (only for subjects with actual data)
             function calculateTotalStats(subjects) {
                 let totalPresent = 0;
                 let totalAbsent = 0;
+                let subjectsWithData = 0;
 
                 for (const subject in subjects) {
-                    totalPresent += subjects[subject].present || 0;
-                    totalAbsent += subjects[subject].absent || 0;
+                    if (hasAttendanceData(subjects[subject])) {
+                        totalPresent += subjects[subject].present || 0;
+                        totalAbsent += subjects[subject].absent || 0;
+                        subjectsWithData++;
+                    }
                 }
 
-                return { present: totalPresent, absent: totalAbsent };
+                return {
+                    present: totalPresent,
+                    absent: totalAbsent,
+                    subjectsWithData: subjectsWithData,
+                    totalSubjects: Object.keys(subjects).length
+                };
             }
 
             // Create total attendance pie chart
@@ -508,6 +588,22 @@
 
                 const total = stats.present + stats.absent;
                 const percentage = total > 0 ? Math.round((stats.present / total) * 100) : 0;
+
+                // If no attendance data, show a message instead of chart
+                if (total === 0) {
+                    // Clear the canvas and show a message
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    ctx.fillStyle = '#666';
+                    ctx.font = '16px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No attendance data yet', ctx.canvas.width / 2, ctx.canvas.height / 2 - 10);
+                    ctx.font = '12px Inter, sans-serif';
+                    ctx.fillText('Start marking attendance to see your statistics', ctx.canvas.width / 2, ctx.canvas.height / 2 + 10);
+
+                    // Update legend to show no data
+                    updateTotalLegend(stats, 0, true);
+                    return;
+                }
 
                 totalChart = new Chart(ctx, {
                     type: 'doughnut',
@@ -569,20 +665,32 @@
                 // Update legend
                 updateTotalLegend(stats, percentage);
             }
-            
+
             // Update total attendance legend
-            function updateTotalLegend(stats, percentage) {
+            function updateTotalLegend(stats, percentage, noData = false) {
                 const legendEl = document.getElementById('totalLegend');
-                legendEl.innerHTML = `
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #4CAF50;"></div>
-                        <span>Present: ${stats.present} (${percentage}%)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #F44336;"></div>
-                        <span>Absent: ${stats.absent} (${100 - percentage}%)</span>
-                    </div>
-                `;
+
+                if (noData) {
+                    legendEl.innerHTML = `
+                        <div class="legend-item no-data">
+                            <span>No attendance records found</span>
+                        </div>
+                        <div class="legend-item no-data">
+                            <span><small>Start marking attendance to see your progress</small></span>
+                        </div>
+                    `;
+                } else {
+                    legendEl.innerHTML = `
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #4CAF50;"></div>
+                            <span>Present: ${stats.present} (${percentage}%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #F44336;"></div>
+                            <span>Absent: ${stats.absent} (${100 - percentage}%)</span>
+                        </div>
+                    `;
+                }
             }
 
             // Create individual subject cards
@@ -590,17 +698,35 @@
                 const subjectsList = document.getElementById('subjectsList');
                 subjectsList.innerHTML = '';
 
+                // Separate subjects with and without attendance data
+                const subjectsWithData = [];
+                const subjectsWithoutData = [];
+
                 Object.keys(subjects).forEach(subjectName => {
                     const subjectData = subjects[subjectName];
-                    const present = subjectData.present || 0;
-                    const absent = subjectData.absent || 0;
-                    const total = present + absent;
-                    const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+                    if (hasAttendanceData(subjectData)) {
+                        subjectsWithData.push({ name: subjectName, data: subjectData });
+                    } else {
+                        subjectsWithoutData.push({ name: subjectName, data: subjectData });
+                    }
+                });
 
-                    let infoMessage = '';
-                    let infoClass = '';
+                // Create cards for subjects with attendance data
+                if (subjectsWithData.length > 0) {
+                    const withDataHeader = document.createElement('h3');
+                    withDataHeader.textContent = 'Subjects with Attendance Records';
+                    withDataHeader.className = 'subjects-section-header';
+                    subjectsList.appendChild(withDataHeader);
 
-                    if (total > 0) {
+                    subjectsWithData.forEach(({ name: subjectName, data: subjectData }) => {
+                        const present = subjectData.present || 0;
+                        const absent = subjectData.absent || 0;
+                        const total = present + absent;
+                        const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+
+                        let infoMessage = '';
+                        let infoClass = '';
+
                         if (percentage < 75) {
                             const classesToAttend = Math.ceil((0.75 * total - present) / 0.25);
                             infoMessage = `You need to attend ${classesToAttend} more class(es) to reach 75%.`;
@@ -610,31 +736,61 @@
                             infoMessage = `You can bunk ${maxBunkable} more class(es) and still maintain 75%.`;
                             infoClass = 'info-safe';
                         }
-                    } else {
-                        infoMessage = 'No attendance data yet.';
-                        infoClass = '';
-                    }
 
-                    const subjectCard = document.createElement('div');
-                    subjectCard.className = 'subject-card';
+                        const subjectCard = document.createElement('div');
+                        subjectCard.className = 'subject-card has-data';
 
-                    subjectCard.innerHTML = `
-                        <h4 class="subject-name">${subjectName}</h4>
-                        <div class="attendance-stats">
-                            <span class="present-count">Present: ${present}</span>
-                            <span class="absent-count">Absent: ${absent}</span>
-                        </div>
-                        <div class="percentage-bar">
-                            <div class="progress-bar" style="width: ${percentage}%; background-color: ${percentage >= 75 ? '#4CAF50' : '#F44336'}"></div>
-                            <span class="percentage">${percentage}%</span>
-                        </div>
-                        <div class="attendance-info ${infoClass}">
-                            ${infoMessage}
-                        </div>
+                        subjectCard.innerHTML = `
+                            <h4 class="subject-name">${subjectName}</h4>
+                            <div class="attendance-stats">
+                                <span class="present-count">Present: ${present}</span>
+                                <span class="absent-count">Absent: ${absent}</span>
+                            </div>
+                            <div class="percentage-bar">
+                                <div class="progress-bar" style="width: ${percentage}%; background-color: ${percentage >= 75 ? '#4CAF50' : '#F44336'}"></div>
+                                <span class="percentage">${percentage}%</span>
+                            </div>
+                            <div class="attendance-info ${infoClass}">
+                                ${infoMessage}
+                            </div>
+                        `;
+
+                        subjectsList.appendChild(subjectCard);
+                    });
+                }
+
+                // Create cards for subjects without attendance data
+                if (subjectsWithoutData.length > 0) {
+                    const withoutDataHeader = document.createElement('h3');
+                    withoutDataHeader.textContent = 'Subjects with No Attendance Records';
+                    withoutDataHeader.className = 'subjects-section-header no-data-header';
+                    subjectsList.appendChild(withoutDataHeader);
+
+                    subjectsWithoutData.forEach(({ name: subjectName, data: subjectData }) => {
+                        const subjectCard = document.createElement('div');
+                        subjectCard.className = 'subject-card no-data';
+
+                        subjectCard.innerHTML = `
+                            <h4 class="subject-name">${subjectName}</h4>
+                            <div class="no-data-message">
+                                <p>No attendance has been recorded for this subject yet.</p>
+                                <p><small>Start marking attendance on the dashboard to see statistics here.</small></p>
+                            </div>
+                        `;
+
+                        subjectsList.appendChild(subjectCard);
+                    });
+                }
+
+                // Show message if no subjects at all
+                if (subjectsWithData.length === 0 && subjectsWithoutData.length === 0) {
+                    const noSubjectsMessage = document.createElement('div');
+                    noSubjectsMessage.className = 'no-subjects-message';
+                    noSubjectsMessage.innerHTML = `
+                        <p>No subjects found. Please check your schedule or contact your administrator.</p>
                     `;
-
-                    subjectsList.appendChild(subjectCard);
-                });
+                    subjectsList.appendChild(noSubjectsMessage);
+                }
             }
 
             // Calculate attendance percentage
