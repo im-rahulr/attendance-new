@@ -108,3 +108,23 @@ The admin panel now allows you to:
 3. Monitor attendance across all subjects
 
 When users log in, they will only see the subjects that have been added through the admin panel. 
+
+## Local Development Setup
+
+If you want to run the project locally **without** deploying to Firebase you can use any static-file web-server.  For example with **Node.js** installed:
+
+```bash
+npm install -g http-server
+cd /path/to/project
+http-server -c-1 -o
+```
+
+The `-c-1` flag disables caching so changes are picked up immediately.  The `-o` flag automatically opens your default browser.
+
+> **Important:** Because the project loads ES-modules directly from CDN you must serve the files over **http://** or **https://**.  Opening the `index.html` file directly from the file-system will result in CORS errors.
+
+---
+
+## Recent Bug Fixes
+
+See `RENAMING_COLLISION_FIX.md` for details on the latest critical fix that resolves a naming collision between the Firebase SDK and local code which previously broke the admin panel in modern browsers. 
