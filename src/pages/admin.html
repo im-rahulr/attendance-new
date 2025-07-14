@@ -671,12 +671,67 @@
             color: var(--danger);
         }
 
+        /* Enhanced Reports Styling */
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
 
+        .progress {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
 
+        .table-hover tbody tr:hover {
+            background-color: var(--hover-bg);
+        }
 
+        .nav-pills .nav-link {
+            color: var(--text-main);
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            margin-right: 0.25rem;
+        }
 
+        .nav-pills .nav-link.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
 
+        .nav-pills .nav-link:hover {
+            background-color: var(--hover-bg);
+            border-color: var(--border-color);
+        }
 
+        .card.bg-primary, .card.bg-success, .card.bg-warning, .card.bg-danger, .card.bg-info {
+            border: none;
+        }
+
+        .btn-group .btn {
+            border-color: var(--border-color);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(31, 111, 235, 0.25);
+        }
+
+        .table-dark {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        .table-dark th {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
 
         @media (max-width: 991px) {
             .stat-card { margin-bottom: 1rem; }
@@ -803,6 +858,9 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance-content" type="button" role="tab" aria-controls="attendance-content" aria-selected="false"><i class="fas fa-calendar-check me-2"></i>Attendance</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-content" type="button" role="tab" aria-controls="reports-content" aria-selected="false"><i class="fas fa-chart-bar me-2"></i>Reports</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications-content" type="button" role="tab" aria-controls="notifications-content" aria-selected="false"><i class="fas fa-bell me-2"></i>Notifications</button>
@@ -1699,6 +1757,362 @@
                     </div>
                 </div>
 
+                <!-- Reports Content -->
+                <div class="tab-pane fade" id="reports-content" role="tabpanel" aria-labelledby="reports-tab">
+                    <!-- Reports Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Attendance Reports</h5>
+                                    <small class="text-muted">Comprehensive attendance reporting and analytics</small>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="nav nav-pills nav-fill" id="reports-nav" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="user-reports-tab" data-bs-toggle="pill" data-bs-target="#user-reports" type="button" role="tab" aria-controls="user-reports" aria-selected="true">
+                                                <i class="fas fa-users me-2"></i>User Reports
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="subject-reports-tab" data-bs-toggle="pill" data-bs-target="#subject-reports" type="button" role="tab" aria-controls="subject-reports" aria-selected="false">
+                                                <i class="fas fa-book me-2"></i>Subject Reports
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="analytics-reports-tab" data-bs-toggle="pill" data-bs-target="#analytics-reports" type="button" role="tab" aria-controls="analytics-reports" aria-selected="false">
+                                                <i class="fas fa-chart-line me-2"></i>Analytics
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="reports-tab-content">
+                        <!-- User Reports Tab -->
+                        <div class="tab-pane fade show active" id="user-reports" role="tabpanel" aria-labelledby="user-reports-tab">
+                            <!-- Filters and Controls -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filters & Export</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3 align-items-end">
+                                                <div class="col-md-3">
+                                                    <label for="userReportDateFrom" class="form-label">From Date</label>
+                                                    <input type="date" class="form-control form-control-sm" id="userReportDateFrom">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="userReportDateTo" class="form-label">To Date</label>
+                                                    <input type="date" class="form-control form-control-sm" id="userReportDateTo">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="userReportMinAttendance" class="form-label">Min Attendance %</label>
+                                                    <input type="number" class="form-control form-control-sm" id="userReportMinAttendance" min="0" max="100" placeholder="0">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="userReportRole" class="form-label">Role</label>
+                                                    <select class="form-select form-select-sm" id="userReportRole">
+                                                        <option value="">All Roles</option>
+                                                        <option value="student">Students</option>
+                                                        <option value="admin">Admins</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="btn-group w-100">
+                                                        <button class="btn btn-primary btn-sm" id="applyUserFilters">
+                                                            <i class="fas fa-search me-1"></i>Apply
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary btn-sm" id="clearUserFilters">
+                                                            <i class="fas fa-times me-1"></i>Clear
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-success btn-sm" id="exportUserReportPDF">
+                                                            <i class="fas fa-file-pdf me-1"></i>Export PDF
+                                                        </button>
+                                                        <button class="btn btn-info btn-sm" id="exportUserReportExcel">
+                                                            <i class="fas fa-file-excel me-1"></i>Export Excel
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm" id="refreshUserReport">
+                                                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Statistics Cards -->
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-users fa-2x mb-2"></i>
+                                            <h4 id="totalUsersCount">0</h4>
+                                            <small>Total Users</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                            <h4 id="highAttendanceCount">0</h4>
+                                            <small>High Attendance (≥80%)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-warning text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                            <h4 id="mediumAttendanceCount">0</h4>
+                                            <small>Medium Attendance (60-79%)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                            <h4 id="lowAttendanceCount">0</h4>
+                                            <small>Low Attendance (<60%)</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Reports Table -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0"><i class="fas fa-table me-2"></i>User Attendance Details</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-info me-2" id="userReportCount">0 users</span>
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status" id="userReportSpinner" style="display: none;">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-striped" id="userReportsTable">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>User</th>
+                                                            <th>Email</th>
+                                                            <th>Role</th>
+                                                            <th>Total Sessions</th>
+                                                            <th>Present</th>
+                                                            <th>Absent</th>
+                                                            <th>Attendance %</th>
+                                                            <th>Last Activity</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="userReportsTableBody">
+                                                        <tr>
+                                                            <td colspan="9" class="text-center text-muted">Loading user reports...</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject Reports Tab -->
+                        <div class="tab-pane fade" id="subject-reports" role="tabpanel" aria-labelledby="subject-reports-tab">
+                            <!-- Subject Filters and Controls -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Subject Filters & Export</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3 align-items-end">
+                                                <div class="col-md-3">
+                                                    <label for="subjectReportSelect" class="form-label">Select Subject</label>
+                                                    <select class="form-select form-select-sm" id="subjectReportSelect">
+                                                        <option value="">All Subjects</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="subjectReportDateFrom" class="form-label">From Date</label>
+                                                    <input type="date" class="form-control form-control-sm" id="subjectReportDateFrom">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="subjectReportDateTo" class="form-label">To Date</label>
+                                                    <input type="date" class="form-control form-control-sm" id="subjectReportDateTo">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="btn-group w-100">
+                                                        <button class="btn btn-primary btn-sm" id="applySubjectFilters">
+                                                            <i class="fas fa-search me-1"></i>Apply
+                                                        </button>
+                                                        <button class="btn btn-outline-secondary btn-sm" id="clearSubjectFilters">
+                                                            <i class="fas fa-times me-1"></i>Clear
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <div class="btn-group">
+                                                        <button class="btn btn-success btn-sm" id="exportSubjectReportPDF">
+                                                            <i class="fas fa-file-pdf me-1"></i>Export PDF
+                                                        </button>
+                                                        <button class="btn btn-info btn-sm" id="exportSubjectReportExcel">
+                                                            <i class="fas fa-file-excel me-1"></i>Export Excel
+                                                        </button>
+                                                        <button class="btn btn-warning btn-sm" id="refreshSubjectReport">
+                                                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Statistics -->
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-book fa-2x mb-2"></i>
+                                            <h4 id="totalSubjectsCount">0</h4>
+                                            <small>Total Subjects</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                                            <h4 id="totalSessionsCount">0</h4>
+                                            <small>Total Sessions</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-percentage fa-2x mb-2"></i>
+                                            <h4 id="overallAttendanceRate">0%</h4>
+                                            <small>Overall Attendance Rate</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Reports Table -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0"><i class="fas fa-table me-2"></i>Subject-wise Attendance</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-info me-2" id="subjectReportCount">0 subjects</span>
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status" id="subjectReportSpinner" style="display: none;">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-striped" id="subjectReportsTable">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Subject</th>
+                                                            <th>Total Students</th>
+                                                            <th>Total Sessions</th>
+                                                            <th>Present Count</th>
+                                                            <th>Absent Count</th>
+                                                            <th>Attendance Rate</th>
+                                                            <th>Last Session</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="subjectReportsTableBody">
+                                                        <tr>
+                                                            <td colspan="8" class="text-center text-muted">Loading subject reports...</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analytics Tab -->
+                        <div class="tab-pane fade" id="analytics-reports" role="tabpanel" aria-labelledby="analytics-reports-tab">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Attendance Distribution</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="attendanceDistributionChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Attendance Trends</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="attendanceTrendsChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Subject Performance</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="subjectPerformanceChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Daily Attendance Pattern</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="dailyAttendanceChart" style="max-height: 300px;"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Functions Management Content -->
                 <div class="tab-pane fade" id="functions-content" role="tabpanel" aria-labelledby="functions-tab">
                     <div class="row">
@@ -1975,39 +2389,170 @@
     <!-- Admin Error Container -->
     <div id="adminErrorContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
 
-     <!-- User Details Modal -->
+     <!-- Enhanced User Details Modal -->
     <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userDetailsModalLabel">User Details</h5>
+                    <h5 class="modal-title" id="userDetailsModalLabel">
+                        <i class="fas fa-user me-2"></i>User Details
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Name:</strong> <span id="modalUserName"></span></p>
-                            <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+                    <!-- Loading Spinner -->
+                    <div id="userDetailsSpinner" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                         <div class="col-md-6">
-                            <canvas id="userAttendanceChart"></canvas>
+                        <p class="mt-2 text-muted">Loading user details...</p>
+                    </div>
+
+                    <!-- User Details Content -->
+                    <div id="userDetailsContent" style="display: none;">
+                        <!-- User Basic Info -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><strong>Name:</strong> <span id="modalUserName"></span></p>
+                                                <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+                                                <p><strong>Role:</strong> <span id="modalUserRole" class="badge"></span></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><strong>User ID:</strong> <span id="modalUserId" class="text-muted"></span></p>
+                                                <p><strong>Created:</strong> <span id="modalUserCreated"></span></p>
+                                                <p><strong>Last Login:</strong> <span id="modalUserLastLogin"></span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Attendance Overview</h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <canvas id="userAttendanceChart" style="max-height: 200px;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                                        <h4 id="modalTotalSessions">0</h4>
+                                        <small>Total Sessions</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                        <h4 id="modalPresentCount">0</h4>
+                                        <small>Present</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-times-circle fa-2x mb-2"></i>
+                                        <h4 id="modalAbsentCount">0</h4>
+                                        <small>Absent</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-percentage fa-2x mb-2"></i>
+                                        <h4 id="modalAttendanceRate">0%</h4>
+                                        <small>Attendance Rate</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject-wise Attendance -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-book me-2"></i>Subject-wise Attendance</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Subject</th>
+                                                        <th>Present</th>
+                                                        <th>Absent</th>
+                                                        <th>Total</th>
+                                                        <th>Attendance %</th>
+                                                        <th>Progress</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="modalUserSubjects">
+                                                    <tr>
+                                                        <td colspan="6" class="text-center text-muted">Loading subjects...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Attendance History -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-history me-2"></i>Recent Attendance History</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Subject</th>
+                                                        <th>Status</th>
+                                                        <th>Added By</th>
+                                                        <th>Notes</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="modalUserHistory">
+                                                    <tr>
+                                                        <td colspan="5" class="text-center text-muted">Loading history...</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <hr>
-                    <h5>Subject-wise Attendance</h5>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Present</th>
-                                <th>Absent</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modalUserSubjects"></tbody>
-                    </table>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="exportUserDetailsReport">
+                        <i class="fas fa-file-pdf me-2"></i>Export Report
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -10008,6 +10553,1466 @@ service cloud.firestore {
     };
 
     console.log('🎯 Admin Panel Debug Tools Available: window.adminPanelDebug');
+
+    // Debug: Test if user details functions are available
+    console.log('🔍 Testing user details functions...');
+    console.log('viewUserDetails function:', typeof viewUserDetails);
+    console.log('exportSingleUserReport function:', typeof exportSingleUserReport);
+
+    // Add debug functions to window for testing
+    window.debugUserDetails = {
+        testViewUserDetails: (userId) => {
+            console.log('Testing viewUserDetails with userId:', userId);
+            if (typeof viewUserDetails === 'function') {
+                viewUserDetails(userId);
+            } else {
+                console.error('viewUserDetails function not found!');
+            }
+        },
+        testExportUserReport: (userId) => {
+            console.log('Testing exportSingleUserReport with userId:', userId);
+            if (typeof exportSingleUserReport === 'function') {
+                exportSingleUserReport(userId);
+            } else {
+                console.error('exportSingleUserReport function not found!');
+            }
+        },
+        testModal: () => {
+            console.log('Testing modal display...');
+            const modalElement = document.getElementById('userDetailsModal');
+            console.log('Modal element found:', !!modalElement);
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        }
+    };
+
+    // ==========================================
+    // ENHANCED REPORTING SYSTEM FUNCTIONS
+    // ==========================================
+
+    // Global variables for reports
+    let currentUserReportData = [];
+    let currentSubjectReportData = [];
+    let reportCharts = {};
+
+    // Initialize Reports System
+    function initializeReportsSystem() {
+        console.log('📊 Initializing Enhanced Reports System...');
+
+        // Set up event listeners for report tabs
+        setupReportEventListeners();
+
+        // Load initial data
+        loadUserReports();
+        loadSubjectReports();
+        loadSubjectsForFilter();
+
+        // Set default date ranges
+        setDefaultDateRanges();
+
+        console.log('✅ Reports System Initialized');
+    }
+
+    // Set up event listeners for reports
+    function setupReportEventListeners() {
+        // User Reports Event Listeners
+        document.getElementById('applyUserFilters')?.addEventListener('click', applyUserFilters);
+        document.getElementById('clearUserFilters')?.addEventListener('click', clearUserFilters);
+        document.getElementById('exportUserReportPDF')?.addEventListener('click', exportUserReportPDF);
+        document.getElementById('exportUserReportExcel')?.addEventListener('click', exportUserReportExcel);
+        document.getElementById('refreshUserReport')?.addEventListener('click', loadUserReports);
+
+        // Subject Reports Event Listeners
+        document.getElementById('applySubjectFilters')?.addEventListener('click', applySubjectFilters);
+        document.getElementById('clearSubjectFilters')?.addEventListener('click', clearSubjectFilters);
+        document.getElementById('exportSubjectReportPDF')?.addEventListener('click', exportSubjectReportPDF);
+        document.getElementById('exportSubjectReportExcel')?.addEventListener('click', exportSubjectReportExcel);
+        document.getElementById('refreshSubjectReport')?.addEventListener('click', loadSubjectReports);
+
+        // Analytics tab event listener
+        document.getElementById('analytics-reports-tab')?.addEventListener('shown.bs.tab', loadAnalyticsCharts);
+    }
+
+    // Set default date ranges (last 30 days)
+    function setDefaultDateRanges() {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+        const todayStr = today.toISOString().split('T')[0];
+        const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+
+        // Set user report dates
+        const userDateFrom = document.getElementById('userReportDateFrom');
+        const userDateTo = document.getElementById('userReportDateTo');
+        if (userDateFrom) userDateFrom.value = thirtyDaysAgoStr;
+        if (userDateTo) userDateTo.value = todayStr;
+
+        // Set subject report dates
+        const subjectDateFrom = document.getElementById('subjectReportDateFrom');
+        const subjectDateTo = document.getElementById('subjectReportDateTo');
+        if (subjectDateFrom) subjectDateFrom.value = thirtyDaysAgoStr;
+        if (subjectDateTo) subjectDateTo.value = todayStr;
+    }
+
+    // Load subjects for filter dropdown
+    async function loadSubjectsForFilter() {
+        try {
+            const subjectsSnapshot = await db.collection('subjects').get();
+            const subjectSelect = document.getElementById('subjectReportSelect');
+
+            if (subjectSelect) {
+                subjectSelect.innerHTML = '<option value="">All Subjects</option>';
+
+                subjectsSnapshot.forEach(doc => {
+                    const subject = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = subject.name || 'Unnamed Subject';
+                    subjectSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading subjects for filter:', error);
+        }
+    }
+
+    // Load User Reports
+    async function loadUserReports() {
+        const spinner = document.getElementById('userReportSpinner');
+        const tableBody = document.getElementById('userReportsTableBody');
+
+        if (spinner) spinner.style.display = 'inline-block';
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="9" class="text-center">Loading user reports...</td></tr>';
+
+        try {
+            // Get all users
+            const usersSnapshot = await db.collection('users').get();
+            const userReportData = [];
+
+            for (const userDoc of usersSnapshot.docs) {
+                const userData = userDoc.data();
+                const userId = userDoc.id;
+
+                // Calculate attendance statistics
+                const attendanceStats = await calculateUserAttendanceStats(userId, userData);
+
+                userReportData.push({
+                    id: userId,
+                    name: userData.name || 'Unknown',
+                    email: userData.email || 'No email',
+                    role: userData.role || 'student',
+                    ...attendanceStats
+                });
+            }
+
+            currentUserReportData = userReportData;
+            displayUserReports(userReportData);
+            updateUserStatistics(userReportData);
+
+        } catch (error) {
+            console.error('Error loading user reports:', error);
+            showToast('Error loading user reports: ' + error.message, 'danger');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading reports</td></tr>';
+            }
+        } finally {
+            if (spinner) spinner.style.display = 'none';
+        }
+    }
+
+    // Calculate user attendance statistics
+    async function calculateUserAttendanceStats(userId, userData) {
+        try {
+            // Get attendance records for this user
+            const attendanceSnapshot = await db.collection('manualAttendance')
+                .where('userId', '==', userId)
+                .get();
+
+            let totalSessions = 0;
+            let presentCount = 0;
+            let absentCount = 0;
+            let lastActivity = null;
+
+            attendanceSnapshot.forEach(doc => {
+                const record = doc.data();
+                totalSessions++;
+
+                if (record.status === 'present') {
+                    presentCount++;
+                } else {
+                    absentCount++;
+                }
+
+                // Track last activity
+                const recordDate = new Date(record.date);
+                if (!lastActivity || recordDate > lastActivity) {
+                    lastActivity = recordDate;
+                }
+            });
+
+            // Also check attendanceData in user document
+            const attendanceData = userData.attendanceData?.subjects || {};
+            Object.values(attendanceData).forEach(subject => {
+                if (subject.present) presentCount += subject.present;
+                if (subject.absent) absentCount += subject.absent;
+                totalSessions += (subject.present || 0) + (subject.absent || 0);
+            });
+
+            const attendancePercentage = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0;
+
+            return {
+                totalSessions,
+                presentCount,
+                absentCount,
+                attendancePercentage,
+                lastActivity: lastActivity ? lastActivity.toLocaleDateString() : 'Never'
+            };
+        } catch (error) {
+            console.error('Error calculating attendance stats for user:', userId, error);
+            return {
+                totalSessions: 0,
+                presentCount: 0,
+                absentCount: 0,
+                attendancePercentage: 0,
+                lastActivity: 'Error'
+            };
+        }
+    }
+
+    // Display user reports in table
+    function displayUserReports(data) {
+        const tableBody = document.getElementById('userReportsTableBody');
+        const countBadge = document.getElementById('userReportCount');
+
+        if (!tableBody) return;
+
+        if (countBadge) countBadge.textContent = `${data.length} users`;
+
+        if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No users found</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = data.map(user => {
+            const attendanceClass = user.attendancePercentage >= 80 ? 'text-success' :
+                                  user.attendancePercentage >= 60 ? 'text-warning' : 'text-danger';
+
+            return `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">${user.name}</div>
+                                <small class="text-muted">${user.id}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td>
+                        <span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${user.role}</span>
+                    </td>
+                    <td>${user.totalSessions}</td>
+                    <td><span class="text-success">${user.presentCount}</span></td>
+                    <td><span class="text-danger">${user.absentCount}</span></td>
+                    <td>
+                        <span class="${attendanceClass} fw-bold">${user.attendancePercentage}%</span>
+                        <div class="progress mt-1" style="height: 4px;">
+                            <div class="progress-bar ${user.attendancePercentage >= 80 ? 'bg-success' : user.attendancePercentage >= 60 ? 'bg-warning' : 'bg-danger'}"
+                                 style="width: ${user.attendancePercentage}%"></div>
+                        </div>
+                    </td>
+                    <td>${user.lastActivity}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="viewUserDetails('${user.id}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-info" onclick="exportSingleUserReport('${user.id}')" title="Export Report">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Update user statistics cards
+    function updateUserStatistics(data) {
+        const totalUsers = data.length;
+        const highAttendance = data.filter(user => user.attendancePercentage >= 80).length;
+        const mediumAttendance = data.filter(user => user.attendancePercentage >= 60 && user.attendancePercentage < 80).length;
+        const lowAttendance = data.filter(user => user.attendancePercentage < 60).length;
+
+        document.getElementById('totalUsersCount').textContent = totalUsers;
+        document.getElementById('highAttendanceCount').textContent = highAttendance;
+        document.getElementById('mediumAttendanceCount').textContent = mediumAttendance;
+        document.getElementById('lowAttendanceCount').textContent = lowAttendance;
+    }
+
+    // Apply user filters
+    function applyUserFilters() {
+        const dateFrom = document.getElementById('userReportDateFrom').value;
+        const dateTo = document.getElementById('userReportDateTo').value;
+        const minAttendance = parseInt(document.getElementById('userReportMinAttendance').value) || 0;
+        const role = document.getElementById('userReportRole').value;
+
+        let filteredData = [...currentUserReportData];
+
+        // Filter by attendance percentage
+        if (minAttendance > 0) {
+            filteredData = filteredData.filter(user => user.attendancePercentage >= minAttendance);
+        }
+
+        // Filter by role
+        if (role) {
+            filteredData = filteredData.filter(user => user.role === role);
+        }
+
+        // TODO: Implement date filtering when we have proper date tracking
+
+        displayUserReports(filteredData);
+        updateUserStatistics(filteredData);
+        showToast(`Applied filters. Showing ${filteredData.length} users.`, 'info');
+    }
+
+    // Clear user filters
+    function clearUserFilters() {
+        document.getElementById('userReportDateFrom').value = '';
+        document.getElementById('userReportDateTo').value = '';
+        document.getElementById('userReportMinAttendance').value = '';
+        document.getElementById('userReportRole').value = '';
+
+        setDefaultDateRanges();
+        displayUserReports(currentUserReportData);
+        updateUserStatistics(currentUserReportData);
+        showToast('Filters cleared.', 'info');
+    }
+
+    // Load Subject Reports
+    async function loadSubjectReports() {
+        const spinner = document.getElementById('subjectReportSpinner');
+        const tableBody = document.getElementById('subjectReportsTableBody');
+
+        if (spinner) spinner.style.display = 'inline-block';
+        if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Loading subject reports...</td></tr>';
+
+        try {
+            // Get all subjects
+            const subjectsSnapshot = await db.collection('subjects').get();
+            const subjectReportData = [];
+
+            for (const subjectDoc of subjectsSnapshot.docs) {
+                const subjectData = subjectDoc.data();
+                const subjectId = subjectDoc.id;
+
+                // Calculate subject attendance statistics
+                const attendanceStats = await calculateSubjectAttendanceStats(subjectId, subjectData.name);
+
+                subjectReportData.push({
+                    id: subjectId,
+                    name: subjectData.name || 'Unnamed Subject',
+                    ...attendanceStats
+                });
+            }
+
+            currentSubjectReportData = subjectReportData;
+            displaySubjectReports(subjectReportData);
+            updateSubjectStatistics(subjectReportData);
+
+        } catch (error) {
+            console.error('Error loading subject reports:', error);
+            showToast('Error loading subject reports: ' + error.message, 'danger');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading reports</td></tr>';
+            }
+        } finally {
+            if (spinner) spinner.style.display = 'none';
+        }
+    }
+
+    // Calculate subject attendance statistics
+    async function calculateSubjectAttendanceStats(subjectId, subjectName) {
+        try {
+            // Get attendance records for this subject
+            const attendanceSnapshot = await db.collection('manualAttendance')
+                .where('subjectId', '==', subjectId)
+                .get();
+
+            let totalSessions = 0;
+            let presentCount = 0;
+            let absentCount = 0;
+            let lastSession = null;
+            const uniqueStudents = new Set();
+
+            attendanceSnapshot.forEach(doc => {
+                const record = doc.data();
+                totalSessions++;
+                uniqueStudents.add(record.userId);
+
+                if (record.status === 'present') {
+                    presentCount++;
+                } else {
+                    absentCount++;
+                }
+
+                // Track last session
+                const recordDate = new Date(record.date);
+                if (!lastSession || recordDate > lastSession) {
+                    lastSession = recordDate;
+                }
+            });
+
+            // Also check user documents for this subject
+            const usersSnapshot = await db.collection('users').get();
+            usersSnapshot.forEach(userDoc => {
+                const userData = userDoc.data();
+                const attendanceData = userData.attendanceData?.subjects || {};
+
+                if (attendanceData[subjectName]) {
+                    const subjectData = attendanceData[subjectName];
+                    presentCount += subjectData.present || 0;
+                    absentCount += subjectData.absent || 0;
+                    totalSessions += (subjectData.present || 0) + (subjectData.absent || 0);
+                    uniqueStudents.add(userDoc.id);
+                }
+            });
+
+            const attendanceRate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0;
+
+            return {
+                totalStudents: uniqueStudents.size,
+                totalSessions,
+                presentCount,
+                absentCount,
+                attendanceRate,
+                lastSession: lastSession ? lastSession.toLocaleDateString() : 'Never'
+            };
+        } catch (error) {
+            console.error('Error calculating attendance stats for subject:', subjectId, error);
+            return {
+                totalStudents: 0,
+                totalSessions: 0,
+                presentCount: 0,
+                absentCount: 0,
+                attendanceRate: 0,
+                lastSession: 'Error'
+            };
+        }
+    }
+
+    // Display subject reports in table
+    function displaySubjectReports(data) {
+        const tableBody = document.getElementById('subjectReportsTableBody');
+        const countBadge = document.getElementById('subjectReportCount');
+
+        if (!tableBody) return;
+
+        if (countBadge) countBadge.textContent = `${data.length} subjects`;
+
+        if (data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No subjects found</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = data.map(subject => {
+            const attendanceClass = subject.attendanceRate >= 80 ? 'text-success' :
+                                  subject.attendanceRate >= 60 ? 'text-warning' : 'text-danger';
+
+            return `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-info rounded-circle d-flex align-items-center justify-content-center me-2">
+                                <i class="fas fa-book text-white"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">${subject.name}</div>
+                                <small class="text-muted">${subject.id}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${subject.totalStudents}</td>
+                    <td>${subject.totalSessions}</td>
+                    <td><span class="text-success">${subject.presentCount}</span></td>
+                    <td><span class="text-danger">${subject.absentCount}</span></td>
+                    <td>
+                        <span class="${attendanceClass} fw-bold">${subject.attendanceRate}%</span>
+                        <div class="progress mt-1" style="height: 4px;">
+                            <div class="progress-bar ${subject.attendanceRate >= 80 ? 'bg-success' : subject.attendanceRate >= 60 ? 'bg-warning' : 'bg-danger'}"
+                                 style="width: ${subject.attendanceRate}%"></div>
+                        </div>
+                    </td>
+                    <td>${subject.lastSession}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="viewSubjectDetails('${subject.id}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-info" onclick="exportSingleSubjectReport('${subject.id}')" title="Export Report">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Update subject statistics cards
+    function updateSubjectStatistics(data) {
+        const totalSubjects = data.length;
+        const totalSessions = data.reduce((sum, subject) => sum + subject.totalSessions, 0);
+        const totalPresent = data.reduce((sum, subject) => sum + subject.presentCount, 0);
+        const totalAbsent = data.reduce((sum, subject) => sum + subject.absentCount, 0);
+        const overallRate = (totalPresent + totalAbsent) > 0 ? Math.round((totalPresent / (totalPresent + totalAbsent)) * 100) : 0;
+
+        document.getElementById('totalSubjectsCount').textContent = totalSubjects;
+        document.getElementById('totalSessionsCount').textContent = totalSessions;
+        document.getElementById('overallAttendanceRate').textContent = `${overallRate}%`;
+    }
+
+    // Apply subject filters
+    function applySubjectFilters() {
+        const selectedSubject = document.getElementById('subjectReportSelect').value;
+        const dateFrom = document.getElementById('subjectReportDateFrom').value;
+        const dateTo = document.getElementById('subjectReportDateTo').value;
+
+        let filteredData = [...currentSubjectReportData];
+
+        // Filter by selected subject
+        if (selectedSubject) {
+            filteredData = filteredData.filter(subject => subject.id === selectedSubject);
+        }
+
+        // TODO: Implement date filtering when we have proper date tracking
+
+        displaySubjectReports(filteredData);
+        updateSubjectStatistics(filteredData);
+        showToast(`Applied filters. Showing ${filteredData.length} subjects.`, 'info');
+    }
+
+    // Clear subject filters
+    function clearSubjectFilters() {
+        document.getElementById('subjectReportSelect').value = '';
+        document.getElementById('subjectReportDateFrom').value = '';
+        document.getElementById('subjectReportDateTo').value = '';
+
+        setDefaultDateRanges();
+        displaySubjectReports(currentSubjectReportData);
+        updateSubjectStatistics(currentSubjectReportData);
+        showToast('Filters cleared.', 'info');
+    }
+
+    // Export User Report to PDF
+    async function exportUserReportPDF() {
+        const exportBtn = document.getElementById('exportUserReportPDF');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Exporting...';
+        }
+
+        try {
+            if (!window.jspdf) {
+                throw new Error('jsPDF library not loaded');
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Get current filtered data
+            const tableBody = document.getElementById('userReportsTableBody');
+            const displayedRows = tableBody.querySelectorAll('tr');
+            const userData = [];
+
+            // Extract data from displayed table rows
+            displayedRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) {
+                    userData.push([
+                        cells[0].querySelector('.fw-bold')?.textContent || '',
+                        cells[1].textContent,
+                        cells[2].querySelector('.badge')?.textContent || '',
+                        cells[3].textContent,
+                        cells[4].textContent,
+                        cells[5].textContent,
+                        cells[6].querySelector('span')?.textContent || '',
+                        cells[7].textContent
+                    ]);
+                }
+            });
+
+            // Set up the document
+            doc.setFontSize(20);
+            doc.text('User Attendance Report', 20, 20);
+
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+            doc.text(`Total Users: ${userData.length}`, 20, 40);
+
+            // Add summary statistics
+            const stats = calculateReportStatistics(currentUserReportData);
+            doc.text(`High Attendance (≥80%): ${stats.highAttendance}`, 20, 50);
+            doc.text(`Medium Attendance (60-79%): ${stats.mediumAttendance}`, 20, 60);
+            doc.text(`Low Attendance (<60%): ${stats.lowAttendance}`, 20, 70);
+
+            // Add table
+            doc.autoTable({
+                startY: 80,
+                head: [['Name', 'Email', 'Role', 'Sessions', 'Present', 'Absent', 'Attendance %', 'Last Activity']],
+                body: userData,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [52, 58, 64] },
+                alternateRowStyles: { fillColor: [248, 249, 250] }
+            });
+
+            // Save the PDF
+            const fileName = `user_attendance_report_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+
+            showToast('User report PDF exported successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error exporting user report PDF:', error);
+            showToast('Error exporting PDF: ' + error.message, 'danger');
+        } finally {
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.innerHTML = '<i class="fas fa-file-pdf me-1"></i>Export PDF';
+            }
+        }
+    }
+
+    // Export Subject Report to PDF
+    async function exportSubjectReportPDF() {
+        const exportBtn = document.getElementById('exportSubjectReportPDF');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Exporting...';
+        }
+
+        try {
+            if (!window.jspdf) {
+                throw new Error('jsPDF library not loaded');
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Get current filtered data
+            const tableBody = document.getElementById('subjectReportsTableBody');
+            const displayedRows = tableBody.querySelectorAll('tr');
+            const subjectData = [];
+
+            // Extract data from displayed table rows
+            displayedRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 7) {
+                    subjectData.push([
+                        cells[0].querySelector('.fw-bold')?.textContent || '',
+                        cells[1].textContent,
+                        cells[2].textContent,
+                        cells[3].textContent,
+                        cells[4].textContent,
+                        cells[5].querySelector('span')?.textContent || '',
+                        cells[6].textContent
+                    ]);
+                }
+            });
+
+            // Set up the document
+            doc.setFontSize(20);
+            doc.text('Subject Attendance Report', 20, 20);
+
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+            doc.text(`Total Subjects: ${subjectData.length}`, 20, 40);
+
+            // Add summary statistics
+            const totalSessions = currentSubjectReportData.reduce((sum, s) => sum + s.totalSessions, 0);
+            const overallRate = calculateOverallAttendanceRate(currentSubjectReportData);
+            doc.text(`Total Sessions: ${totalSessions}`, 20, 50);
+            doc.text(`Overall Attendance Rate: ${overallRate}%`, 20, 60);
+
+            // Add table
+            doc.autoTable({
+                startY: 70,
+                head: [['Subject', 'Students', 'Sessions', 'Present', 'Absent', 'Rate %', 'Last Session']],
+                body: subjectData,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [52, 58, 64] },
+                alternateRowStyles: { fillColor: [248, 249, 250] }
+            });
+
+            // Save the PDF
+            const fileName = `subject_attendance_report_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+
+            showToast('Subject report PDF exported successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error exporting subject report PDF:', error);
+            showToast('Error exporting PDF: ' + error.message, 'danger');
+        } finally {
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.innerHTML = '<i class="fas fa-file-pdf me-1"></i>Export PDF';
+            }
+        }
+    }
+
+    // Export User Report to Excel (CSV)
+    function exportUserReportExcel() {
+        try {
+            const tableBody = document.getElementById('userReportsTableBody');
+            const displayedRows = tableBody.querySelectorAll('tr');
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "User Attendance Report\n";
+            csvContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
+            csvContent += "Name,Email,Role,Total Sessions,Present,Absent,Attendance %,Last Activity\n";
+
+            displayedRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) {
+                    const rowData = [
+                        cells[0].querySelector('.fw-bold')?.textContent || '',
+                        cells[1].textContent,
+                        cells[2].querySelector('.badge')?.textContent || '',
+                        cells[3].textContent,
+                        cells[4].textContent,
+                        cells[5].textContent,
+                        cells[6].querySelector('span')?.textContent || '',
+                        cells[7].textContent
+                    ];
+                    csvContent += rowData.map(field => `"${field}"`).join(',') + '\n';
+                }
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `user_attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('User report CSV exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting user report CSV:', error);
+            showToast('Error exporting CSV: ' + error.message, 'danger');
+        }
+    }
+
+    // Export Subject Report to Excel (CSV)
+    function exportSubjectReportExcel() {
+        try {
+            const tableBody = document.getElementById('subjectReportsTableBody');
+            const displayedRows = tableBody.querySelectorAll('tr');
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Subject Attendance Report\n";
+            csvContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
+            csvContent += "Subject,Total Students,Total Sessions,Present Count,Absent Count,Attendance Rate %,Last Session\n";
+
+            displayedRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 7) {
+                    const rowData = [
+                        cells[0].querySelector('.fw-bold')?.textContent || '',
+                        cells[1].textContent,
+                        cells[2].textContent,
+                        cells[3].textContent,
+                        cells[4].textContent,
+                        cells[5].querySelector('span')?.textContent || '',
+                        cells[6].textContent
+                    ];
+                    csvContent += rowData.map(field => `"${field}"`).join(',') + '\n';
+                }
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `subject_attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Subject report CSV exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting subject report CSV:', error);
+            showToast('Error exporting CSV: ' + error.message, 'danger');
+        }
+    }
+
+    // Utility function to calculate report statistics
+    function calculateReportStatistics(userData) {
+        return {
+            highAttendance: userData.filter(user => user.attendancePercentage >= 80).length,
+            mediumAttendance: userData.filter(user => user.attendancePercentage >= 60 && user.attendancePercentage < 80).length,
+            lowAttendance: userData.filter(user => user.attendancePercentage < 60).length
+        };
+    }
+
+    // Utility function to calculate overall attendance rate
+    function calculateOverallAttendanceRate(subjectData) {
+        const totalPresent = subjectData.reduce((sum, subject) => sum + subject.presentCount, 0);
+        const totalAbsent = subjectData.reduce((sum, subject) => sum + subject.absentCount, 0);
+        return (totalPresent + totalAbsent) > 0 ? Math.round((totalPresent / (totalPresent + totalAbsent)) * 100) : 0;
+    }
+
+    // View user details - Complete implementation
+    async function viewUserDetails(userId) {
+        console.log('🔍 viewUserDetails called with userId:', userId);
+        try {
+            // Check if modal element exists
+            const modalElement = document.getElementById('userDetailsModal');
+            if (!modalElement) {
+                throw new Error('User details modal element not found');
+            }
+            console.log('✅ Modal element found');
+
+            // Check if Bootstrap is available
+            if (typeof bootstrap === 'undefined') {
+                throw new Error('Bootstrap library not loaded');
+            }
+            console.log('✅ Bootstrap library available');
+
+            // Show the modal
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+            console.log('✅ Modal shown');
+
+            // Show loading spinner
+            const spinner = document.getElementById('userDetailsSpinner');
+            const content = document.getElementById('userDetailsContent');
+            if (spinner) spinner.style.display = 'block';
+            if (content) content.style.display = 'none';
+            console.log('✅ Loading spinner shown');
+
+            // Check if database is available
+            if (typeof db === 'undefined') {
+                throw new Error('Database connection not available');
+            }
+            console.log('✅ Database connection available');
+
+            // Fetch user data
+            console.log('🔍 Fetching user data for:', userId);
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (!userDoc.exists) {
+                throw new Error('User not found');
+            }
+            console.log('✅ User data fetched successfully');
+
+            const userData = userDoc.data();
+
+            // Populate basic user information
+            document.getElementById('modalUserName').textContent = userData.name || 'Unknown';
+            document.getElementById('modalUserEmail').textContent = userData.email || 'No email';
+            document.getElementById('modalUserId').textContent = userId;
+            document.getElementById('modalUserRole').textContent = userData.role || 'student';
+            document.getElementById('modalUserRole').className = `badge ${userData.role === 'admin' ? 'bg-danger' : 'bg-primary'}`;
+
+            // Format dates
+            const createdDate = userData.createdAt ? userData.createdAt.toDate().toLocaleDateString() : 'Unknown';
+            const lastLogin = userData.lastLogin ? userData.lastLogin.toDate().toLocaleDateString() : 'Never';
+            document.getElementById('modalUserCreated').textContent = createdDate;
+            document.getElementById('modalUserLastLogin').textContent = lastLogin;
+
+            // Calculate attendance statistics
+            const attendanceStats = await calculateUserAttendanceStats(userId, userData);
+
+            // Update statistics cards
+            document.getElementById('modalTotalSessions').textContent = attendanceStats.totalSessions;
+            document.getElementById('modalPresentCount').textContent = attendanceStats.presentCount;
+            document.getElementById('modalAbsentCount').textContent = attendanceStats.absentCount;
+            document.getElementById('modalAttendanceRate').textContent = `${attendanceStats.attendancePercentage}%`;
+
+            // Load subject-wise attendance
+            await loadUserSubjectAttendance(userId, userData);
+
+            // Load recent attendance history
+            await loadUserAttendanceHistory(userId);
+
+            // Create attendance chart
+            createUserAttendanceChart(attendanceStats);
+
+            // Hide loading spinner and show content
+            document.getElementById('userDetailsSpinner').style.display = 'none';
+            document.getElementById('userDetailsContent').style.display = 'block';
+
+            // Set up export button
+            document.getElementById('exportUserDetailsReport').onclick = () => exportSingleUserReport(userId);
+
+        } catch (error) {
+            console.error('Error loading user details:', error);
+            showToast('Error loading user details: ' + error.message, 'danger');
+
+            // Hide loading spinner and show error
+            document.getElementById('userDetailsSpinner').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <p class="text-danger">Error loading user details</p>
+                    <p class="text-muted">${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    // Load user subject-wise attendance
+    async function loadUserSubjectAttendance(userId, userData) {
+        try {
+            const subjectsTableBody = document.getElementById('modalUserSubjects');
+            subjectsTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading subjects...</td></tr>';
+
+            // Get attendance data from user document
+            const attendanceData = userData.attendanceData?.subjects || {};
+
+            // Get manual attendance records
+            const manualAttendanceSnapshot = await db.collection('manualAttendance')
+                .where('userId', '==', userId)
+                .get();
+
+            // Aggregate attendance by subject
+            const subjectStats = {};
+
+            // Process user document attendance data
+            Object.entries(attendanceData).forEach(([subjectName, data]) => {
+                if (!subjectStats[subjectName]) {
+                    subjectStats[subjectName] = { present: 0, absent: 0 };
+                }
+                subjectStats[subjectName].present += data.present || 0;
+                subjectStats[subjectName].absent += data.absent || 0;
+            });
+
+            // Process manual attendance records
+            manualAttendanceSnapshot.forEach(doc => {
+                const record = doc.data();
+                const subjectName = record.subjectName;
+
+                if (!subjectStats[subjectName]) {
+                    subjectStats[subjectName] = { present: 0, absent: 0 };
+                }
+
+                if (record.status === 'present') {
+                    subjectStats[subjectName].present++;
+                } else {
+                    subjectStats[subjectName].absent++;
+                }
+            });
+
+            // Populate the table
+            if (Object.keys(subjectStats).length === 0) {
+                subjectsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No attendance data found</td></tr>';
+                return;
+            }
+
+            subjectsTableBody.innerHTML = Object.entries(subjectStats).map(([subjectName, stats]) => {
+                const total = stats.present + stats.absent;
+                const percentage = total > 0 ? Math.round((stats.present / total) * 100) : 0;
+                const progressClass = percentage >= 80 ? 'bg-success' : percentage >= 60 ? 'bg-warning' : 'bg-danger';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-book text-info me-2"></i>
+                                ${subjectName}
+                            </div>
+                        </td>
+                        <td><span class="text-success fw-bold">${stats.present}</span></td>
+                        <td><span class="text-danger fw-bold">${stats.absent}</span></td>
+                        <td><span class="fw-bold">${total}</span></td>
+                        <td>
+                            <span class="fw-bold ${percentage >= 80 ? 'text-success' : percentage >= 60 ? 'text-warning' : 'text-danger'}">
+                                ${percentage}%
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar ${progressClass}" style="width: ${percentage}%">
+                                    ${percentage}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Error loading user subject attendance:', error);
+            document.getElementById('modalUserSubjects').innerHTML =
+                '<tr><td colspan="6" class="text-center text-danger">Error loading subject data</td></tr>';
+        }
+    }
+
+    // Load user attendance history
+    async function loadUserAttendanceHistory(userId) {
+        try {
+            const historyTableBody = document.getElementById('modalUserHistory');
+            historyTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Loading history...</td></tr>';
+
+            // Get recent manual attendance records (last 20)
+            const historySnapshot = await db.collection('manualAttendance')
+                .where('userId', '==', userId)
+                .orderBy('date', 'desc')
+                .limit(20)
+                .get();
+
+            if (historySnapshot.empty) {
+                historyTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No attendance history found</td></tr>';
+                return;
+            }
+
+            historyTableBody.innerHTML = historySnapshot.docs.map(doc => {
+                const record = doc.data();
+                const statusClass = record.status === 'present' ? 'text-success' : 'text-danger';
+                const statusIcon = record.status === 'present' ? 'fa-check-circle' : 'fa-times-circle';
+
+                return `
+                    <tr>
+                        <td>${record.date || 'Unknown'}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-book text-info me-2"></i>
+                                ${record.subjectName || 'Unknown'}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="${statusClass}">
+                                <i class="fas ${statusIcon} me-1"></i>
+                                ${record.status || 'Unknown'}
+                            </span>
+                        </td>
+                        <td>${record.addedByName || 'Unknown'}</td>
+                        <td>${record.notes || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Error loading user attendance history:', error);
+            document.getElementById('modalUserHistory').innerHTML =
+                '<tr><td colspan="5" class="text-center text-danger">Error loading history</td></tr>';
+        }
+    }
+
+    // Create user attendance chart
+    function createUserAttendanceChart(attendanceStats) {
+        const ctx = document.getElementById('userAttendanceChart');
+        if (!ctx) return;
+
+        try {
+            // Destroy existing chart if it exists
+            if (window.userModalChart) {
+                window.userModalChart.destroy();
+            }
+
+            window.userModalChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent'],
+                    datasets: [{
+                        data: [attendanceStats.presentCount, attendanceStats.absentCount],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating user attendance chart:', error);
+        }
+    }
+
+    // View subject details (placeholder for future implementation)
+    function viewSubjectDetails(subjectId) {
+        showToast(`Viewing details for subject: ${subjectId}`, 'info');
+        // TODO: Implement subject details modal or navigation
+    }
+
+    // Export single user report - Complete implementation
+    async function exportSingleUserReport(userId) {
+        console.log('📄 exportSingleUserReport called with userId:', userId);
+        try {
+            showToast('Generating user report...', 'info');
+            console.log('✅ Toast shown, starting report generation');
+
+            // Get user data
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (!userDoc.exists) {
+                throw new Error('User not found');
+            }
+
+            const userData = userDoc.data();
+            const attendanceStats = await calculateUserAttendanceStats(userId, userData);
+
+            // Get subject-wise attendance data
+            const attendanceData = userData.attendanceData?.subjects || {};
+            const manualAttendanceSnapshot = await db.collection('manualAttendance')
+                .where('userId', '==', userId)
+                .get();
+
+            // Aggregate subject data
+            const subjectStats = {};
+
+            // Process user document attendance data
+            Object.entries(attendanceData).forEach(([subjectName, data]) => {
+                if (!subjectStats[subjectName]) {
+                    subjectStats[subjectName] = { present: 0, absent: 0 };
+                }
+                subjectStats[subjectName].present += data.present || 0;
+                subjectStats[subjectName].absent += data.absent || 0;
+            });
+
+            // Process manual attendance records
+            const attendanceHistory = [];
+            manualAttendanceSnapshot.forEach(doc => {
+                const record = doc.data();
+                const subjectName = record.subjectName;
+
+                if (!subjectStats[subjectName]) {
+                    subjectStats[subjectName] = { present: 0, absent: 0 };
+                }
+
+                if (record.status === 'present') {
+                    subjectStats[subjectName].present++;
+                } else {
+                    subjectStats[subjectName].absent++;
+                }
+
+                // Add to history
+                attendanceHistory.push({
+                    date: record.date || 'Unknown',
+                    subject: record.subjectName || 'Unknown',
+                    status: record.status || 'Unknown',
+                    addedBy: record.addedByName || 'Unknown',
+                    notes: record.notes || ''
+                });
+            });
+
+            // Sort history by date (newest first)
+            attendanceHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Generate PDF
+            if (!window.jspdf) {
+                throw new Error('jsPDF library not loaded');
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFontSize(20);
+            doc.text('Individual User Attendance Report', 20, 20);
+
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+
+            // User Information
+            doc.setFontSize(16);
+            doc.text('User Information', 20, 50);
+
+            doc.setFontSize(12);
+            doc.text(`Name: ${userData.name || 'Unknown'}`, 20, 60);
+            doc.text(`Email: ${userData.email || 'No email'}`, 20, 70);
+            doc.text(`Role: ${userData.role || 'student'}`, 20, 80);
+            doc.text(`User ID: ${userId}`, 20, 90);
+
+            // Attendance Summary
+            doc.setFontSize(16);
+            doc.text('Attendance Summary', 20, 110);
+
+            doc.setFontSize(12);
+            doc.text(`Total Sessions: ${attendanceStats.totalSessions}`, 20, 120);
+            doc.text(`Present: ${attendanceStats.presentCount}`, 20, 130);
+            doc.text(`Absent: ${attendanceStats.absentCount}`, 20, 140);
+            doc.text(`Attendance Rate: ${attendanceStats.attendancePercentage}%`, 20, 150);
+
+            // Subject-wise Attendance Table
+            let yPosition = 170;
+            doc.setFontSize(16);
+            doc.text('Subject-wise Attendance', 20, yPosition);
+            yPosition += 10;
+
+            const subjectTableData = Object.entries(subjectStats).map(([subject, stats]) => {
+                const total = stats.present + stats.absent;
+                const percentage = total > 0 ? Math.round((stats.present / total) * 100) : 0;
+                return [subject, stats.present.toString(), stats.absent.toString(), total.toString(), `${percentage}%`];
+            });
+
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Subject', 'Present', 'Absent', 'Total', 'Attendance %']],
+                body: subjectTableData,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [52, 58, 64] },
+                alternateRowStyles: { fillColor: [248, 249, 250] }
+            });
+
+            // Recent Attendance History
+            yPosition = doc.lastAutoTable.finalY + 20;
+            doc.setFontSize(16);
+            doc.text('Recent Attendance History', 20, yPosition);
+            yPosition += 10;
+
+            const historyTableData = attendanceHistory.slice(0, 15).map(record => [
+                record.date,
+                record.subject,
+                record.status,
+                record.addedBy,
+                record.notes.substring(0, 30) + (record.notes.length > 30 ? '...' : '')
+            ]);
+
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Date', 'Subject', 'Status', 'Added By', 'Notes']],
+                body: historyTableData,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [52, 58, 64] },
+                alternateRowStyles: { fillColor: [248, 249, 250] }
+            });
+
+            // Save the PDF
+            const fileName = `user_report_${userData.name || 'user'}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+
+            showToast('User report exported successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error exporting user report:', error);
+            showToast('Error exporting user report: ' + error.message, 'danger');
+        }
+    }
+
+    // Export single subject report (placeholder for future implementation)
+    function exportSingleSubjectReport(subjectId) {
+        showToast(`Exporting report for subject: ${subjectId}`, 'info');
+        // TODO: Implement single subject report export
+    }
+
+    // Load Analytics Charts
+    function loadAnalyticsCharts() {
+        console.log('📊 Loading analytics charts...');
+
+        // Load all charts
+        loadAttendanceDistributionChart();
+        loadAttendanceTrendsChart();
+        loadSubjectPerformanceChart();
+        loadDailyAttendanceChart();
+    }
+
+    // Load Attendance Distribution Chart
+    function loadAttendanceDistributionChart() {
+        const ctx = document.getElementById('attendanceDistributionChart');
+        if (!ctx) return;
+
+        try {
+            // Destroy existing chart if it exists
+            if (reportCharts.distributionChart) {
+                reportCharts.distributionChart.destroy();
+            }
+
+            const stats = calculateReportStatistics(currentUserReportData);
+
+            reportCharts.distributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High (≥80%)', 'Medium (60-79%)', 'Low (<60%)'],
+                    datasets: [{
+                        data: [stats.highAttendance, stats.mediumAttendance, stats.lowAttendance],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating attendance distribution chart:', error);
+        }
+    }
+
+    // Load Attendance Trends Chart (placeholder)
+    function loadAttendanceTrendsChart() {
+        const ctx = document.getElementById('attendanceTrendsChart');
+        if (!ctx) return;
+
+        try {
+            // Destroy existing chart if it exists
+            if (reportCharts.trendsChart) {
+                reportCharts.trendsChart.destroy();
+            }
+
+            // Sample data for demonstration
+            const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            const attendanceData = [85, 78, 82, 88];
+
+            reportCharts.trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: attendanceData,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating attendance trends chart:', error);
+        }
+    }
+
+    // Load Subject Performance Chart
+    function loadSubjectPerformanceChart() {
+        const ctx = document.getElementById('subjectPerformanceChart');
+        if (!ctx) return;
+
+        try {
+            // Destroy existing chart if it exists
+            if (reportCharts.performanceChart) {
+                reportCharts.performanceChart.destroy();
+            }
+
+            const subjectNames = currentSubjectReportData.map(s => s.name);
+            const attendanceRates = currentSubjectReportData.map(s => s.attendanceRate);
+
+            reportCharts.performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: subjectNames,
+                    datasets: [{
+                        label: 'Attendance Rate %',
+                        data: attendanceRates,
+                        backgroundColor: attendanceRates.map(rate =>
+                            rate >= 80 ? '#28a745' : rate >= 60 ? '#ffc107' : '#dc3545'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating subject performance chart:', error);
+        }
+    }
+
+    // Load Daily Attendance Chart (placeholder)
+    function loadDailyAttendanceChart() {
+        const ctx = document.getElementById('dailyAttendanceChart');
+        if (!ctx) return;
+
+        try {
+            // Destroy existing chart if it exists
+            if (reportCharts.dailyChart) {
+                reportCharts.dailyChart.destroy();
+            }
+
+            // Sample data for demonstration
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const attendanceData = [88, 85, 90, 82, 78];
+
+            reportCharts.dailyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Average Attendance %',
+                        data: attendanceData,
+                        backgroundColor: '#17a2b8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating daily attendance chart:', error);
+        }
+    }
+
+    // Initialize reports when the reports tab is first shown
+    document.getElementById('reports-tab')?.addEventListener('shown.bs.tab', function() {
+        if (!window.reportsInitialized) {
+            initializeReportsSystem();
+            window.reportsInitialized = true;
+        }
+    });
+
+    // Add reports initialization to the main admin panel initialization
+    const originalInitializeAdminPanel = initializeAdminPanel;
+    initializeAdminPanel = function() {
+        originalInitializeAdminPanel();
+
+        // Initialize reports system after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            if (document.getElementById('reports-content')) {
+                console.log('🔧 Setting up reports system integration...');
+                // Don't auto-initialize reports, wait for tab to be shown
+                window.reportsInitialized = false;
+            }
+        }, 1000);
+    };
+
+    // Make functions globally accessible for onclick handlers
+    window.viewUserDetails = viewUserDetails;
+    window.exportSingleUserReport = exportSingleUserReport;
+    window.viewSubjectDetails = viewSubjectDetails;
+    window.exportSingleSubjectReport = exportSingleSubjectReport;
 
     </script>
 </body>
