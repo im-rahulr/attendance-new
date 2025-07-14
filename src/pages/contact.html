@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - lowrybunks</title>
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        /* Contact page specific styles */
+        .contact-page {
+            padding-bottom: 100px; /* Space for bottom navigation */
+        }
+
+        .contact-header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 20px;
+            margin: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px var(--shadow-medium);
+        }
+
+        [data-theme="dark"] .contact-header {
+            background: linear-gradient(135deg, #333333, #555555);
+        }
+
+        .contact-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .contact-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .contact-section {
+            margin: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .institution-contact {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .institution-contact:last-child {
+            margin-bottom: 0;
+        }
+
+        .institution-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .contact-info:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .contact-details {
+            flex: 1;
+        }
+
+        .contact-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .contact-value {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .contact-value a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-value a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        .general-contact {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 16px;
+            margin: 20px;
+            color: white;
+        }
+
+        [data-theme="dark"] .general-contact {
+            background: linear-gradient(135deg, #333333, #555555);
+        }
+
+        .general-contact h3 {
+            margin: 0 0 16px 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .general-contact p {
+            margin: 0 0 20px 0;
+            opacity: 0.9;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .contact-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .contact-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .pending-email {
+            color: var(--warning-color);
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .contact-header {
+                margin: 10px;
+                padding: 20px 16px;
+            }
+
+            .contact-section {
+                margin: 10px;
+                padding: 16px;
+            }
+
+            .general-contact {
+                margin: 10px;
+                padding: 20px 16px;
+            }
+
+            .contact-header h1 {
+                font-size: 24px;
+            }
+
+            .institution-contact {
+                padding: 16px;
+            }
+
+            .contact-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .contact-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+        </div>
+        
+        <div class="main-content contact-page">
+            <!-- Contact Header -->
+            <div class="contact-header">
+                <h1><i class="fas fa-envelope"></i> Contact Us</h1>
+                <p>Get in touch with our institutional partners</p>
+            </div>
+            
+            <!-- General Contact -->
+            <div class="general-contact">
+                <h3><i class="fas fa-headset"></i> Need Help?</h3>
+                <p>For general inquiries about lowrybunks attendance system, technical support, or partnership opportunities, reach out to us through your institution's contact person.</p>
+                <a href="#institutional-contacts" class="contact-button">
+                    <i class="fas fa-arrow-down"></i>
+                    View Institutional Contacts
+                </a>
+            </div>
+            
+            <!-- Institutional Contacts -->
+            <div class="contact-section" id="institutional-contacts">
+                <h3 class="section-title">
+                    <i class="fas fa-university"></i>
+                    Institutional Contacts
+                </h3>
+                
+                <!-- Lowry Advent College -->
+                <div class="institution-contact">
+                    <div class="institution-name">
+                        <i class="fas fa-graduation-cap"></i>
+                        Lowry Advent College
+                    </div>
+                    
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value">
+                                <a href="mailto:rahul@mailo.com">rahul@mailo.com</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Contact Person</div>
+                            <div class="contact-value">Rahul</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Garden City College -->
+                <div class="institution-contact">
+                    <div class="institution-name">
+                        <i class="fas fa-graduation-cap"></i>
+                        Garden City College
+                    </div>
+                    
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value">
+                                <span class="pending-email">sudeep@[domain].com</span>
+                                <br><small style="color: var(--text-secondary);">Email domain pending confirmation</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Contact Person</div>
+                            <div class="contact-value">Sudeep</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Jain College -->
+                <div class="institution-contact">
+                    <div class="institution-name">
+                        <i class="fas fa-graduation-cap"></i>
+                        Jain College
+                    </div>
+                    
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value">
+                                <span class="pending-email">niketh@[domain].com</span>
+                                <br><small style="color: var(--text-secondary);">Email domain pending confirmation</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info">
+                        <div class="contact-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="contact-label">Contact Person</div>
+                            <div class="contact-value">Niketh</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script src="../components/theme.js"></script>
+    <script src="../api/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Firebase references
+            let auth;
+            
+            try {
+                auth = firebase.auth();
+                
+                // Check if user is authenticated
+                auth.onAuthStateChanged(function(user) {
+                    if (!user) {
+                        // Redirect to login if not authenticated
+                        window.location.href = 'login.html';
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                // Redirect to login on error
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

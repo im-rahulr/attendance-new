@@ -1,0 +1,12 @@
+I need you to completely rebuild the admin panel for the attendance application. Please:
+
+1. Delete the existing admin.html file
+2. Create a new admin.html page from scratch with the following requirements:
+   - Implement all administrative functions (user management, attendance reports, system settings, etc.)
+   - Use a dark UI theme with consistent color scheme that matches the existing attendance application's dark mode
+   - Ensure all functionality works properly (forms, navigation, data display, etc.)
+   - Maintain Bootstrap framework integration and responsive design
+   - Include proper error handling and user feedback
+   - Follow the existing application's design patterns and structure
+
+Before making changes, please analyze the current admin.html file to understand what administrative functions need to be implemented, then create a comprehensive replacement that addresses any existing errors while maintaining full functionality.

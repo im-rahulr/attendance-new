@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Tests - Attendance Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-fail {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-pending {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-vial me-2"></i>System Tests</h1>
+        <p class="text-muted">Automated tests for the Attendance Application</p>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="test-section">
+                    <h3>Test Results</h3>
+                    <div id="testResults"></div>
+                    
+                    <div class="mt-3">
+                        <button id="runAllTests" class="btn btn-primary">
+                            <i class="fas fa-play me-1"></i>Run All Tests
+                        </button>
+                        <button id="runCoreTests" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-cog me-1"></i>Core Tests Only
+                        </button>
+                        <button id="clearResults" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-trash me-1"></i>Clear Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="test-section">
+                    <h4>Test Summary</h4>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 id="passCount">0</h5>
+                                    <small>Passed</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5 id="failCount">0</h5>
+                                    <small>Failed</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 id="totalCount">0</h5>
+                                    <small>Total</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="test-section">
+                    <h4>System Status</h4>
+                    <div id="systemStatus">
+                        <div class="test-result test-pending">
+                            <i class="fas fa-clock me-2"></i>Waiting for tests to run...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="../config/firebase-config.js"></script>
+    
+    <!-- Test Suite -->
+    <script>
+        class TestSuite {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+                this.passCount = 0;
+                this.failCount = 0;
+            }
+
+            addTest(name, testFunction, category = 'general') {
+                this.tests.push({
+                    name,
+                    testFunction,
+                    category,
+                    status: 'pending'
+                });
+            }
+
+            async runTest(test) {
+                try {
+                    const result = await test.testFunction();
+                    test.status = result ? 'pass' : 'fail';
+                    test.message = result === true ? 'Test passed' : (result || 'Test failed');
+                    
+                    if (test.status === 'pass') {
+                        this.passCount++;
+                    } else {
+                        this.failCount++;
+                    }
+                } catch (error) {
+                    test.status = 'fail';
+                    test.message = `Error: ${error.message}`;
+                    this.failCount++;
+                }
+                
+                this.updateDisplay(test);
+            }
+
+            async runAllTests() {
+                this.clearResults();
+                
+                for (const test of this.tests) {
+                    await this.runTest(test);
+                    // Small delay to make tests visible
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                this.updateSummary();
+                this.updateSystemStatus();
+            }
+
+            async runCoreTests() {
+                this.clearResults();
+                
+                const coreTests = this.tests.filter(test => test.category === 'core');
+                for (const test of coreTests) {
+                    await this.runTest(test);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                this.updateSummary();
+                this.updateSystemStatus();
+            }
+
+            clearResults() {
+                this.results = [];
+                this.passCount = 0;
+                this.failCount = 0;
+                document.getElementById('testResults').innerHTML = '';
+                this.updateSummary();
+            }
+
+            updateDisplay(test) {
+                const resultsDiv = document.getElementById('testResults');
+                const testDiv = document.createElement('div');
+                testDiv.className = `test-result test-${test.status}`;
+                
+                const icon = test.status === 'pass' ? 'check' : 'times';
+                testDiv.innerHTML = `
+                    <i class="fas fa-${icon} me-2"></i>
+                    <strong>${test.name}</strong>
+                    <div class="small mt-1">${test.message}</div>
+                `;
+                
+                resultsDiv.appendChild(testDiv);
+            }
+
+            updateSummary() {
+                document.getElementById('passCount').textContent = this.passCount;
+                document.getElementById('failCount').textContent = this.failCount;
+                document.getElementById('totalCount').textContent = this.passCount + this.failCount;
+            }
+
+            updateSystemStatus() {
+                const statusDiv = document.getElementById('systemStatus');
+                const totalTests = this.passCount + this.failCount;
+                const successRate = totalTests > 0 ? Math.round((this.passCount / totalTests) * 100) : 0;
+                
+                let statusClass = 'test-fail';
+                let statusIcon = 'times-circle';
+                let statusText = 'System has issues';
+                
+                if (successRate >= 90) {
+                    statusClass = 'test-pass';
+                    statusIcon = 'check-circle';
+                    statusText = 'System is healthy';
+                } else if (successRate >= 70) {
+                    statusClass = 'test-pending';
+                    statusIcon = 'exclamation-triangle';
+                    statusText = 'System has minor issues';
+                }
+                
+                statusDiv.innerHTML = `
+                    <div class="test-result ${statusClass}">
+                        <i class="fas fa-${statusIcon} me-2"></i>
+                        ${statusText} (${successRate}% success rate)
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize test suite
+        const testSuite = new TestSuite();
+
+        // Core functionality tests
+        testSuite.addTest('Firebase Configuration', async () => {
+            return typeof firebase !== 'undefined' && firebase.apps.length > 0;
+        }, 'core');
+
+        testSuite.addTest('Firestore Connection', async () => {
+            try {
+                const db = firebase.firestore();
+                await db.collection('test').limit(1).get();
+                return true;
+            } catch (error) {
+                return `Firestore error: ${error.message}`;
+            }
+        }, 'core');
+
+        testSuite.addTest('Authentication Service', async () => {
+            return typeof firebase.auth === 'function';
+        }, 'core');
+
+        testSuite.addTest('Local Storage Available', async () => {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                return true;
+            } catch (error) {
+                return 'Local storage not available';
+            }
+        }, 'core');
+
+        testSuite.addTest('Error Manager Initialized', async () => {
+            return typeof window.errorManager !== 'undefined';
+        }, 'core');
+
+        testSuite.addTest('Activity Tracker Available', async () => {
+            return typeof window.activityTracker !== 'undefined';
+        }, 'core');
+
+        // UI tests
+        testSuite.addTest('Bootstrap CSS Loaded', async () => {
+            const bootstrapElement = document.querySelector('.container');
+            const styles = window.getComputedStyle(bootstrapElement);
+            return styles.maxWidth !== 'none';
+        }, 'ui');
+
+        testSuite.addTest('Font Awesome Icons Loaded', async () => {
+            const icon = document.querySelector('.fas');
+            const styles = window.getComputedStyle(icon);
+            return styles.fontFamily.includes('Font Awesome');
+        }, 'ui');
+
+        // Event listeners
+        document.getElementById('runAllTests').addEventListener('click', () => {
+            testSuite.runAllTests();
+        });
+
+        document.getElementById('runCoreTests').addEventListener('click', () => {
+            testSuite.runCoreTests();
+        });
+
+        document.getElementById('clearResults').addEventListener('click', () => {
+            testSuite.clearResults();
+        });
+
+        // Auto-run core tests on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                testSuite.runCoreTests();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - lowrybunks</title>
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        /* Profile-specific styles */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 20px;
+            margin: 20px;
+            color: white;
+            box-shadow: 0 8px 32px var(--shadow-medium);
+        }
+
+        [data-theme="dark"] .profile-header {
+            background: linear-gradient(135deg, #333333, #555555);
+        }
+
+        .large-profile-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            border: 3px solid rgba(4, 243, 36, 0.3);
+        }
+
+        .profile-info h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .profile-info p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .profile-section {
+            margin: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .profile-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-field:last-child {
+            border-bottom: none;
+        }
+
+        .field-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .field-value {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .edit-field {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .edit-field input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .edit-field input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .update-btn {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 8px 16px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            min-width: 80px !important;
+            text-align: center !important;
+        }
+
+        .update-btn:hover {
+            opacity: 0.9 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 8px var(--shadow-medium) !important;
+        }
+
+        .status-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #333333;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .status-link:hover {
+            background-color: #1f1d1d;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px var(--shadow-medium);
+        }
+
+        .status-link i {
+            font-size: 12px;
+        }
+
+
+
+        .action-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .action-button:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-medium);
+        }
+
+        #resetPasswordBtn {
+            background-color: #333333;
+            color: rgb(242, 239, 239) !important;
+        }
+
+        #resetPasswordBtn:hover {
+            background-color: var(--accent-secondary) !important;
+            border-color: var(--accent-secondary) !important;
+        }
+
+        .logout-button {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border: 1px solid var(--error-color) !important;
+        }
+
+        .logout-button:hover {
+            background-color: #d32f2f !important;
+            border-color: #d32f2f !important;
+        }
+
+        /* Project Log Button Styling */
+        .project-log-button {
+            background-color: #6c5ce7 !important;
+            color: white !important;
+            border: 1px solid #6c5ce7 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+        }
+
+        .project-log-button:hover {
+            background-color: #5a4fcf !important;
+            border-color: #5a4fcf !important;
+        }
+
+        .project-log-button i {
+            font-size: 14px;
+        }
+
+        /* Loading and message styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .error-message, .success-message {
+            margin: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background-color: var(--error-bg);
+            color: var(--error-color);
+            border: 2px solid var(--error-color);
+        }
+
+        .success-message {
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            border: 2px solid var(--success-color);
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--success-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            color: white;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        /* Notification badge */
+        .notification-badge {
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .profile-header {
+                margin: 10px;
+                padding: 16px;
+            }
+
+            .profile-section {
+                margin: 10px;
+                padding: 16px;
+            }
+
+            .large-profile-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            .profile-info h2 {
+                font-size: 20px;
+            }
+
+            .stat-cards {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+        }
+
+        .profile-about {
+            margin: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px var(--shadow-light);            text-align: center;
+            padding-bottom: 100px;
+        }
+
+        .profile-about .section-title {
+            margin-bottom: 10px;
+        }
+
+        .footer-desc {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .footer-copyright {
+            color: var(--text-tertiary, #aaa);
+            font-size: 13px;
+            margin-bottom: 0;
+        }
+
+        /* Institutional Footer Styles */
+        .institutional-footer {
+            margin: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .footer-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .institutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .institution-item {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .institution-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow-medium);
+        }
+
+        .institution-logo {
+            width: 80px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background-color: white;
+            padding: 6px;
+        }
+
+        .institution-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .institution-status {
+            font-size: 10px;
+            color: var(--success-color);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 480px) {
+            .institutional-footer {
+                margin: 10px;
+                padding: 16px;
+            }
+
+            .institutions-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .institution-logo {
+                width: 60px;
+                height: 30px;
+            }
+
+            .institution-name {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+        </div>
+
+        <div class="main-content profile-page">
+            <!-- Error and Success Messages -->
+            <div id="errorMessage" class="error-message">
+                An error occurred. Please try again.
+            </div>
+
+            <div id="successMessage" class="success-message">
+                Profile updated successfully!
+            </div>
+
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="large-profile-icon" id="largeProfileIcon">P</div>
+                <div class="profile-info">
+                    <h2 id="profileName">Loading...</h2>
+                    <p id="profileEmail">loading@example.com</p>
+                </div>
+            </div>
+
+            <!-- Personal Information Section -->
+            <div class="profile-section">
+                <h3 class="section-title">Personal Information</h3>
+
+                <div class="profile-field">
+                    <span class="field-label">Name</span>
+                    <div class="edit-field">
+                        <input type="text" id="displayNameInput"maxlength="20" autocomplete="name" style="width: 10%;">
+                        <button id="updateNameBtn" class="update-btn">Update</button>
+                    </div>
+                </div>
+
+                <div class="profile-field">
+                    <span class="field-label">Email</span>
+                    <span class="field-value" id="emailValue">loading@example.com</span>
+                </div>
+
+                <div class="profile-field">
+                    <span class="field-label">College</span>
+                    <span class="field-value">LAC</span>
+                </div>
+
+                <div class="profile-field">
+                    <span class="field-label">Role</span>
+                    <span class="field-value" id="userRole">Loading...</span>
+                </div>
+
+                <div class="profile-field">
+                    <span class="field-label">Joined On</span>
+                    <span class="field-value" id="joinedDate">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Website Status Section -->
+            <div class="profile-section">
+                <h3 class="section-title">Website Status</h3>
+
+                <div class="profile-field">
+                    <span class="field-label">System Status</span>
+                    <a href="https://app.pulsetic.com/status/LrMZQJuO/?preview=true"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="status-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        Check Status
+                    </a>
+                </div>
+            </div>
+
+            <!-- Account Actions Section -->
+            <div class="profile-section">
+                <h3 class="section-title">Account Actions</h3>
+                <button id="projectLogBtn" class="action-button project-log-button">
+                    <i class="fas fa-code-branch"></i>
+                    View Project Log
+                </button>
+                <button id="resetPasswordBtn" class="action-button">Reset Password</button>
+                <button id="logoutBtn" class="action-button logout-button">Logout</button>
+            </div>
+        </div>
+        <div class="profile-about">
+            <h3 class="section-title">About LowryBunks</h3>
+            <p class="footer-desc">Made my 💖</p>
+            <p style="color: white;" class="footer-copyright">© 2025 <a href="">CodeCraft</a>. All rights reserved.</p>
+        </div> 
+               <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-badge" id="navNotificationBadge" style="display: none;">0</span>
+            </a>
+            <a href="profile.html" class="nav-item active">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loader-text" id="loadingText">Loading...</p>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script src="../components/theme.js"></script>
+    <script src="../api/auth.js"></script>
+    <script src="../components/notifications.js"></script>
+    <script>
+        // Fallback validation function
+        function validateNameManually(name) {
+            if (!name || name.trim() === '') {
+                return 'Please enter a valid name.';
+            }
+
+            if (name.length < 2) {
+                return 'Name must be at least 2 characters long.';
+            }
+
+            if (name.length > 50) {
+                return 'Name must be less than 50 characters.';
+            }
+
+            // Check for valid characters (letters, spaces, hyphens, apostrophes)
+            const nameRegex = /^[a-zA-Z\s\-']+$/;
+            if (!nameRegex.test(name)) {
+                return 'Name can only contain letters, spaces, hyphens, and apostrophes.';
+            }
+
+            return null; // No error
+        }
+
+        // Helper function to get initials from name
+        function getInitials(name) {
+            if (!name) return 'U';
+            const names = name.split(' ');
+            const initials = names.map(n => n[0]).join('');
+            return initials.toUpperCase().slice(0, 2);
+        }
+
+        // Show/hide loading overlay
+        function showLoading(text = 'Loading...') {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').textContent = text;
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Firebase references
+            let auth;
+            let db;
+
+            try {
+                // Check if Firebase is available
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase SDK not loaded');
+                }
+
+                auth = firebase.auth();
+                db = firebase.firestore();
+
+                // Show loading
+                showLoading('Loading your profile...');
+
+                // Check if user is authenticated
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        // Update profile information
+                        document.getElementById('profileName').textContent = user.displayName || 'User';
+                        document.getElementById('profileEmail').textContent = user.email;
+                        document.getElementById('emailValue').textContent = user.email;
+                        document.getElementById('displayNameInput').value = user.displayName || '';
+
+                        const largeInitials = getInitials(user.displayName || user.email || 'U');
+                        document.getElementById('largeProfileIcon').textContent = largeInitials;
+
+                        // Get user data from Firestore with improved error handling
+                        const userRef = db.collection('users').doc(user.uid);
+                        userRef.get()
+                            .then(doc => {
+                                if (doc.exists) {
+                                    const userData = doc.data();
+
+                                    // Update join date
+                                    if (userData.createdAt) {
+                                        try {
+                                            const joinDate = userData.createdAt.toDate();
+                                            document.getElementById('joinedDate').textContent = joinDate.toLocaleDateString();
+                                        } catch (dateError) {
+                                            console.warn("Error parsing join date:", dateError);
+                                            document.getElementById('joinedDate').textContent = 'Unknown';
+                                        }
+                                    } else {
+                                        document.getElementById('joinedDate').textContent = 'Unknown';
+                                    }
+
+                                    // Set user role
+                                    document.getElementById('userRole').textContent = userData.role || 'Student';
+
+                                } else {
+                                    // User document doesn't exist, create it
+                                    console.log("User document doesn't exist, creating one...");
+                                    const newUserData = {
+                                        name: user.displayName || 'User',
+                                        email: user.email,
+                                        role: 'Student',
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                                        attendanceData: {
+                                            subjects: {}
+                                        }
+                                    };
+
+                                    return userRef.set(newUserData).then(() => {
+                                        // Update UI with default values
+                                        document.getElementById('joinedDate').textContent = new Date().toLocaleDateString();
+                                        document.getElementById('userRole').textContent = 'Student';
+                                        console.log("User document created successfully");
+                                    });
+                                }
+                                hideLoading();
+                            })
+                            .catch(error => {
+                                console.error("Error getting user document:", error);
+
+                                // Provide more specific error messages
+                                let errorMessage = 'Error loading profile data.';
+                                if (error.code === 'permission-denied') {
+                                    errorMessage = 'Permission denied. Please check your account permissions.';
+                                } else if (error.code === 'unavailable') {
+                                    errorMessage = 'Service temporarily unavailable. Please try again later.';
+                                } else if (error.code === 'network-request-failed') {
+                                    errorMessage = 'Network error. Please check your internet connection.';
+                                }
+
+                                showError(errorMessage);
+
+                                // Set default values even on error
+                                document.getElementById('joinedDate').textContent = 'Unknown';
+                                document.getElementById('userRole').textContent = 'Student';
+
+                                hideLoading();
+                            });
+
+                        // Setup event listeners
+                        setupEventListeners(user, auth, db);
+
+                    } else {
+                        // Redirect to login if not authenticated
+                        window.location.href = 'login.html';
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+
+                // Provide more specific error messages
+                let errorMessage = "Failed to initialize Firebase.";
+                if (error.message.includes('not loaded')) {
+                    errorMessage = "Firebase SDK failed to load. Please check your internet connection and try refreshing the page.";
+                } else if (error.message.includes('configuration')) {
+                    errorMessage = "Firebase configuration error. Please contact support.";
+                } else {
+                    errorMessage = "Failed to initialize Firebase. Please check your internet connection and try again.";
+                }
+
+                showError(errorMessage);
+
+                // Set default values for offline mode
+                document.getElementById('profileName').textContent = 'User';
+                document.getElementById('profileEmail').textContent = 'user@example.com';
+                document.getElementById('emailValue').textContent = 'user@example.com';
+                document.getElementById('joinedDate').textContent = 'Unknown';
+                document.getElementById('userRole').textContent = 'Student';
+
+                hideLoading();
+            }
+        });
+
+        // Setup event listeners function
+        function setupEventListeners(user, auth, db) {
+            // Update Name Button
+            const updateNameButton = document.getElementById('updateNameBtn');
+            if (updateNameButton) {
+                updateNameButton.addEventListener('click', function() {
+                    // Clear any existing messages
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'none';
+
+                    const newName = document.getElementById('displayNameInput').value.trim();
+
+                    // Enhanced validation with fallback
+                    let validationError = null;
+
+                    // Try to use validation manager if available
+                    if (window.validationManager) {
+                        try {
+                            const validation = window.validationManager.validateField(newName, {
+                                required: true,
+                                type: 'name',
+                                minLength: 2,
+                                maxLength: 50
+                            });
+
+                            if (!validation.valid) {
+                                validationError = validation.errors[0];
+                            }
+                        } catch (error) {
+                            console.error('Validation manager error:', error);
+                            // Fall back to manual validation
+                            validationError = validateNameManually(newName);
+                        }
+                    } else {
+                        // Fallback validation if validation manager not available
+                        validationError = validateNameManually(newName);
+                    }
+
+                    if (validationError) {
+                        showError(validationError);
+                        return;
+                    }
+
+                    if (!user) {
+                        showError('User not authenticated. Please log in again.');
+                        return;
+                    }
+
+                    // Check if name is different from current name
+                    if (newName === (user.displayName || '')) {
+                        showError('Please enter a different name.');
+                        return;
+                    }
+
+                    // Show loading and update profile
+                    showLoading('Updating profile...');
+
+                    user.updateProfile({
+                        displayName: newName
+                    }).then(() => {
+                        // Also update in Firestore
+                        return db.collection('users').doc(user.uid).update({
+                            name: newName,
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }).then(() => {
+                        // Update UI elements
+                        document.getElementById('profileName').textContent = newName;
+                        document.getElementById('largeProfileIcon').textContent = getInitials(newName);
+
+                        // Show success message
+                        showSuccess('Profile updated successfully!');
+                        hideLoading();
+                    }).catch(error => {
+                        console.error("Error updating profile:", error);
+
+                        // Provide more specific error messages
+                        let errorMessage = 'Error updating profile. Please try again.';
+                        if (error.code === 'permission-denied') {
+                            errorMessage = 'Permission denied. Please check your account permissions.';
+                        } else if (error.code === 'network-request-failed') {
+                            errorMessage = 'Network error. Please check your internet connection.';
+                        } else if (error.code === 'unavailable') {
+                            errorMessage = 'Service temporarily unavailable. Please try again later.';
+                        }
+
+                        showError(errorMessage);
+                        hideLoading();
+                    });
+                });
+
+                // Add Enter key listener to the display name input
+                const displayNameInput = document.getElementById('displayNameInput');
+                if (displayNameInput) {
+                    displayNameInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            updateNameButton.click();
+                        }
+                    });
+                }
+            }
+
+            // Reset Password Button
+            document.getElementById('resetPasswordBtn').addEventListener('click', function() {
+                showLoading('Sending reset email...');
+
+                // Send password reset email
+                auth.sendPasswordResetEmail(user.email)
+                    .then(() => {
+                        showSuccess("Password reset email sent. Check your inbox.");
+                        hideLoading();
+                    })
+                    .catch((error) => {
+                        console.error("Error sending reset email:", error);
+                        showError("Failed to send reset email. Please try again.");
+                        hideLoading();
+                    });
+            });
+
+            // Project Log Button
+            const projectLogButton = document.getElementById('projectLogBtn');
+            if (projectLogButton) {
+                projectLogButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    try {
+                        // Navigate to project log page
+                        window.location.href = 'projectlog.html';
+                    } catch (error) {
+                        console.error('Error navigating to project log:', error);
+                        showError('Unable to open project log. Please try again.');
+                    }
+                });
+            }
+
+            // Logout Button
+            const logoutButton = document.getElementById('logoutBtn');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    showLoading('Logging out...');
+
+                    // Check if auth is available
+                    if (!auth) {
+                        console.error('Auth not available');
+                        window.location.replace('login.html');
+                        return;
+                    }
+
+                    // Sign out with proper error handling
+                    auth.signOut()
+                        .then(() => {
+                            console.log('User signed out successfully from profile page');
+                            // Clear any cached data
+                            if (typeof localStorage !== 'undefined') {
+                                localStorage.clear();
+                            }
+                            if (typeof sessionStorage !== 'undefined') {
+                                sessionStorage.clear();
+                            }
+                            // Redirection is now handled by the global auth state listener in auth.js
+                        })
+                        .catch((error) => {
+                            console.error("Error signing out:", error);
+                            showError("Failed to sign out. Please try again.");
+                            hideLoading();
+                        });
+                });
+            }
+
+        }
+
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const passwordInput = document.getElementById(targetId);
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    this.textContent = '🔒';
+                } else {
+                    passwordInput.type = 'password';
+                    this.textContent = '👁️';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

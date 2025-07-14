@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Test Suite - Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .test-pass { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border-left-color: #28a745;
+        }
+        .test-fail { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border-left-color: #dc3545;
+        }
+        .test-warn { 
+            background-color: #fff3cd; 
+            color: #856404; 
+            border-left-color: #ffc107;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-stethoscope me-2"></i>
+                    Admin Panel Test Suite
+                </h1>
+                
+                <div class="alert alert-info">
+                    <strong>Purpose:</strong> Comprehensive testing of admin panel functionality including authentication, Firebase connectivity, and UI components.
+                </div>
+                
+                <!-- Test Progress -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line me-2"></i>Test Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-2">
+                            <div id="testProgress" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="h4 text-success" id="passCount">0</div>
+                                <small>Passed</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="h4 text-danger" id="failCount">0</div>
+                                <small>Failed</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="h4 text-warning" id="warnCount">0</div>
+                                <small>Warnings</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="h4 text-info" id="totalCount">0</div>
+                                <small>Total</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Firebase Tests -->
+                        <div class="card test-section">
+                            <div class="card-header">
+                                <h5><i class="fas fa-fire me-2"></i>Firebase Tests</h5>
+                            </div>
+                            <div class="card-body" id="firebaseTests">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Testing...</span>
+                                    </div>
+                                    <p class="mt-2">Initializing Firebase tests...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Authentication Tests -->
+                        <div class="card test-section">
+                            <div class="card-header">
+                                <h5><i class="fas fa-lock me-2"></i>Authentication Tests</h5>
+                            </div>
+                            <div class="card-body" id="authTests">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Testing...</span>
+                                    </div>
+                                    <p class="mt-2">Preparing auth tests...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- UI Component Tests -->
+                        <div class="card test-section">
+                            <div class="card-header">
+                                <h5><i class="fas fa-desktop me-2"></i>UI Component Tests</h5>
+                            </div>
+                            <div class="card-body" id="uiTests">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Testing...</span>
+                                    </div>
+                                    <p class="mt-2">Checking UI components...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Console Output -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5><i class="fas fa-terminal me-2"></i>Test Console</h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearConsole()">
+                                    <i class="fas fa-trash me-1"></i>Clear
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="consoleOutput" class="console-output">
+                                    <div style="color: #569cd6;">[INFO] Test suite initializing...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Test Results Summary -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5><i class="fas fa-clipboard-check me-2"></i>Test Summary</h5>
+                            </div>
+                            <div class="card-body" id="testSummary">
+                                <p class="text-muted">Test results will appear here...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-primary" onclick="runAllTests()">
+                                <i class="fas fa-play me-1"></i>Run All Tests
+                            </button>
+                            <button class="btn btn-success" onclick="testFirebaseOnly()">
+                                <i class="fas fa-fire me-1"></i>Test Firebase Only
+                            </button>
+                            <button class="btn btn-warning" onclick="testAuthOnly()">
+                                <i class="fas fa-lock me-1"></i>Test Auth Only
+                            </button>
+                            <button class="btn btn-info" onclick="testUIOnly()">
+                                <i class="fas fa-desktop me-1"></i>Test UI Only
+                            </button>
+                            <a href="../pages/admin.html" class="btn btn-outline-primary" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i>Open Admin Panel
+                            </a>
+                            <button class="btn btn-outline-secondary" onclick="exportResults()">
+                                <i class="fas fa-download me-1"></i>Export Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Admin Auth Module -->
+    <script src="../components/admin-auth.js"></script>
+    
+    <script>
+        // Test suite state
+        let testResults = [];
+        let testCounts = { pass: 0, fail: 0, warn: 0, total: 0 };
+        
+        // Console output management
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        function logToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#569cd6',
+                success: '#4ec9b0',
+                error: '#f44747',
+                warn: '#dcdcaa',
+                debug: '#9cdcfe'
+            };
+            
+            const color = colors[type] || colors.info;
+            const prefix = type.toUpperCase().padEnd(7);
+            
+            consoleOutput.innerHTML += `<div style="color: ${color};">[${timestamp}] [${prefix}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = '<div style="color: #569cd6;">[INFO] Console cleared</div>';
+        }
+        
+        // Test result management
+        function addTestResult(name, status, message = '', details = '') {
+            const result = { name, status, message, details, timestamp: new Date() };
+            testResults.push(result);
+            
+            testCounts.total++;
+            testCounts[status]++;
+            
+            updateTestProgress();
+            updateTestCounts();
+            
+            logToConsole(`${name}: ${status.toUpperCase()} - ${message}`, status === 'pass' ? 'success' : status);
+            
+            return result;
+        }
+        
+        function updateTestProgress() {
+            const progress = testCounts.total > 0 ? (testCounts.pass / testCounts.total) * 100 : 0;
+            document.getElementById('testProgress').style.width = `${progress}%`;
+        }
+        
+        function updateTestCounts() {
+            document.getElementById('passCount').textContent = testCounts.pass;
+            document.getElementById('failCount').textContent = testCounts.fail;
+            document.getElementById('warnCount').textContent = testCounts.warn;
+            document.getElementById('totalCount').textContent = testCounts.total;
+        }
+        
+        function renderTestResults(containerId, results) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            let html = '';
+            results.forEach(result => {
+                const iconMap = {
+                    pass: 'fa-check',
+                    fail: 'fa-times',
+                    warn: 'fa-exclamation-triangle'
+                };
+                
+                const icon = iconMap[result.status] || 'fa-question';
+                
+                html += `
+                    <div class="test-result test-${result.status}">
+                        <i class="fas ${icon} me-2"></i>
+                        <strong>${result.name}</strong>
+                        ${result.message ? `<br><small>${result.message}</small>` : ''}
+                        ${result.details ? `<br><code style="font-size: 11px;">${result.details}</code>` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-muted">No test results yet</p>';
+        }
+        
+        // Initialize test suite
+        document.addEventListener('DOMContentLoaded', function() {
+            logToConsole('Test suite loaded successfully', 'success');
+            logToConsole('Ready to run tests', 'info');
+        });
+        
+        // Auto-run tests after a short delay
+        setTimeout(() => {
+            logToConsole('Auto-starting test suite...', 'info');
+            runAllTests();
+        }, 2000);
+    </script>
+    
+    <!-- Test implementations will be added in the next part -->
+    <script src="admin-panel-tests.js"></script>
+</body>
+</html>

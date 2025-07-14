@@ -1,0 +1,51 @@
+{
+  "name": "attendance-app",
+  "version": "1.0.0",
+  "description": "Attendance tracking application with admin panel",
+  "main": "src/pages/index.html",
+  "scripts": {
+    "start": "firebase serve --port 5000",
+    "dev": "firebase serve --port 5000 --host 0.0.0.0",
+    "build": "npm run lint && npm run test",
+    "test": "node src/tests/run-tests.js",
+    "test:browser": "open src/tests/system-tests.html",
+    "lint": "echo 'Linting JavaScript files...' && find src -name '*.js' -exec node -c {} \\;",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:functions": "firebase deploy --only functions",
+    "backup": "node scripts/backup-firestore.js",
+    "setup": "npm install && firebase login && firebase use --add"
+  },
+  "keywords": [
+    "attendance",
+    "firebase",
+    "admin-panel",
+    "education"
+  ],
+  "author": "CodeCraft",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^9.23.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "task-master-ai": "^0.19.0",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^12.0.0",
+    "live-server": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/attendance-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/attendance-app/issues"
+  },
+  "homepage": "https://github.com/your-username/attendance-app#readme"
+}

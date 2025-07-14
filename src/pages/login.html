@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance App - Login</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Dancing+Script:wght@400..700&family=Pacifico&family=Sacramento&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Embedded CSS (since external CSS may not load on Netlify) -->
+    <style>
+        :root {
+            --primary-color: #1C2D40;
+            --accent-color: #97BCE8;
+            --green-color: #34C759;
+            --red-color: #FF3B30;
+            --text-dark: #282424;
+            --text-light: #4E4949;
+            --bg-light: #FFFFFF;
+            --border-color: #DEDEDE;
+            --btn-color: #D9ED92;
+
+            /* Light theme variables */
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #282424;
+            --text-secondary: #4E4949;
+            --text-muted: #6c757d;
+            --border-primary: #DEDEDE;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark Theme Colors */
+        [data-theme="dark"] {
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #999999;
+            --border-primary: #333333;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --accent-color: #64B5F6;
+            --btn-color: #4CAF50;
+            --bg-light: #111111;
+            --text-dark: #ffffff;
+            --text-light: #cccccc;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 20px 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* lowrybunks styling */
+        .lowry-style {
+            font-family: 'Dancing Script', cursive;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        /* Auth Container Styles */
+        .auth-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: var(--bg-primary);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-primary);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .auth-container h1 {
+            font-size: 28px;
+            color: var(--text-primary);
+        }
+
+        /* Tab Navigation */
+        .tab-container {
+            margin: 30px 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background-color: #d1dee5;
+            border-radius: 50px;
+            padding: 5px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px;
+            border-radius: 50px;
+            font-weight: 500;
+            color: rgb(0, 0, 0);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--btn-color);
+            color: var(--text-dark);
+            font-weight: 600;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Form Styles */
+        .form-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 1px solid var(--border-primary);
+            border-radius: 10px;
+            padding: 12px 15px;
+            height: auto;
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(151, 188, 232, 0.25);
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Ensure password input text is visible */
+        input[type="password"],
+        input[type="text"] {
+            color: var(--text-primary) !important;
+            background-color: var(--bg-primary) !important;
+        }
+
+        /* Fix for autofill styles */
+        .form-control:-webkit-autofill,
+        .form-control:-webkit-autofill:hover,
+        .form-control:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--text-primary) !important;
+            -webkit-box-shadow: 0 0 0px 1000px var(--bg-primary) inset !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .password-input {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: color 0.3s ease, transform 0.2s ease;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-color);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .password-toggle:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .forgot-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Login Button */
+        .btn-login {
+            background-color: var(--btn-color);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-weight: 600;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px var(--shadow-color);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Divider */
+        .or-divider {
+            position: relative;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .or-divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--border-primary);
+            z-index: 1;
+        }
+
+        .or-divider span {
+            position: relative;
+            background-color: var(--bg-primary);
+            padding: 0 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            z-index: 2;
+        }
+
+        /* Social Login */
+        .social-login {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .btn-social {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid var(--border-primary);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-social:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        /* Green Book Loader Animation (from dashboard.html) */
+        .loader {
+            --background: linear-gradient(135deg, #17c33c, #1f872f);
+            --shadow: rgba(31, 80, 14, 0.28);
+            --text: #6C7486;
+            --page: rgba(255, 255, 255, 0.36);
+            --page-fold: rgba(239, 228, 228, 0.52);
+            --duration: 3s;
+            width: 200px;
+            height: 140px;
+            position: relative;
+            margin: 0 auto 50px;
+            display: none;
+        }
+
+        .loader:before, .loader:after {
+            --r: -6deg;
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            width: 120px;
+            top: 80%;
+            box-shadow: 0 16px 12px var(--shadow);
+            transform: rotate(var(--r));
+        }
+
+        .loader:before {
+            left: 4px;
+        }
+
+        .loader:after {
+            --r: 6deg;
+            right: 4px;
+        }
+
+        .loader div {
+            width: 100%;
+            height: 100%;
+            border-radius: 13px;
+            position: relative;
+            z-index: 1;
+            perspective: 600px;
+            box-shadow: 0 4px 6px var(--shadow);
+            background-image: var(--background);
+        }
+
+        .loader div ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            position: relative;
+        }
+
+        .loader div ul li {
+            --r: 180deg;
+            --o: 0;
+            --c: var(--page);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            transform-origin: 100% 50%;
+            color: var(--c);
+            opacity: var(--o);
+            transform: rotateY(var(--r));
+            -webkit-animation: var(--duration) ease infinite;
+            animation: var(--duration) ease infinite;
+        }
+
+        .loader div ul li:nth-child(2) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-2;
+            animation-name: page-2;
+        }
+
+        .loader div ul li:nth-child(3) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-3;
+            animation-name: page-3;
+        }
+
+        .loader div ul li:nth-child(4) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-4;
+            animation-name: page-4;
+        }
+
+        .loader div ul li:nth-child(5) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-5;
+            animation-name: page-5;
+        }
+
+        .loader div ul li svg {
+            width: 90px;
+            height: 120px;
+            display: block;
+        }
+
+        .loader div ul li:first-child {
+            --r: 0deg;
+            --o: 1;
+        }
+
+        .loader div ul li:last-child {
+            --o: 1;
+        }
+
+        .loader-text {
+            display: block;
+            left: 0;
+            right: 0;
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        @keyframes page-2 {
+            0% { transform: rotateY(180deg); opacity: 0; }
+            20% { opacity: 1; }
+            35%, 100% { opacity: 0; }
+            50%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-3 {
+            15% { transform: rotateY(180deg); opacity: 0; }
+            35% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+            65%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-4 {
+            30% { transform: rotateY(180deg); opacity: 0; }
+            50% { opacity: 1; }
+            65%, 100% { opacity: 0; }
+            80%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-5 {
+            45% { transform: rotateY(180deg); opacity: 0; }
+            65% { opacity: 1; }
+            80%, 100% { opacity: 0; }
+            95%, 100% { transform: rotateY(0deg); }
+        }
+
+
+
+        .loader-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, var(--accent-color), var(--btn-color));
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .loader span {
+            display: block;
+            text-align: center;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 140px;
+            font-size: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.7;
+            }
+        }
+
+        /* Show content when loaded */
+        .content-container {
+            display: none;
+        }
+        
+        /* Loading overlay for script.js compatibility */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        /* Modal Dark Mode Support */
+        .modal-content {
+            background-color: var(--bg-primary) !important;
+            border: 1px solid var(--border-primary) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-primary) !important;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-primary) !important;
+        }
+
+        .modal-title {
+            color: var(--text-primary) !important;
+        }
+
+        [data-theme="dark"] .btn-close {
+            filter: invert(1);
+        }
+
+        /* Toast Dark Mode Support */
+        .toast {
+            background: linear-gradient(135deg, var(--accent-color), var(--btn-color)) !important;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 576px) {
+            .auth-container {
+                border-radius: 0;
+                padding: 20px;
+                box-shadow: none;
+                border: none;
+            }
+
+            body {
+                padding: 0;
+                background-color: var(--bg-primary);
+            }
+
+            .modal-dialog {
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Original Book Loader Animation -->
+        <div class="loader" id="pageLoader">
+            <div>
+                <ul>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <p class="mt-2 loader-text" id="loadingText">Loading your attendance portal...</p>
+        </div>
+
+        <div class="auth-container content-container" id="mainContent">
+            <h1 class="text-center mb-4">Welcome to <span class="lowry-style">lowry</span>bunks</h1>
+            <p class="text-center mb-5">Access your attendance portal</p>
+            
+            <div class="tab-container mb-4">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" id="loginTab">Login</button>
+                    <button class="tab-btn" id="signupTab">Sign Up</button>
+                </div>
+                
+                <div class="tab-content" id="loginContent">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="example@email.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <div class="password-input">
+                                <input type="password" class="form-control" id="loginPassword" required>
+                                <span class="password-toggle" data-target="loginPassword">👁️</span>
+                            </div>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            <a href="#" class="forgot-link" id="forgotPassword">Forgot password?</a>
+                        </div>
+                        <button type="button" class="btn btn-login w-100" id="loginButton">Login</button>
+                    </form>
+                </div>
+                
+                <div class="tab-content d-none" id="signupContent">
+                    <form id="signupForm">
+                        <div class="mb-3">
+                            <label for="signupName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="signupName" placeholder="Your full name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="signupEmail" placeholder="example@email.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupPassword" class="form-label">Password</label>
+                            <div class="password-input">
+                                <input type="password" class="form-control" id="signupPassword" required>
+                                <span class="password-toggle" data-target="signupPassword">👁️</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-login w-100" id="signupButton">Create Account</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center or-divider">
+                <span>Or Sign In With</span>
+            </div>
+            
+            <div class="social-login">
+                <button class="btn btn-social google" id="googleLogin">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                      <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                      <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                      <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                      <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+                    </svg>
+                    Google
+                </button>
+                <button class="btn btn-social facebook">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512">
+                      <path fill="#1877F2" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/>
+                      <path fill="#ffffff" d="M355.6 330.7 367 256h-67v-39.5c0-20.3 10-40.3 40-40.3h32v-60s-29-5-56-5c-57 0-94 34.3-94 96.5V256h-63.4v74.7H222V512h78v-205z"/>
+                    </svg>
+                    Facebook
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay that script.js expects -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingText">Loading your data...</p>
+    </div>
+
+    <!-- Coming Soon Modal -->
+    <div class="modal fade" id="comingSoonModal" tabindex="-1" aria-labelledby="comingSoonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-primary); border: 1px solid var(--border-primary); color: var(--text-primary);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-primary);">
+                    <h5 class="modal-title" id="comingSoonModalLabel" style="color: var(--text-primary);">
+                        <span id="modalIcon">🚀</span> Coming Soon!
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <span id="socialIcon" style="font-size: 3rem;">🔗</span>
+                    </div>
+                    <h6 id="modalMessage" style="color: var(--text-primary);">Social Login Feature</h6>
+                    <p style="color: var(--text-secondary);" id="modalDescription">
+                        We're working hard to bring you seamless social login integration.
+                        This feature will be available soon!
+                    </p>
+                    <div class="mt-3">
+                        <small style="color: var(--text-muted);">
+                            In the meantime, please use email and password to sign in.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-primary);">
+                    <button type="button" class="btn btn-login" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Not Found Modal -->
+    <div class="modal fade" id="accountNotFoundModal" tabindex="-1" aria-labelledby="accountNotFoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-primary); border: 1px solid var(--border-primary); color: var(--text-primary);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-primary);">
+                    <h5 class="modal-title" id="accountNotFoundModalLabel" style="color: var(--text-primary);">
+                        <span>❌</span> Account Not Found
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <span style="font-size: 3rem;">🔍</span>
+                    </div>
+                    <h6 style="color: var(--text-primary);">We couldn't find an account with this email</h6>
+                    <p style="color: var(--text-secondary);" id="accountNotFoundEmail">
+                        The email address you entered doesn't match any existing account.
+                    </p>
+                    <div class="mt-3">
+                        <p style="color: var(--text-secondary);">
+                            Would you like to create a new account instead?
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-primary);">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Try Again</button>
+                    <button type="button" class="btn btn-login" id="createAccountBtn">Create Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- General Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--bg-primary); border: 1px solid var(--border-primary); color: var(--text-primary);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-primary);">
+                    <h5 class="modal-title" id="errorModalLabel" style="color: var(--text-primary);">
+                        <span id="errorIcon">⚠️</span> <span id="errorTitle">Login Error</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <span id="errorModalIcon" style="font-size: 3rem;">❗</span>
+                    </div>
+                    <h6 id="errorModalMessage" style="color: var(--text-primary);">An error occurred</h6>
+                    <p style="color: var(--text-secondary);" id="errorModalDescription">
+                        Please try again or contact support if the problem persists.
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-primary);">
+                    <button type="button" class="btn btn-login" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container for notifications -->
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1060;">
+        <div id="comingSoonToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="background: linear-gradient(135deg, var(--accent-color), var(--btn-color));">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    🚀 Coming Soon! Social login feature is under development.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="../components/theme.js" onerror="console.warn('theme.js not loaded')"></script>
+    <script src="../api/auth.js" onerror="console.warn('auth.js not loaded')"></script>
+    
+    <!-- Lazy loading and loader script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show loader
+            const loader = document.getElementById('pageLoader');
+            const content = document.getElementById('mainContent');
+
+            // Display loader
+            if (loader) {
+                loader.style.display = 'block';
+            }
+            if (content) {
+                content.style.display = 'none';
+            }
+
+            // Simulate loading delay and then show content
+            setTimeout(function() {
+                if (loader) {
+                    loader.style.display = 'none';
+                }
+                if (content) {
+                    content.style.display = 'block';
+                }
+            }, 2000);
+            
+            // Implement lazy loading for images
+            const lazyImages = document.querySelectorAll('img[data-src]');
+            
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                            imageObserver.unobserve(img);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(function(img) {
+                    imageObserver.observe(img);
+                });
+            } else {
+                // Fallback for browsers that don't support IntersectionObserver
+                lazyImages.forEach(function(img) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                });
+            }
+            
+            // Enhanced password toggle functionality
+            function initPasswordToggle() {
+                document.querySelectorAll('.password-toggle').forEach(toggle => {
+                    toggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Find the input in the same parent container
+                        const passwordContainer = this.parentElement;
+                        const input = passwordContainer.querySelector('input[type="password"], input[type="text"]');
+
+                        if (!input) {
+                            console.warn('Password input not found for toggle');
+                            return;
+                        }
+
+                        // Toggle password visibility
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            this.textContent = '🙈'; // Hide icon
+                            this.setAttribute('aria-label', 'Hide password');
+                            this.title = 'Hide password';
+                        } else {
+                            input.type = 'password';
+                            this.textContent = '👁️'; // Show icon
+                            this.setAttribute('aria-label', 'Show password');
+                            this.title = 'Show password';
+                        }
+
+                        // Brief focus on input to maintain cursor position
+                        const cursorPosition = input.selectionStart;
+                        input.focus();
+                        input.setSelectionRange(cursorPosition, cursorPosition);
+                    });
+
+                    // Set initial accessibility attributes
+                    toggle.setAttribute('role', 'button');
+                    toggle.setAttribute('aria-label', 'Show password');
+                    toggle.setAttribute('tabindex', '0');
+                    toggle.title = 'Show password';
+
+                    // Add keyboard support
+                    toggle.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            this.click();
+                        }
+                    });
+                });
+            }
+
+            // Initialize password toggle
+            initPasswordToggle();
+
+            // Social Login Coming Soon functionality
+            function initSocialLoginHandlers() {
+                const socialButtons = document.querySelectorAll('.btn-social');
+                const comingSoonModal = new bootstrap.Modal(document.getElementById('comingSoonModal'));
+                const comingSoonToast = document.getElementById('comingSoonToast');
+
+                socialButtons.forEach(button => {
+                    // Remove any existing event listeners first
+                    button.removeEventListener('click', arguments.callee);
+
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+
+                        // Determine which social platform was clicked
+                        const isGoogle = this.classList.contains('google') || this.textContent.includes('Google') || this.id === 'googleLogin';
+                        const isFacebook = this.classList.contains('facebook') || this.textContent.includes('Facebook');
+
+                        // Update modal content based on platform
+                        const modalIcon = document.getElementById('modalIcon');
+                        const socialIcon = document.getElementById('socialIcon');
+                        const modalMessage = document.getElementById('modalMessage');
+                        const modalDescription = document.getElementById('modalDescription');
+
+                        if (isGoogle) {
+                            modalIcon.textContent = '🚀';
+                            socialIcon.textContent = '🔍';
+                            modalMessage.textContent = 'Google Login Coming Soon';
+                            modalDescription.textContent = 'We\'re integrating Google Sign-In to make your login experience even smoother. This feature will be available in our next update!';
+                        } else if (isFacebook) {
+                            modalIcon.textContent = '🚀';
+                            socialIcon.textContent = '📘';
+                            modalMessage.textContent = 'Facebook Login Coming Soon';
+                            modalDescription.textContent = 'Facebook Login integration is in development. Soon you\'ll be able to sign in with just one click using your Facebook account!';
+                        } else {
+                            modalIcon.textContent = '🚀';
+                            socialIcon.textContent = '🔗';
+                            modalMessage.textContent = 'Social Login Coming Soon';
+                            modalDescription.textContent = 'We\'re working on social login integration to make accessing your account easier than ever!';
+                        }
+
+                        // Show modal with animation
+                        comingSoonModal.show();
+
+                        // Optional: Also show a toast notification
+                        if (comingSoonToast) {
+                            const toastMessage = document.getElementById('toastMessage');
+                            if (isGoogle) {
+                                toastMessage.textContent = '🔍 Google Login coming soon!';
+                            } else if (isFacebook) {
+                                toastMessage.textContent = '📘 Facebook Login coming soon!';
+                            } else {
+                                toastMessage.textContent = '🚀 Social Login coming soon!';
+                            }
+
+                            const toast = new bootstrap.Toast(comingSoonToast, { delay: 3000 });
+                            toast.show();
+                        }
+
+                        // Add a subtle animation to the clicked button
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                    });
+                });
+            }
+
+            // Initialize social login handlers
+            initSocialLoginHandlers();
+
+            // Override Google login button specifically to prevent Firebase auth
+            const googleLoginBtn = document.getElementById('googleLogin');
+            if (googleLoginBtn) {
+                // Remove all existing event listeners
+                const newGoogleBtn = googleLoginBtn.cloneNode(true);
+                googleLoginBtn.parentNode.replaceChild(newGoogleBtn, googleLoginBtn);
+
+                // Add only our coming soon handler
+                newGoogleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    // Show coming soon modal for Google
+                    const modalIcon = document.getElementById('modalIcon');
+                    const socialIcon = document.getElementById('socialIcon');
+                    const modalMessage = document.getElementById('modalMessage');
+                    const modalDescription = document.getElementById('modalDescription');
+
+                    if (modalIcon) modalIcon.textContent = '🚀';
+                    if (socialIcon) socialIcon.textContent = '🔍';
+                    if (modalMessage) modalMessage.textContent = 'Google Login Coming Soon';
+                    if (modalDescription) modalDescription.textContent = 'We\'re integrating Google Sign-In to make your login experience even smoother. This feature will be available in our next update!';
+
+                    const comingSoonModal = new bootstrap.Modal(document.getElementById('comingSoonModal'));
+                    comingSoonModal.show();
+                });
+            }
+
+            // Enhanced Error Handling Functions
+            function initErrorHandling() {
+                const accountNotFoundModal = new bootstrap.Modal(document.getElementById('accountNotFoundModal'));
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                const createAccountBtn = document.getElementById('createAccountBtn');
+
+                // Handle create account button click
+                createAccountBtn.addEventListener('click', function() {
+                    // Close the modal
+                    accountNotFoundModal.hide();
+
+                    // Switch to signup tab
+                    const signupTab = document.getElementById('signupTab');
+                    const loginTab = document.getElementById('loginTab');
+                    const signupContent = document.getElementById('signupContent');
+                    const loginContent = document.getElementById('loginContent');
+
+                    if (signupTab && loginTab && signupContent && loginContent) {
+                        signupTab.classList.add('active');
+                        loginTab.classList.remove('active');
+                        signupContent.classList.remove('d-none');
+                        loginContent.classList.add('d-none');
+
+                        // Pre-fill email if available
+                        const loginEmail = document.getElementById('loginEmail').value;
+                        const signupEmail = document.getElementById('signupEmail');
+                        if (loginEmail && signupEmail) {
+                            signupEmail.value = loginEmail;
+                        }
+
+                        // Focus on name field
+                        const signupName = document.getElementById('signupName');
+                        if (signupName) {
+                            setTimeout(() => signupName.focus(), 300);
+                        }
+                    }
+                });
+
+                // Make error handling functions globally available
+                window.showAccountNotFoundError = function(email) {
+                    const emailElement = document.getElementById('accountNotFoundEmail');
+                    if (emailElement && email) {
+                        emailElement.textContent = `No account found for "${email}". Would you like to create one?`;
+                    }
+                    accountNotFoundModal.show();
+                };
+
+                window.showEnhancedError = function(title, message, icon = '❗') {
+                    const errorTitle = document.getElementById('errorTitle');
+                    const errorIcon = document.getElementById('errorIcon');
+                    const errorModalIcon = document.getElementById('errorModalIcon');
+                    const errorModalMessage = document.getElementById('errorModalMessage');
+                    const errorModalDescription = document.getElementById('errorModalDescription');
+
+                    if (errorTitle) errorTitle.textContent = title;
+                    if (errorIcon) errorIcon.textContent = icon;
+                    if (errorModalIcon) errorModalIcon.textContent = icon;
+                    if (errorModalMessage) errorModalMessage.textContent = title;
+                    if (errorModalDescription) errorModalDescription.textContent = message;
+
+                    errorModal.show();
+                };
+            }
+
+            // Initialize error handling
+            initErrorHandling();
+            
+            // Tab switching functionality
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+            const loginContent = document.getElementById('loginContent');
+            const signupContent = document.getElementById('signupContent');
+            
+            loginTab.addEventListener('click', function() {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginContent.classList.remove('d-none');
+                signupContent.classList.add('d-none');
+            });
+            
+            signupTab.addEventListener('click', function() {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupContent.classList.remove('d-none');
+                loginContent.classList.add('d-none');
+            });
+            
+            // Override the showLoading and hideLoading functions for script.js compatibility
+            window.showLoading = function(message = "Loading...") {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                const loadingText = document.getElementById('loadingText');
+                
+                if (loadingText) {
+                    loadingText.textContent = message;
+                }
+                
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+                
+                // Also show our book loader for a nicer effect
+                if (loader) {
+                    loader.style.display = 'block';
+                    content.style.display = 'none';
+                }
+            };
+            
+            window.hideLoading = function() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none';
+                }
+                
+                // Hide book loader and show content
+                if (loader) {
+                    loader.style.display = 'none';
+                    content.style.display = 'block';
+                }
+            };
+        });
+    </script>
+</body>
+</html> 

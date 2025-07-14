@@ -2,33 +2,43 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow admin users to read and write to all documents
-    match /{document=**} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    // Helper function to check if user is admin
+    function isAdmin(email) {
+      return email in ['admin@admin.com', 'admin@example.com', 'administrator@attendance.com'];
     }
-    
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Allow admin users to read and write to all documents (highest priority)
+    match /{document=**} {
+      allow read, write: if isAuthenticated() && isAdmin(request.auth.token.email);
+    }
+
     // Allow subjects collection to be read by all authenticated users
     match /subjects/{subjectId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && isAdmin(request.auth.token.email);
     }
-    
+
     // Allow users to read and write only their own documents
     match /users/{userId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin(request.auth.token.email));
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin(request.auth.token.email));
     }
-    
+
     // User logs collection - only admin access
     match /userLogs/{logId} {
       allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
     }
-    
+
     // Deleted records collection - only admin access
     match /deletedRecords/{recordId} {
       allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
     }
-    
+
     // Manual attendance collection - only admin access
     match /manualAttendance/{recordId} {
       allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
@@ -45,9 +55,49 @@ service cloud.firestore {
         (resource.data.recipientId == request.auth.uid || isAdmin(request.auth.token.email));
     }
 
-    // Helper function to check if user is admin
-    function isAdmin(email) {
-      return email in ['admin@admin.com', 'admin@example.com', 'administrator@attendance.com'];
+    // Error logs collection - only admin access
+    match /errorLogs/{errorId} {
+      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+
+    // Application logs collection - only admin access
+    match /applicationLogs/{logId} {
+      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+
+    // Project logs collection - read access for authenticated users, write access for admins
+    match /projectLogs/{logId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+
+    // Attendance collection - users can read their own, admins can read/write all
+    match /attendance/{attendanceId} {
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || isAdmin(request.auth.token.email));
+      allow write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+
+    // Attendance records collection - users can read their own, admins can read/write all
+    match /attendanceRecords/{recordId} {
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || isAdmin(request.auth.token.email));
+      allow write: if request.auth != null && isAdmin(request.auth.token.email);
+    }
+
+    // Test connection collection for admin panel diagnostics
+    match /_test_connection/{testId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Test collection for connectivity tests (more permissive for testing)
+    match /_test/{testId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Temporary rule for unauthenticated testing (REMOVE IN PRODUCTION)
+    match /public_test/{testId} {
+      allow read, write: if true;
     }
   }
-} 
+}

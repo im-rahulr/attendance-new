@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test - Attendance App Fixes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background-color: #218838;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .console-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Attendance App Debug Test</h1>
+    <p>This page helps verify that the fixes are properly implemented and working.</p>
+
+    <div class="test-section">
+        <h2>1. File Existence Check</h2>
+        <button class="test-button" onclick="checkFiles()">Check Required Files</button>
+        <div id="file-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Validation Manager Test</h2>
+        <button class="test-button" onclick="testValidation()">Test Validation System</button>
+        <div id="validation-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Profile Button Visibility Test</h2>
+        <p>This simulates the profile page Update Name button:</p>
+        <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
+            <input type="text" id="testNameInput" placeholder="Enter your full name" style="padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px;">
+            <button id="testUpdateBtn" style="
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                background-color: #28a745 !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 8px !important;
+                padding: 10px 20px !important;
+                cursor: pointer !important;
+                font-weight: 500 !important;
+                font-size: 14px !important;
+                min-width: 80px !important;
+            ">Update</button>
+        </div>
+        <div id="button-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Notification Badge Test</h2>
+        <p>Test notification badge behavior:</p>
+        <div style="position: relative; display: inline-block; margin: 10px;">
+            <span style="font-size: 24px;">🔔</span>
+            <span id="testBadge" class="notification-badge" style="
+                background-color: #dc3545;
+                color: white;
+                border-radius: 50%;
+                padding: 2px 6px;
+                font-size: 10px;
+                font-weight: 600;
+                position: absolute;
+                top: -5px;
+                right: -10px;
+                min-width: 16px;
+                text-align: center;
+                display: none;
+            "></span>
+        </div>
+        <br>
+        <button class="test-button" onclick="testNotificationBadge(0)">Test 0 Notifications</button>
+        <button class="test-button" onclick="testNotificationBadge(3)">Test 3 Notifications</button>
+        <button class="test-button" onclick="testNotificationBadge(12)">Test 12 Notifications</button>
+        <div id="badge-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Console Output</h2>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+        <div id="console-output" class="console-output">Console output will appear here...</div>
+    </div>
+
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+
+        function addToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌ ERROR' : '📝 LOG';
+            consoleOutput.textContent += `[${timestamp}] ${prefix}: ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+
+        function clearConsole() {
+            consoleOutput.textContent = 'Console cleared...\n';
+        }
+
+        function checkFiles() {
+            const status = document.getElementById('file-status');
+            status.innerHTML = '<div class="status info">Checking files...</div>';
+            
+            const filesToCheck = ['validation.js', 'profile.html', 'admin.html'];
+            let results = [];
+            
+            filesToCheck.forEach(file => {
+                fetch(file)
+                    .then(response => {
+                        if (response.ok) {
+                            results.push(`✅ ${file} - Found`);
+                        } else {
+                            results.push(`❌ ${file} - Not found (${response.status})`);
+                        }
+                        updateFileStatus(results);
+                    })
+                    .catch(error => {
+                        results.push(`❌ ${file} - Error: ${error.message}`);
+                        updateFileStatus(results);
+                    });
+            });
+        }
+
+        function updateFileStatus(results) {
+            const status = document.getElementById('file-status');
+            status.innerHTML = '<div class="status info">' + results.join('<br>') + '</div>';
+        }
+
+        function testValidation() {
+            const status = document.getElementById('validation-status');
+            
+            if (typeof window.validationManager !== 'undefined') {
+                try {
+                    const testResult = window.validationManager.validateField('John Doe', {
+                        required: true,
+                        type: 'name'
+                    });
+                    
+                    if (testResult.valid) {
+                        status.innerHTML = '<div class="status success">✅ Validation Manager is working correctly!</div>';
+                        console.log('Validation test passed');
+                    } else {
+                        status.innerHTML = '<div class="status error">❌ Validation failed: ' + testResult.errors.join(', ') + '</div>';
+                    }
+                } catch (error) {
+                    status.innerHTML = '<div class="status error">❌ Validation Manager error: ' + error.message + '</div>';
+                    console.error('Validation test error:', error);
+                }
+            } else {
+                status.innerHTML = '<div class="status error">❌ Validation Manager not found. Check if validation.js is loaded.</div>';
+                console.error('ValidationManager not available');
+            }
+        }
+
+        function testNotificationBadge(count) {
+            const badge = document.getElementById('testBadge');
+            const status = document.getElementById('badge-status');
+            
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.style.display = 'inline-block';
+                badge.style.visibility = 'visible';
+                status.innerHTML = `<div class="status success">✅ Badge showing: ${badge.textContent}</div>`;
+                console.log(`Badge test: showing ${count} notifications`);
+            } else {
+                badge.textContent = '';
+                badge.style.display = 'none';
+                badge.style.visibility = 'hidden';
+                status.innerHTML = '<div class="status success">✅ Badge hidden (0 notifications)</div>';
+                console.log('Badge test: hidden for 0 notifications');
+            }
+        }
+
+        // Test the Update Name button
+        document.addEventListener('DOMContentLoaded', function() {
+            const testUpdateBtn = document.getElementById('testUpdateBtn');
+            const testNameInput = document.getElementById('testNameInput');
+            const buttonStatus = document.getElementById('button-status');
+            
+            if (testUpdateBtn) {
+                console.log('Test Update button found and visible');
+                buttonStatus.innerHTML = '<div class="status success">✅ Update button is visible and properly styled</div>';
+                
+                testUpdateBtn.addEventListener('click', function() {
+                    const name = testNameInput.value.trim();
+                    if (name) {
+                        buttonStatus.innerHTML = '<div class="status success">✅ Update button clicked! Name: "' + name + '"</div>';
+                        console.log('Update button test: clicked with name "' + name + '"');
+                    } else {
+                        buttonStatus.innerHTML = '<div class="status error">❌ Please enter a name first</div>';
+                    }
+                });
+            } else {
+                console.error('Test Update button not found');
+                buttonStatus.innerHTML = '<div class="status error">❌ Update button not found</div>';
+            }
+        });
+
+        // Initial console message
+        console.log('Debug test page loaded successfully');
+    </script>
+
+    <!-- Try to load validation.js to test if it's available -->
+    <script src="../utils/validation.js"></script>
+</body>
+</html>

@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Log - lowrybunks</title>
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Project Log specific styles */
+        .project-log-page {
+            padding-bottom: 100px; /* Space for bottom navigation */
+        }
+
+        .log-header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 20px;
+            margin: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px var(--shadow-medium);
+        }
+
+        [data-theme="dark"] .log-header {
+            background: linear-gradient(135deg, #333333, #555555);
+        }
+
+        .log-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .log-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .log-section {
+            margin: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-entry {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-date {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .log-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .log-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .log-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .log-tag {
+            background-color: var(--accent-secondary);
+            color: var(--accent-primary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        [data-theme="dark"] .log-tag {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--success-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            color: white;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        /* Notification badge */
+        .notification-badge {
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .log-header {
+                margin: 10px;
+                padding: 20px 16px;
+            }
+
+            .log-section {
+                margin: 10px;
+                padding: 16px;
+            }
+
+            .log-header h1 {
+                font-size: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .stat-number {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+        </div>
+        
+        <div class="main-content project-log-page">
+            <!-- Project Log Header -->
+            <div class="log-header">
+                <h1><i class="fas fa-code-branch"></i> Project Log</h1>
+                <p>Development history and updates</p>
+            </div>
+            
+            <!-- Project Statistics -->
+            <div class="log-section">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Project Statistics
+                </h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalCommits">45</div>
+                        <div class="stat-label">Total Updates</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalFeatures">18</div>
+                        <div class="stat-label">Features Added</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalBugFixes">8</div>
+                        <div class="stat-label">Bug Fixes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="projectAge">31</div>
+                        <div class="stat-label">Days Active</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Developed by Section -->
+            <div class="log-section">
+                <h3 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Developed by
+                </h3>
+                <ul style="list-style: none; padding-left: 0; font-size: 15px; color: var(--text-primary);">
+                    <li>Rahul</li>
+                    <li>Niketh</li>
+                    <li>Viki</li>
+                    <li>Randan</li>
+                </ul>
+            </div>
+            
+            <!-- Filters and Controls -->
+            <div class="log-section">
+                <h3 class="section-title">
+                    <i class="fas fa-filter"></i>
+                    Filters & Controls
+                </h3>
+
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    <input type="text" id="projectSearchInput" class="form-control form-control-sm" placeholder="Search project logs..." style="width: 200px;">
+                    <select id="projectTypeFilter" class="form-select form-select-sm" style="width: 150px;">
+                        <option value="">All Types</option>
+                        <option value="feature">New Feature</option>
+                        <option value="bugfix">Bug Fix</option>
+                        <option value="enhancement">Enhancement</option>
+                        <option value="documentation">Documentation</option>
+                        <option value="ui">UI/UX</option>
+                        <option value="security">Security</option>
+                    </select>
+                    <select id="projectUserFilter" class="form-select form-select-sm" style="width: 150px;">
+                        <option value="">All Users</option>
+                    </select>
+                    <input type="date" id="projectDateFrom" class="form-control form-control-sm" style="width: 140px;" title="From Date">
+                    <input type="date" id="projectDateTo" class="form-control form-control-sm" style="width: 140px;" title="To Date">
+                    <button class="btn btn-sm btn-outline-secondary" id="clearProjectFiltersBtn">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="refreshProjectLogsBtn">
+                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" id="toggleProjectChartsBtn" title="Toggle project analytics charts">
+                        <i class="fas fa-chart-bar me-1"></i>Analytics
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Updates -->
+            <div class="log-section">
+                <h3 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    Recent Updates
+                </h3>
+
+                <!-- Loading Spinner -->
+                <div id="projectLogsSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading project logs...</p>
+                </div>
+
+                <!-- Project Logs Container -->
+                <div id="projectLogsContainer">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+
+                <!-- Project Analytics Charts (Initially Hidden) -->
+                <div id="projectAnalyticsSection" class="mt-4" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>Project Activity Timeline
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="projectTimelineChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-pie-chart me-2"></i>Project Types Distribution
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="projectTypesChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-users me-2"></i>Contributors Activity
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="contributorsChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calendar me-2"></i>Monthly Progress
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="monthlyProgressChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-badge" id="navNotificationBadge" style="display: none;">0</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loader-text" id="loadingText">Loading...</p>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="../components/theme.js"></script>
+    <script src="../api/auth.js"></script>
+    <script src="../components/notifications.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Firebase references
+            let auth;
+            let db;
+
+            try {
+                auth = firebase.auth();
+                db = firebase.firestore();
+
+                // Check if user is authenticated
+                auth.onAuthStateChanged(function(user) {
+                    if (!user) {
+                        // Redirect to login if not authenticated
+                        window.location.href = 'login.html';
+                    } else {
+                        // Load project logs
+                        loadProjectLogs();
+                        setupEventListeners();
+                        updateProjectStats();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                // Redirect to login on error
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Function to load project logs from Firestore
+        async function loadProjectLogs(searchTerm = '') {
+            const container = document.getElementById('projectLogsContainer');
+            const spinner = document.getElementById('projectLogsSpinner');
+
+            if (!container) {
+                console.error("Project logs container not found");
+                return;
+            }
+
+            // Show spinner
+            spinner.style.display = 'block';
+            container.innerHTML = '';
+
+            try {
+                // Get filter values
+                const typeFilter = document.getElementById('projectTypeFilter')?.value || '';
+                const userFilter = document.getElementById('projectUserFilter')?.value || '';
+                const dateFrom = document.getElementById('projectDateFrom')?.value;
+                const dateTo = document.getElementById('projectDateTo')?.value;
+
+                let query = firebase.firestore().collection('projectLogs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(50);
+
+                // Apply date filters if provided
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    query = query.where('timestamp', '>=', fromDate);
+                }
+
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    query = query.where('timestamp', '<=', toDate);
+                }
+
+                const snapshot = await query.get();
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="text-center text-muted"><p>No project logs found. <button class="btn btn-sm btn-primary" onclick="generateSampleProjectLogs()">Generate Sample Data</button></p></div>';
+                    spinner.style.display = 'none';
+                    return;
+                }
+
+                const projectLogs = [];
+                snapshot.forEach(doc => {
+                    const logData = doc.data();
+                    projectLogs.push({ id: doc.id, ...logData });
+                });
+
+                // Apply client-side filters
+                let filteredLogs = projectLogs;
+
+                // Filter by search term
+                if (searchTerm) {
+                    filteredLogs = filteredLogs.filter(log =>
+                        log.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        log.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        log.contributors?.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                        log.tags?.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
+                    );
+                }
+
+                // Filter by type
+                if (typeFilter) {
+                    filteredLogs = filteredLogs.filter(log =>
+                        log.tags?.some(tag => tag.toLowerCase().includes(typeFilter.toLowerCase()))
+                    );
+                }
+
+                // Filter by user
+                if (userFilter) {
+                    filteredLogs = filteredLogs.filter(log =>
+                        log.contributors?.some(c => c.toLowerCase().includes(userFilter.toLowerCase()))
+                    );
+                }
+
+                if (filteredLogs.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted"><p>No matching project logs found</p></div>';
+                    spinner.style.display = 'none';
+                    return;
+                }
+
+                // Populate container with logs
+                filteredLogs.forEach(log => {
+                    const timestamp = log.timestamp ?
+                        (log.timestamp.toDate ? log.timestamp.toDate() : new Date(log.timestamp)).toLocaleDateString() :
+                        'Unknown Date';
+
+                    const contributors = Array.isArray(log.contributors) ? log.contributors.join(', ') : (log.contributors || 'Unknown');
+                    const tags = Array.isArray(log.tags) ? log.tags : [];
+
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry';
+                    logEntry.innerHTML = `
+                        <div class="log-date">${timestamp}</div>
+                        <div class="log-title">${log.title || 'Untitled'}</div>
+                        <div class="log-description">
+                            ${log.description || 'No description available'}<br>
+                            <strong>Contributors:</strong> ${contributors}
+                        </div>
+                        <div class="log-tags">
+                            ${tags.map(tag => `<span class="log-tag">${tag}</span>`).join('')}
+                        </div>
+                    `;
+                    container.appendChild(logEntry);
+                });
+
+                spinner.style.display = 'none';
+
+                if (!searchTerm) {
+                    showToast('Project logs loaded successfully!', 'success');
+                }
+            } catch (error) {
+                console.error("Error loading project logs:", error);
+                container.innerHTML = `<div class="text-center text-danger"><p>Error loading logs: ${error.message}</p></div>`;
+                spinner.style.display = 'none';
+                showToast('Error loading project logs: ' + error.message, 'danger');
+            }
+        }
+
+        // Function to setup event listeners
+        function setupEventListeners() {
+            // Search input
+            const searchInput = document.getElementById('projectSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value;
+                    loadProjectLogs(searchTerm);
+                });
+            }
+
+            // Filter controls
+            const typeFilter = document.getElementById('projectTypeFilter');
+            if (typeFilter) {
+                typeFilter.addEventListener('change', () => {
+                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
+                    loadProjectLogs(searchTerm);
+                });
+            }
+
+            const userFilter = document.getElementById('projectUserFilter');
+            if (userFilter) {
+                userFilter.addEventListener('change', () => {
+                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
+                    loadProjectLogs(searchTerm);
+                });
+            }
+
+            const dateFrom = document.getElementById('projectDateFrom');
+            if (dateFrom) {
+                dateFrom.addEventListener('change', () => {
+                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
+                    loadProjectLogs(searchTerm);
+                });
+            }
+
+            const dateTo = document.getElementById('projectDateTo');
+            if (dateTo) {
+                dateTo.addEventListener('change', () => {
+                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
+                    loadProjectLogs(searchTerm);
+                });
+            }
+
+            // Clear filters button
+            const clearFiltersBtn = document.getElementById('clearProjectFiltersBtn');
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', () => {
+                    document.getElementById('projectSearchInput').value = '';
+                    document.getElementById('projectTypeFilter').value = '';
+                    document.getElementById('projectUserFilter').value = '';
+                    document.getElementById('projectDateFrom').value = '';
+                    document.getElementById('projectDateTo').value = '';
+                    loadProjectLogs();
+                });
+            }
+
+            // Refresh button
+            const refreshBtn = document.getElementById('refreshProjectLogsBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
+                    loadProjectLogs(searchTerm);
+                });
+            }
+
+            // Toggle analytics button
+            const toggleChartsBtn = document.getElementById('toggleProjectChartsBtn');
+            if (toggleChartsBtn) {
+                toggleChartsBtn.addEventListener('click', toggleProjectAnalytics);
+            }
+        }
+
+        // Function to update project statistics
+        async function updateProjectStats() {
+            try {
+                const snapshot = await firebase.firestore().collection('projectLogs').get();
+                const logs = [];
+                snapshot.forEach(doc => logs.push(doc.data()));
+
+                // Calculate statistics
+                const totalLogs = logs.length;
+                const features = logs.filter(log => log.tags?.some(tag => tag.toLowerCase().includes('feature'))).length;
+                const bugFixes = logs.filter(log => log.tags?.some(tag => tag.toLowerCase().includes('bug'))).length;
+
+                // Calculate project age (days since first log)
+                const timestamps = logs.map(log => log.timestamp ?
+                    (log.timestamp.toDate ? log.timestamp.toDate() : new Date(log.timestamp)) :
+                    new Date()).filter(date => date);
+                const oldestDate = timestamps.length > 0 ? new Date(Math.min(...timestamps)) : new Date();
+                const projectAge = Math.ceil((new Date() - oldestDate) / (1000 * 60 * 60 * 24));
+
+                // Update UI
+                document.getElementById('totalCommits').textContent = totalLogs;
+                document.getElementById('totalFeatures').textContent = features;
+                document.getElementById('totalBugFixes').textContent = bugFixes;
+                document.getElementById('projectAge').textContent = projectAge;
+
+            } catch (error) {
+                console.error("Error updating project stats:", error);
+            }
+        }
+
+        // Function to populate user filter dropdown
+        async function populateUserFilter() {
+            try {
+                const snapshot = await firebase.firestore().collection('projectLogs').get();
+                const users = new Set();
+
+                snapshot.forEach(doc => {
+                    const log = doc.data();
+                    if (log.contributors) {
+                        if (Array.isArray(log.contributors)) {
+                            log.contributors.forEach(user => users.add(user));
+                        } else {
+                            users.add(log.contributors);
+                        }
+                    }
+                });
+
+                const userFilter = document.getElementById('projectUserFilter');
+                if (userFilter) {
+                    // Clear existing options except "All Users"
+                    while (userFilter.children.length > 1) {
+                        userFilter.removeChild(userFilter.lastChild);
+                    }
+
+                    // Add user options
+                    Array.from(users).sort().forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user;
+                        option.textContent = user;
+                        userFilter.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Error populating user filter:", error);
+            }
+        }
+
+        // Function to generate sample project logs
+        async function generateSampleProjectLogs() {
+            try {
+                const sampleLogs = [
+                    {
+                        title: "Task Management System Implementation",
+                        description: "Implemented comprehensive task management system with task creation, updating, and completion tracking. Added support for subtasks and dependencies.",
+                        contributors: ["Development Team"],
+                        tags: ["New Feature", "Enhancement", "Task Management"],
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    },
+                    {
+                        title: "Error Log Page Functionality Restoration",
+                        description: "Restored full functionality to the Error Log page including backend endpoints, UI improvements, sorting, and advanced filtering capabilities.",
+                        contributors: ["Rahul", "Niketh"],
+                        tags: ["Bug Fix", "Enhancement", "Admin Panel"],
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    },
+                    {
+                        title: "Profile Page Data Loading Fix",
+                        description: "Resolved 'Error loading user data' message on profile page by improving error handling and ensuring user documents are created properly.",
+                        contributors: ["Viki"],
+                        tags: ["Bug Fix", "Profile", "Data Loading"],
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    },
+                    {
+                        title: "Login Password Visibility Toggle",
+                        description: "Fixed non-functional password visibility toggle button on login and signin pages. Added proper event handlers and accessibility features.",
+                        contributors: ["Randan"],
+                        tags: ["Bug Fix", "UI/UX", "Authentication"],
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    },
+                    {
+                        title: "Project Log Dynamic System",
+                        description: "Converted static project log page to dynamic system with Firestore integration, filtering, sorting, and real-time updates.",
+                        contributors: ["Development Team"],
+                        tags: ["New Feature", "Enhancement", "Project Management"],
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }
+                ];
+
+                const batch = firebase.firestore().batch();
+                sampleLogs.forEach(log => {
+                    const docRef = firebase.firestore().collection('projectLogs').doc();
+                    batch.set(docRef, log);
+                });
+
+                await batch.commit();
+
+                if (typeof showToast === 'function') {
+                    showToast('Sample project logs generated successfully!', 'success');
+                } else {
+                    alert('Sample project logs generated successfully!');
+                }
+
+                // Refresh the display
+                setTimeout(() => {
+                    loadProjectLogs();
+                    updateProjectStats();
+                    populateUserFilter();
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error generating sample logs:', error);
+                if (typeof showToast === 'function') {
+                    showToast('Failed to generate sample logs: ' + error.message, 'danger');
+                } else {
+                    alert('Failed to generate sample logs: ' + error.message);
+                }
+            }
+        }
+
+        // Project Analytics Chart Variables
+        let projectTimelineChartInstance = null;
+        let projectTypesChartInstance = null;
+        let contributorsChartInstance = null;
+        let monthlyProgressChartInstance = null;
+
+        // Function to toggle project analytics section
+        function toggleProjectAnalytics() {
+            const section = document.getElementById('projectAnalyticsSection');
+            const btn = document.getElementById('toggleProjectChartsBtn');
+
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-chart-bar me-1"></i>Hide Analytics';
+                createProjectAnalyticsCharts();
+            } else {
+                section.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-chart-bar me-1"></i>Analytics';
+            }
+        }
+
+        // Function to create all project analytics charts
+        async function createProjectAnalyticsCharts() {
+            try {
+                await Promise.all([
+                    createProjectTimelineChart(),
+                    createProjectTypesChart(),
+                    createContributorsChart(),
+                    createMonthlyProgressChart()
+                ]);
+            } catch (error) {
+                console.error('Error creating project analytics charts:', error);
+            }
+        }
+
+        // Function to create Project Timeline Chart
+        async function createProjectTimelineChart() {
+            const ctx = document.getElementById('projectTimelineChart');
+            if (!ctx) return;
+
+            try {
+                const snapshot = await firebase.firestore().collection('projectLogs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(50)
+                    .get();
+
+                const last30Days = {};
+
+                // Initialize last 30 days
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    last30Days[dateStr] = 0;
+                }
+
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    const timestamp = project.timestamp ? project.timestamp.toDate() : new Date();
+                    const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                    if (last30Days.hasOwnProperty(dateStr)) {
+                        last30Days[dateStr]++;
+                    }
+                });
+
+                if (projectTimelineChartInstance) {
+                    projectTimelineChartInstance.destroy();
+                }
+
+                projectTimelineChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(last30Days),
+                        datasets: [{
+                            label: 'Project Updates',
+                            data: Object.values(last30Days),
+                            borderColor: '#34C759',
+                            backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#34C759',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: '#86868B',
+                                    maxTicksLimit: 10
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(60, 60, 67, 0.29)' },
+                                ticks: { color: '#86868B' }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating project timeline chart:', error);
+            }
+        }
+
+        // Function to create Project Types Chart
+        async function createProjectTypesChart() {
+            const ctx = document.getElementById('projectTypesChart');
+            if (!ctx) return;
+
+            try {
+                const snapshot = await firebase.firestore().collection('projectLogs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(100)
+                    .get();
+
+                const projectTypes = {};
+
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    if (project.tags && Array.isArray(project.tags)) {
+                        project.tags.forEach(tag => {
+                            projectTypes[tag] = (projectTypes[tag] || 0) + 1;
+                        });
+                    }
+                });
+
+                if (projectTypesChartInstance) {
+                    projectTypesChartInstance.destroy();
+                }
+
+                projectTypesChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(projectTypes),
+                        datasets: [{
+                            data: Object.values(projectTypes),
+                            backgroundColor: [
+                                '#007AFF',
+                                '#34C759',
+                                '#FF9500',
+                                '#FF3B30',
+                                '#5AC8FA',
+                                '#AF52DE',
+                                '#FF2D92',
+                                '#FFCC00'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#FFFFFF'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    color: '#1D1D1F'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                cornerRadius: 8
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating project types chart:', error);
+            }
+        }
+
+        // Function to create Contributors Chart
+        async function createContributorsChart() {
+            const ctx = document.getElementById('contributorsChart');
+            if (!ctx) return;
+
+            try {
+                const snapshot = await firebase.firestore().collection('projectLogs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(100)
+                    .get();
+
+                const contributors = {};
+
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    if (project.contributors) {
+                        if (Array.isArray(project.contributors)) {
+                            project.contributors.forEach(contributor => {
+                                contributors[contributor] = (contributors[contributor] || 0) + 1;
+                            });
+                        } else {
+                            contributors[project.contributors] = (contributors[project.contributors] || 0) + 1;
+                        }
+                    }
+                });
+
+                // Get top 10 contributors
+                const sortedContributors = Object.entries(contributors)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10);
+
+                if (contributorsChartInstance) {
+                    contributorsChartInstance.destroy();
+                }
+
+                contributorsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedContributors.map(([contributor]) => contributor),
+                        datasets: [{
+                            label: 'Contributions',
+                            data: sortedContributors.map(([, count]) => count),
+                            backgroundColor: '#5AC8FA',
+                            borderRadius: 6,
+                            maxBarThickness: 40
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(60, 60, 67, 0.29)' },
+                                ticks: { color: '#86868B' }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { color: '#86868B' }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating contributors chart:', error);
+            }
+        }
+
+        // Function to create Monthly Progress Chart
+        async function createMonthlyProgressChart() {
+            const ctx = document.getElementById('monthlyProgressChart');
+            if (!ctx) return;
+
+            try {
+                const snapshot = await firebase.firestore().collection('projectLogs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(200)
+                    .get();
+
+                const monthlyData = {};
+
+                // Initialize last 6 months
+                for (let i = 5; i >= 0; i--) {
+                    const date = new Date();
+                    date.setMonth(date.getMonth() - i);
+                    const monthStr = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                    monthlyData[monthStr] = { features: 0, bugfixes: 0, enhancements: 0 };
+                }
+
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    const timestamp = project.timestamp ? project.timestamp.toDate() : new Date();
+                    const monthStr = timestamp.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+                    if (monthlyData[monthStr] && project.tags && Array.isArray(project.tags)) {
+                        project.tags.forEach(tag => {
+                            const lowerTag = tag.toLowerCase();
+                            if (lowerTag.includes('feature') || lowerTag.includes('new')) {
+                                monthlyData[monthStr].features++;
+                            } else if (lowerTag.includes('bug') || lowerTag.includes('fix')) {
+                                monthlyData[monthStr].bugfixes++;
+                            } else if (lowerTag.includes('enhancement') || lowerTag.includes('improvement')) {
+                                monthlyData[monthStr].enhancements++;
+                            }
+                        });
+                    }
+                });
+
+                if (monthlyProgressChartInstance) {
+                    monthlyProgressChartInstance.destroy();
+                }
+
+                monthlyProgressChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(monthlyData),
+                        datasets: [{
+                            label: 'Features',
+                            data: Object.values(monthlyData).map(d => d.features),
+                            backgroundColor: '#34C759',
+                            borderRadius: 4
+                        }, {
+                            label: 'Bug Fixes',
+                            data: Object.values(monthlyData).map(d => d.bugfixes),
+                            backgroundColor: '#FF3B30',
+                            borderRadius: 4
+                        }, {
+                            label: 'Enhancements',
+                            data: Object.values(monthlyData).map(d => d.enhancements),
+                            backgroundColor: '#007AFF',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    color: '#1D1D1F'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#86868B' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(60, 60, 67, 0.29)' },
+                                ticks: { color: '#86868B' }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating monthly progress chart:', error);
+            }
+        }
+
+        // Function to show toast messages (fallback if not available)
+        function showToast(message, type = 'info') {
+            console.log(`Toast (${type}): ${message}`);
+        }
+    </script>
+</body>
+</html>

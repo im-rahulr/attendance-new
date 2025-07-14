@@ -1,0 +1,12 @@
+I need you to completely replace the existing admin.html page in my attendance system. Please:
+
+1. Delete the current admin.html file
+2. Create a brand new admin panel page from scratch with the following requirements:
+   - Implement a dark UI theme with modern color scheme
+   - Include all essential admin functions (user management, attendance tracking, reports, etc.)
+   - Ensure all functionality works properly without errors
+   - Use responsive design that works on different screen sizes
+   - Follow modern web development best practices
+   - Test all features to confirm they're working correctly
+
+Before making changes, please first examine the current admin.html file and the overall codebase structure to understand what admin functions need to be implemented in the new version.

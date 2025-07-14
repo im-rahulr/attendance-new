@@ -1,110 +1,132 @@
-# Attendance System Admin Panel
+# Attendance Application
 
-## Firebase Permissions Fix
+A comprehensive attendance tracking system with admin panel built with Firebase and vanilla JavaScript.
 
-To fix the "Missing or insufficient permissions" error when managing subjects in the admin panel, you need to update your Firebase security rules. Follow these steps:
-
-1. **Go to Firebase Console**
-   - Visit [https://console.firebase.google.com/](https://console.firebase.google.com/)
-   - Select your project "attendance-a9a19"
-
-2. **Update Firestore Security Rules**
-   - In the left sidebar, click on "Firestore Database"
-   - Click on the "Rules" tab
-   - Replace the current rules with the following:
+## Project Structure
 
 ```
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow admin users to read and write to all documents
-    match /{document=**} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
-    }
-    
-    // Allow subjects collection to be read by all authenticated users
-    match /subjects/{subjectId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && isAdmin(request.auth.token.email);
-    }
-    
-    // Allow users to read and write only their own documents
-    match /users/{userId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null && (request.auth.uid == userId || isAdmin(request.auth.token.email));
-    }
-    
-    // User logs collection - only admin access
-    match /userLogs/{logId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
-    }
-    
-    // Deleted records collection - only admin access
-    match /deletedRecords/{recordId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
-    }
-    
-    // Manual attendance collection - only admin access
-    match /manualAttendance/{recordId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
-    }
-    
-    // Helper function to check if user is admin
-    function isAdmin(email) {
-      return email in ['admin@admin.com'];
-    }
-  }
-}
+attendance/
+├── src/                    # Source code directory
+│   ├── components/         # Reusable UI components and scripts
+│   │   ├── theme.js       # Theme management
+│   │   ├── notifications.js # Notification handling
+│   │   ├── notifications-ui.js # Notification UI components
+│   │   ├── dashboard-ui.js # Dashboard UI components
+│   │   ├── admin.js       # Admin panel functionality
+│   │   └── admin-script.js # Additional admin scripts
+│   ├── pages/             # HTML pages
+│   │   ├── index.html     # Entry point (redirects to login)
+│   │   ├── login.html     # Authentication page
+│   │   ├── dashboard.html # Main dashboard
+│   │   ├── profile.html   # User profile management
+│   │   ├── report.html    # Attendance reports
+│   │   ├── notifications.html # Notification center
+│   │   ├── admin.html     # Administrative panel
+│   │   └── contact.html   # Contact page
+│   ├── styles/            # CSS stylesheets
+│   │   └── style.css      # Main stylesheet with theme support
+│   ├── utils/             # Utility functions
+│   │   ├── script.js      # Core functionality
+│   │   └── validation.js  # Form validation utilities
+│   ├── api/               # API and authentication
+│   │   ├── auth.js        # Firebase authentication
+│   │   └── get_users.php  # PHP API endpoint
+│   ├── assets/            # Static assets (images, fonts, icons)
+│   ├── hooks/             # Custom hooks (for future React migration)
+│   └── context/           # State management (for future React migration)
+├── public/                # Static files served directly
+│   ├── _redirects         # Netlify redirects
+│   └── netlify.toml       # Netlify configuration
+├── config/                # Configuration files (empty - moved to root)
+├── tests/                 # Test files
+├── database/              # Database schemas and migrations
+├── docs/                  # Project documentation
+│   ├── README.md          # Main documentation
+│   ├── TESTING_PLAN.md    # Testing documentation
+│   ├── FIXES_SUMMARY.md   # Summary of fixes
+│   └── website.md         # Website documentation
+├── node_modules/          # Dependencies
+├── .taskmaster/           # Task management files
+├── firebase.json          # Firebase configuration
+├── firestore.rules        # Firestore security rules
+├── firestore.indexes.json # Firestore indexes
+├── storage.rules          # Firebase Storage rules
+├── package.json           # Project dependencies and scripts
+├── .gitignore            # Git ignore rules
+└── index.html            # Root entry point
 ```
 
-3. **Publish the Rules**
-   - Click the "Publish" button to deploy these security rules
+## Features
 
-These rules will:
-- Allow admin users (admin@admin.com) to read and write to all collections
-- Allow all authenticated users to read the subjects collection
-- Only allow admin users to create/modify/delete subjects
-- Allow users to manage their own data
-- Restrict access to user logs, deleted records, and manual attendance to admin users only
+- **User Authentication**: Firebase Authentication with email/password
+- **Attendance Tracking**: Real-time attendance monitoring with per-subject breakdown
+- **Admin Panel**: Comprehensive administrative interface with user management
+- **Dark/Light Theme**: User preference-based theming
+- **Notifications System**: Real-time notifications with unread indicators and admin authoring
+- **Data Export**: PDF and Excel export capabilities for attendance reports
+- **Error Management**: Unique error IDs with comprehensive logging
+- **Activity Tracking**: Detailed user activity monitoring and analytics
+- **Mobile Navigation**: Apple-style minimalist bottom navigation
+- **Input Validation**: XSS protection and comprehensive form validation
+- **Testing Suite**: Automated tests for system reliability
+- **Responsive Design**: Mobile-first responsive design
+- **Real-time Updates**: Firebase Firestore real-time synchronization
+- **Notification System**: In-app notifications with admin authoring
+- **Data Export**: PDF and spreadsheet export functionality
+- **User Management**: Individual user profile views and management
 
-## Admin Panel Updates
+## Getting Started
 
-The admin panel has been updated with:
-1. A new color scheme to match the website theme
-2. Enhanced UI with smooth animations and better visual hierarchy
-3. Fixed subject management functionality
-4. Improved charts and data visualization
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-### New Features
+2. **Firebase Setup**:
+   - Configure your Firebase project
+   - Update Firebase configuration in `src/api/auth.js`
+   - Deploy Firestore rules: `firebase deploy --only firestore:rules`
 
-The admin panel now includes the following additional features:
+3. **Development**:
+   ```bash
+   npm start
+   # or
+   firebase serve
+   ```
 
-1. **Excel Data Export**
-   - Export all user attendance data to Excel format
-   - Download detailed user logs as Excel files
-   - Export deleted records for backup and auditing
+4. **Deployment**:
+   ```bash
+   npm run deploy
+   # or
+   firebase deploy
+   ```
 
-2. **User Activity Logging**
-   - Track when users last accessed the website
-   - Monitor user activity throughout the system
-   - View detailed information including IP address and device details
+## Technology Stack
 
-3. **Deleted Records Management**
-   - View records that have been deleted from the system
-   - Restore accidentally deleted items when needed
-   - Maintain a full audit trail of changes
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Backend**: Firebase (Firestore, Authentication, Hosting)
+- **Styling**: CSS Custom Properties, Bootstrap 5
+- **Icons**: Font Awesome
+- **Charts**: Chart.js
+- **Build Tools**: Firebase CLI
 
-4. **Manual Attendance Management**
-   - Add and edit attendance records for any user
-   - Mark students present or absent for specific dates
-   - Track who added or modified attendance records
+## Development Guidelines
 
-## Subjects Management
+- All HTML pages are in `src/pages/`
+- Reusable JavaScript components go in `src/components/`
+- Utility functions go in `src/utils/`
+- API and authentication logic goes in `src/api/`
+- Styles are centralized in `src/styles/`
+- Use relative paths for local resources
+- Follow the established naming conventions
 
-The admin panel now allows you to:
-1. Add new subjects that will be available to all users
-2. View and delete existing subjects
-3. Monitor attendance across all subjects
+## Contributing
 
-When users log in, they will only see the subjects that have been added through the admin panel. 
+1. Follow the established project structure
+2. Update import paths when moving files
+3. Test all functionality after changes
+4. Update documentation as needed
+
+## License
+
+MIT License - see LICENSE file for details

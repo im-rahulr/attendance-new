@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Connectivity Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .test-pass { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border-left-color: #28a745;
+        }
+        .test-fail { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border-left-color: #dc3545;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">🔥 Firebase Connectivity Test</h1>
+        
+        <div class="alert alert-info">
+            <strong>Purpose:</strong> Test Firebase connectivity and permissions before running full admin panel tests.
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Test Results</h5>
+                    </div>
+                    <div class="card-body" id="testResults">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Testing...</span>
+                            </div>
+                            <p class="mt-2">Running tests...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Console Output</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleOutput" class="console-output">
+                            <div style="color: #569cd6;">[INFO] Starting Firebase connectivity test...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <button class="btn btn-primary" onclick="runTests()">Run Tests Again</button>
+                <button class="btn btn-success" onclick="testWithAuth()">Test With Authentication</button>
+                <a href="admin-panel-test.html" class="btn btn-outline-primary">Full Test Suite</a>
+                <a href="../pages/admin.html" class="btn btn-outline-secondary">Admin Panel</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+            authDomain: "attendance-a9a19.firebaseapp.com",
+            databaseURL: "https://attendance-a9a19-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "attendance-a9a19",
+            storageBucket: "attendance-a9a19.appspot.com",
+            messagingSenderId: "1055787262218",
+            appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+            measurementId: "G-3XPB4VLFYH"
+        };
+        
+        let auth, db;
+        const consoleOutput = document.getElementById('consoleOutput');
+        const testResults = document.getElementById('testResults');
+        
+        function logToConsole(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#569cd6',
+                success: '#4ec9b0',
+                error: '#f44747',
+                warn: '#dcdcaa'
+            };
+            
+            const color = colors[type] || colors.info;
+            consoleOutput.innerHTML += `<div style="color: ${color};">[${timestamp}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        function addTestResult(name, status, message) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${status}`;
+            resultDiv.innerHTML = `
+                <i class="fas fa-${status === 'pass' ? 'check' : 'times'} me-2"></i>
+                <strong>${name}</strong><br>
+                <small>${message}</small>
+            `;
+            return resultDiv;
+        }
+        
+        async function runTests() {
+            logToConsole('Starting Firebase connectivity tests...', 'info');
+            testResults.innerHTML = '';
+            
+            const results = [];
+            
+            // Test 1: Firebase SDK
+            try {
+                if (typeof firebase !== 'undefined') {
+                    results.push(addTestResult('Firebase SDK', 'pass', 'Firebase SDK loaded successfully'));
+                    logToConsole('✓ Firebase SDK loaded', 'success');
+                } else {
+                    results.push(addTestResult('Firebase SDK', 'fail', 'Firebase SDK not loaded'));
+                    logToConsole('✗ Firebase SDK not loaded', 'error');
+                    return;
+                }
+            } catch (error) {
+                results.push(addTestResult('Firebase SDK', 'fail', error.message));
+                logToConsole('✗ Firebase SDK error: ' + error.message, 'error');
+            }
+            
+            // Test 2: Firebase Initialization
+            try {
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                
+                results.push(addTestResult('Firebase Init', 'pass', 'Firebase initialized successfully'));
+                logToConsole('✓ Firebase initialized', 'success');
+            } catch (error) {
+                results.push(addTestResult('Firebase Init', 'fail', error.message));
+                logToConsole('✗ Firebase init error: ' + error.message, 'error');
+                return;
+            }
+            
+            // Test 3: Public Test Collection (should work without auth)
+            try {
+                await db.collection('public_test').doc('connectivity').set({
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    test: 'public_connectivity'
+                });
+                
+                results.push(addTestResult('Public Write Test', 'pass', 'Public collection write successful'));
+                logToConsole('✓ Public write test passed', 'success');
+            } catch (error) {
+                results.push(addTestResult('Public Write Test', 'fail', error.message));
+                logToConsole('✗ Public write test failed: ' + error.message, 'error');
+            }
+            
+            // Test 4: Public Read Test
+            try {
+                const doc = await db.collection('public_test').doc('connectivity').get();
+                if (doc.exists) {
+                    results.push(addTestResult('Public Read Test', 'pass', 'Public collection read successful'));
+                    logToConsole('✓ Public read test passed', 'success');
+                } else {
+                    results.push(addTestResult('Public Read Test', 'fail', 'Document does not exist'));
+                    logToConsole('✗ Public read test failed: document not found', 'error');
+                }
+            } catch (error) {
+                results.push(addTestResult('Public Read Test', 'fail', error.message));
+                logToConsole('✗ Public read test failed: ' + error.message, 'error');
+            }
+            
+            // Test 5: Auth Service
+            try {
+                if (auth && typeof auth.onAuthStateChanged === 'function') {
+                    results.push(addTestResult('Auth Service', 'pass', 'Firebase Auth service available'));
+                    logToConsole('✓ Auth service available', 'success');
+                } else {
+                    results.push(addTestResult('Auth Service', 'fail', 'Firebase Auth service not available'));
+                    logToConsole('✗ Auth service not available', 'error');
+                }
+            } catch (error) {
+                results.push(addTestResult('Auth Service', 'fail', error.message));
+                logToConsole('✗ Auth service error: ' + error.message, 'error');
+            }
+            
+            // Display results
+            results.forEach(result => testResults.appendChild(result));
+            
+            const passCount = results.filter(r => r.className.includes('test-pass')).length;
+            const totalCount = results.length;
+            
+            logToConsole(`Tests completed: ${passCount}/${totalCount} passed`, passCount === totalCount ? 'success' : 'warn');
+            
+            if (passCount === totalCount) {
+                logToConsole('🎉 All basic connectivity tests passed! Firebase rules are working.', 'success');
+            } else {
+                logToConsole('⚠️ Some tests failed. Check Firebase rules deployment.', 'warn');
+            }
+        }
+        
+        async function testWithAuth() {
+            logToConsole('Testing with admin authentication...', 'info');
+            
+            try {
+                // Try to sign in with admin credentials
+                const email = 'admin@admin.com';
+                const password = prompt('Enter admin password for testing:');
+                
+                if (!password) {
+                    logToConsole('Authentication test cancelled', 'warn');
+                    return;
+                }
+                
+                logToConsole('Attempting admin sign in...', 'info');
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                
+                logToConsole('✓ Admin authentication successful', 'success');
+                
+                // Test authenticated operations
+                await db.collection('_test_connection').doc('auth_test').set({
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    adminEmail: userCredential.user.email,
+                    test: 'authenticated_access'
+                });
+                
+                logToConsole('✓ Authenticated write test passed', 'success');
+                
+                // Sign out
+                await auth.signOut();
+                logToConsole('✓ Sign out successful', 'success');
+                
+            } catch (error) {
+                logToConsole('✗ Authentication test failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', function() {
+            setTimeout(runTests, 1000);
+        });
+    </script>
+</body>
+</html>

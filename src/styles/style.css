@@ -1,0 +1,1170 @@
+/* Reset and Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Theme Variables */
+:root {
+    /* Light Theme Colors */
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f7f9fa;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-muted: #7C8DB5;
+    --border-color: #f0f0f0;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+    --accent-primary: #1976D2;
+    --accent-secondary: #E3F2FD;
+    --success-color: #4CAF50;
+    --success-bg: #E8F5E9;
+    --error-color: #F44336;
+    --error-bg: #dacbcd;
+    --profile-icon-bg: #252B42;
+    --report-primary: #5E72E4;
+    --btn-light-green: #D9ED92;
+}
+
+/* Dark Theme Colors */
+[data-theme="dark"] {
+    --bg-primary: #000000;
+    --bg-secondary: #111111;
+    --bg-tertiary: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-muted: #999999;
+    --border-color: #222222;
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --accent-primary: #ffffff;
+    --accent-secondary: #333333;
+    --success-color: #4CAF50;
+    --success-bg: #1b5e20;
+    --error-color: #F44336;
+    --error-bg: #b71c1c;
+    --profile-icon-bg: #333333;
+    --report-primary: #333333;
+    --btn-light-green: #4CAF50;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-container {
+    max-width: 414px;
+    height: 100vh;
+    margin: 0 auto;
+    background-color: var(--bg-secondary);
+    position: relative;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.status-icons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Header Styles */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+}
+
+.app-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* lowrybunks styling */
+.lowry-style {
+    /* font-family: 'Dancing Script',cursive; */
+      font-family: "Dancing Script", cursive;
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.profile-icon {
+    width: 36px;
+    height: 36px;
+    background-color: var(--profile-icon-bg);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+/* Greeting Section */
+.greeting-section {
+    padding: 16px;
+}
+
+.greeting {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.welcome-text {
+    font-size: 18px;
+    color: var(--text-muted);
+}
+
+/* Classes Section */
+.classes-section {
+    padding: 16px;
+}
+
+.section-title {
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    /* border-bottom: 2px solid var(--accent-primary); */
+    padding-bottom: 8px;
+}
+
+.class-card {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+/* Visual indicator for marked attendance - Redesigned */
+.class-card.attendance-marked {
+    background: linear-gradient(135deg, var(--accent-secondary) 0%, rgba(25, 118, 210, 0.08) 100%);
+    border-left: 4px solid var(--accent-primary);
+    border-top: 1px solid rgba(25, 118, 210, 0.2);
+    border-right: 1px solid rgba(25, 118, 210, 0.2);
+    border-bottom: 1px solid rgba(25, 118, 210, 0.2);
+    box-shadow: 0 2px 12px rgba(25, 118, 210, 0.08), 0 1px 3px rgba(25, 118, 210, 0.12);
+    position: relative;
+}
+
+/* Subtle checkmark indicator */
+.class-card.attendance-marked::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--accent-primary);
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.8;
+    z-index: 1;
+}
+
+/* Strikethrough effect for marked subject names */
+.class-card.attendance-marked .subject {
+    text-decoration: line-through;
+    text-decoration-color: var(--accent-primary);
+    text-decoration-thickness: 2px;
+    opacity: 0.85;
+    font-style: italic;
+}
+
+/* Dark theme adjustments for marked attendance */
+[data-theme="dark"] .class-card.attendance-marked {
+    background: linear-gradient(135deg, rgba(14, 14, 14, 0.12) 0%, rgba(40, 42, 45, 0.06) 100%);
+    border-left: 4px solid #e2e4da;
+    border-top: 1px solid rgba(9, 5, 5, 0.3);
+    border-right: 1px solid rgba(1, 5, 9, 0.3);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 12px rgba(1, 1, 1, 0.15), 0 1px 3px rgba(100, 181, 246, 0.2);
+}
+
+[data-theme="dark"] .class-card.attendance-marked::after {
+    color: #64B5F6;
+}
+
+[data-theme="dark"] .class-card.attendance-marked .subject {
+    text-decoration-color: #64B5F6;
+}
+
+/* Smooth animation for when attendance is marked */
+.class-card.attendance-marked {
+    animation: subtleMarkAnimation 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes subtleMarkAnimation {
+    0% {
+        transform: translateX(0);
+        box-shadow: 0 2px 8px var(--shadow-light);
+    }
+    30% {
+        transform: translateX(-2px);
+        box-shadow: 0 4px 16px rgba(25, 118, 210, 0.15);
+    }
+    100% {
+        transform: translateX(0);
+        box-shadow: 0 2px 12px rgba(25, 118, 210, 0.08), 0 1px 3px rgba(25, 118, 210, 0.12);
+    }
+}
+
+.class-info {
+    margin-bottom: 12px;
+}
+
+.subject {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.status {
+    font-size: 14px;
+    margin-top: 4px;
+    color: var(--text-secondary);
+}
+
+.status-present {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.class-label {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Adjust class label position when attendance is marked */
+.class-card.attendance-marked .class-label {
+    right: 32px;
+    opacity: 0.7;
+}
+
+/* Attendance summary styles */
+.attendance-summary {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.attendance-summary.good {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.attendance-summary.warning {
+    background-color: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.attendance-summary.no-data {
+    background-color: rgba(158, 158, 158, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+/* Dark theme adjustments for attendance summary */
+[data-theme="dark"] .attendance-summary.good {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #81C784;
+}
+
+[data-theme="dark"] .attendance-summary.warning {
+    background-color: rgba(255, 152, 0, 0.15);
+    color: #FFB74D;
+}
+
+[data-theme="dark"] .attendance-summary.no-data {
+    background-color: rgba(158, 158, 158, 0.15);
+    color: var(--text-muted);
+}
+
+/* Report page styles for subjects with/without data */
+.subjects-section-header {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent-primary);
+    padding-bottom: 8px;
+}
+
+.subjects-section-header.no-data-header {
+    color: var(--text-secondary);
+    border-bottom-color: var(--text-muted);
+    opacity: 0.8;
+}
+
+.subject-card.no-data {
+    background-color: var(--bg-tertiary);
+    border: 1px dashed var(--border-color);
+    opacity: 0.8;
+}
+
+.subject-card.has-data {
+    border-left: 4px solid var(--accent-primary);
+}
+
+.no-data-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+}
+
+.no-data-message p {
+    margin-bottom: 8px;
+}
+
+.no-subjects-message {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--bg-tertiary);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+}
+
+.legend-item.no-data {
+    justify-content: center;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Dark theme adjustments for report styles */
+[data-theme="dark"] .subjects-section-header {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .subjects-section-header.no-data-header {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .subject-card.no-data {
+    background-color: rgba(40, 42, 45, 0.3);
+    border-color: rgba(158, 158, 158, 0.3);
+}
+
+[data-theme="dark"] .no-subjects-message {
+    background-color: rgba(40, 42, 45, 0.3);
+    border-color: rgba(158, 158, 158, 0.3);
+}
+
+.attendance-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-present, .btn-absent {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-present {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+}
+
+.btn-present.active {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-absent {
+    background-color: var(--error-bg);
+    color: var(--error-color);
+}
+
+.btn-absent.active {
+    background-color: var(--error-color);
+    color: white;
+}
+
+/* Bottom Navigation - Apple Style Minimalist Design */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 414px;
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 1000;
+    height: auto;
+    min-height: 83px;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: #8E8E93;
+    font-weight: 400;
+    padding: 4px 8px;
+    border-radius: 0;
+    transition: all 0.2s ease-out;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 60px;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: -0.24px;
+    flex: 1;
+}
+
+.nav-item i {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.nav-item span:not(.notification-badge) {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* Notification badge styles - Apple Style */
+.notification-badge {
+    background: linear-gradient(135deg, #FF3B30, #FF9500);
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    position: absolute;
+    top: 0px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+    border: 2px solid var(--bg-secondary);
+    box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+    animation: notificationPulse 2s infinite;
+}
+
+@keyframes notificationPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.nav-item:hover {
+    color: #007AFF;
+    background-color: transparent;
+    transform: none;
+}
+
+.nav-item.active {
+    background-color: transparent;
+    color: #007AFF;
+    font-weight: 500;
+    box-shadow: none;
+}
+
+.nav-item.active i {
+    color: #007AFF;
+}
+
+.nav-item.active span {
+    color: #007AFF;
+    font-weight: 500;
+}
+
+/* Remove the top indicator for Apple-style minimalism */
+.nav-item.active::before {
+    display: none;
+}
+
+/* Dark theme navigation adjustments - Apple Style */
+[data-theme="dark"] .bottom-nav {
+    background: rgba(28, 28, 30, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .nav-item {
+    color: #8E8E93;
+}
+
+[data-theme="dark"] .nav-item:hover {
+    background-color: transparent;
+    color: #007AFF;
+    transform: none;
+}
+
+[data-theme="dark"] .nav-item.active {
+    background-color: transparent;
+    color: #007AFF;
+}
+
+[data-theme="dark"] .nav-item.active i,
+[data-theme="dark"] .nav-item.active span {
+    color: #007AFF;
+}
+
+/* Media queries for mobile-only display */
+@media (min-width: 768px) {
+    .bottom-nav {
+        display: none;
+    }
+}
+
+/* Report Page Styles - Enhanced */
+.report-header {
+    padding: 20px 16px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--report-primary) 100%);
+    color: white;
+    margin: -16px -16px 24px -16px;
+    border-radius: 0 0 20px 20px;
+}
+
+.report-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.report-content {
+    padding: 16px;
+}
+
+/* Total Attendance Section */
+.total-attendance-small {
+    text-align: center;
+    margin-bottom: 32px;
+    background-color: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px var(--shadow-light);
+    border: 1px solid var(--border-color);
+}
+
+.total-attendance-small h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.small-chart-container {
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+    position: relative;
+}
+
+/* Subject List Section */
+.subjects-list {
+    margin-bottom: 32px;
+}
+
+.subjects-list h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+    padding-bottom: 8px;
+}
+
+.subject-card {
+    background-color: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--shadow-medium);
+    border-color: var(--accent-primary);
+}
+
+.subject-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.subject-name {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.attendance-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.present-count {
+    color: var(--success-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.present-count::before {
+    content: '✓';
+    font-weight: bold;
+}
+
+.absent-count {
+    color: var(--error-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.absent-count::before {
+    content: '✗';
+    font-weight: bold;
+}
+
+.percentage-bar {
+    background-color: var(--bg-tertiary);
+    border-radius: 12px;
+    height: 40px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 2px solid var(--border-color);
+}
+
+.progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--success-color), #66BB6A);
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.percentage-bar .percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+    z-index: 2;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-info {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.info-safe {
+    background-color: var(--success-bg);
+    color: white;
+    border: 1px solid var(--success-color);
+}
+
+.info-danger {
+    background-color: var(--error-bg);
+    color: white;
+    border: 1px solid var(--error-color);
+}
+
+/* Combined Subjects Chart Section */
+.subjects-combined {
+    text-align: center;
+    margin-bottom: 32px;
+    background-color: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px var(--shadow-light);
+    border: 1px solid var(--border-color);
+}
+
+.subjects-combined h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.medium-chart-container {
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    position: relative;
+}
+
+/* Chart Legends */
+.chart-legend, .subjects-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+    padding: 6px 12px;
+    background-color: var(--bg-tertiary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Dark Theme Report Adjustments */
+[data-theme="dark"] .report-header {
+    background: linear-gradient(135deg, #131414 0%, #131414 100%);
+}
+
+/* [data-theme="dark"] .subject-card::before {
+    background: linear-gradient(90deg, #64B5F6, #4CAF50);
+} */
+
+[data-theme="dark"] .progress-bar {
+    background: linear-gradient(90deg, #4CAF50, #cf0707);
+}
+
+[data-theme="dark"] .legend-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .small-chart-container {
+        width: 180px;
+        height: 180px;
+    }
+
+    .medium-chart-container {
+        width: 250px;
+        height: 250px;
+    }
+
+    .report-header h1 {
+        font-size: 24px;
+    }
+
+    .subject-card {
+        padding: 16px;
+    }
+
+    .chart-legend, .subjects-legend {
+        gap: 12px;
+    }
+
+    .legend-item {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* Make sure the main content doesn't get hidden under the bottom nav */
+.main-content, .report-content, .classes-section, .profile-page {
+    padding-bottom: 90px;
+}
+
+/* Additional spacing for dashboard content */
+.app-container {
+    padding-bottom: 20px;
+}
+
+/* Profile Page Styles */
+.profile-page {
+    padding: 20px 16px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.large-profile-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--bg-tertiary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    font-weight: bold;
+    margin-right: 20px;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.profile-email {
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+.profile-section {
+    margin-bottom: 30px;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 50px;
+}
+
+.profile-field:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.field-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 15px;
+    flex-shrink: 0;
+    min-width: 100px;
+}
+
+.field-value {
+    color: var(--text-secondary);
+    font-size: 15px;
+    text-align: right;
+    word-break: break-word;
+}
+
+.edit-field {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.edit-field input {
+    padding: 8px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.edit-field input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-secondary);
+}
+
+.edit-field button, .action-button {
+    padding: 10px 20px;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px var(--shadow-light);
+    font-size: 14px;
+}
+
+.edit-field button:hover, .action-button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-medium);
+}
+
+.edit-field button:active, .action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px var(--shadow-light);
+}
+
+.logout-button {
+    background-color: var(--error-color);
+}
+
+.logout-button:hover {
+    background-color: var(--error-color);
+    opacity: 0.85;
+}
+
+.stat-cards {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.stat-card {
+    flex: 1;
+    text-align: center;
+    padding: 16px 8px;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-medium);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.attendance-rate {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.attendance-rate .stat-value {
+    color: white;
+    font-size: 36px;
+}
+
+.attendance-rate .stat-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Theme Toggle Styles */
+.theme-toggle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 15px 0;
+    background-color: var(--bg-tertiary);
+    border-radius: 12px;
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-container:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+}
+
+.theme-toggle {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: var(--border-color);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle.active {
+    background-color: var(--success-color);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.theme-toggle.active .theme-toggle-slider {
+    transform: translateX(30px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.theme-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+/* Error and Success Messages */
+.error-message, .success-message {
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: none;
+    font-weight: 500;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    animation: slideIn 0.3s ease-out;
+}
+
+.error-message {
+    background-color: var(--error-bg);
+    color: var(--error-color);
+    border: 2px solid var(--error-color);
+}
+
+.success-message {
+    background-color: var(--success-bg);
+    color: var(--success-color);
+    border: 2px solid var(--success-color);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading Overlay Improvements */
+.loading-overlay {
+    background-color: var(--bg-primary);
+    opacity: 0.95;
+    backdrop-filter: blur(5px);
+}
+
+.loader-text {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-top: 15px;
+}
+
+/* Toast Notification Improvements */
+.toast {
+    border-radius: 12px !important;
+    font-weight: 500;
+    min-width: 300px;
+    backdrop-filter: blur(10px);
+    animation: slideDownToast 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-body {
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+@keyframes slideDownToast {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) translateX(-50%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+    }
+}
+
+/* Dark theme toast adjustments */
+[data-theme="dark"] .toast {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}

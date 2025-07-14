@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel Test - Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .test-pass { background-color: #d4edda; color: #155724; }
+        .test-fail { background-color: #f8d7da; color: #721c24; }
+        .test-warn { background-color: #fff3cd; color: #856404; }
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-stethoscope me-2"></i>
+                    Admin Panel Diagnostic Test
+                </h1>
+                
+                <div class="alert alert-info">
+                    <strong>Purpose:</strong> This page tests the admin panel functionality and identifies console errors.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-check-circle me-2"></i>Dependency Tests</h5>
+                            </div>
+                            <div class="card-body" id="dependencyTests">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Testing...</span>
+                                    </div>
+                                    <p class="mt-2">Running tests...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5><i class="fas fa-fire me-2"></i>Firebase Tests</h5>
+                            </div>
+                            <div class="card-body" id="firebaseTests">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Testing...</span>
+                                    </div>
+                                    <p class="mt-2">Testing Firebase...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-terminal me-2"></i>Console Output</h5>
+                                <button class="btn btn-sm btn-outline-secondary float-end" onclick="clearConsole()">
+                                    <i class="fas fa-trash me-1"></i>Clear
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="consoleOutput" class="console-output">
+                                    Console output will appear here...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-bug me-2"></i>Error Summary</h5>
+                            </div>
+                            <div class="card-body" id="errorSummary">
+                                <p class="text-muted">No errors detected yet...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="runTests()">
+                                <i class="fas fa-play me-1"></i>Run Tests
+                            </button>
+                            <button class="btn btn-success" onclick="testAdminPanel()">
+                                <i class="fas fa-cog me-1"></i>Test Admin Panel
+                            </button>
+                            <button class="btn btn-warning" onclick="showDiagnostics()">
+                                <i class="fas fa-info-circle me-1"></i>Show Diagnostics
+                            </button>
+                            <a href="admin.html" class="btn btn-outline-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>Open Admin Panel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+    <script>
+        // Console capture
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+        
+        const consoleOutput = document.getElementById('consoleOutput');
+        const errorSummary = document.getElementById('errorSummary');
+        const errors = [];
+        
+        function addToConsole(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = {
+                log: '#00ff00',
+                error: '#ff0000',
+                warn: '#ffff00',
+                info: '#00ffff'
+            }[type] || '#ffffff';
+            
+            consoleOutput.innerHTML += `<div style="color: ${color}">[${timestamp}] ${type.toUpperCase()}: ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            
+            if (type === 'error') {
+                errors.push({ timestamp, message });
+                updateErrorSummary();
+            }
+        }
+        
+        // Override console methods
+        console.log = function(...args) {
+            originalConsole.log.apply(console, args);
+            addToConsole('log', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsole.error.apply(console, args);
+            addToConsole('error', args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalConsole.warn.apply(console, args);
+            addToConsole('warn', args.join(' '));
+        };
+        
+        console.info = function(...args) {
+            originalConsole.info.apply(console, args);
+            addToConsole('info', args.join(' '));
+        };
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+            errors.length = 0;
+            updateErrorSummary();
+        }
+        
+        function updateErrorSummary() {
+            if (errors.length === 0) {
+                errorSummary.innerHTML = '<p class="text-success"><i class="fas fa-check me-2"></i>No errors detected</p>';
+            } else {
+                errorSummary.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>${errors.length} Error(s) Detected</h6>
+                        <ul class="mb-0">
+                            ${errors.slice(-5).map(err => `<li>${err.timestamp}: ${err.message}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        // Test functions
+        function runTests() {
+            console.log('🚀 Starting comprehensive tests...');
+            testDependencies();
+            testFirebase();
+        }
+        
+        function testDependencies() {
+            const dependencyTests = document.getElementById('dependencyTests');
+            const dependencies = {
+                'Firebase': typeof firebase !== 'undefined',
+                'Bootstrap': typeof bootstrap !== 'undefined',
+                'Chart.js': typeof Chart !== 'undefined',
+                'ExcelJS': typeof ExcelJS !== 'undefined',
+                'FileSaver': typeof saveAs !== 'undefined'
+            };
+            
+            let html = '';
+            for (const [name, loaded] of Object.entries(dependencies)) {
+                const status = loaded ? 'test-pass' : 'test-fail';
+                const icon = loaded ? 'fa-check' : 'fa-times';
+                html += `<div class="test-result ${status}"><i class="fas ${icon} me-2"></i>${name}: ${loaded ? 'Loaded' : 'Missing'}</div>`;
+                
+                if (loaded) {
+                    console.log(`✅ ${name} dependency loaded successfully`);
+                } else {
+                    console.error(`❌ ${name} dependency missing`);
+                }
+            }
+            
+            dependencyTests.innerHTML = html;
+        }
+        
+        function testFirebase() {
+            const firebaseTests = document.getElementById('firebaseTests');
+            
+            if (typeof firebase === 'undefined') {
+                firebaseTests.innerHTML = '<div class="test-result test-fail"><i class="fas fa-times me-2"></i>Firebase not loaded</div>';
+                console.error('❌ Firebase not loaded');
+                return;
+            }
+            
+            try {
+                // Firebase config
+                const firebaseConfig = {
+                    apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+                    authDomain: "attendance-a9a19.firebaseapp.com",
+                    databaseURL: "https://attendance-a9a19-default-rtdb.asia-southeast1.firebasedatabase.app",
+                    projectId: "attendance-a9a19",
+                    storageBucket: "attendance-a9a19.appspot.com",
+                    messagingSenderId: "1055787262218",
+                    appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+                    measurementId: "G-3XPB4VLFYH"
+                };
+                
+                // Initialize Firebase
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                
+                let html = '';
+                html += '<div class="test-result test-pass"><i class="fas fa-check me-2"></i>Firebase initialized</div>';
+                html += '<div class="test-result test-pass"><i class="fas fa-check me-2"></i>Auth service available</div>';
+                html += '<div class="test-result test-pass"><i class="fas fa-check me-2"></i>Firestore service available</div>';
+                
+                // Test Firestore connection
+                db.collection('_test').limit(1).get()
+                    .then(() => {
+                        html += '<div class="test-result test-pass"><i class="fas fa-check me-2"></i>Firestore connection successful</div>';
+                        firebaseTests.innerHTML = html;
+                        console.log('✅ Firebase tests completed successfully');
+                    })
+                    .catch(error => {
+                        html += `<div class="test-result test-fail"><i class="fas fa-times me-2"></i>Firestore connection failed: ${error.message}</div>`;
+                        firebaseTests.innerHTML = html;
+                        console.error('❌ Firestore connection failed:', error);
+                    });
+                
+                firebaseTests.innerHTML = html;
+                console.log('✅ Firebase initialization successful');
+                
+            } catch (error) {
+                firebaseTests.innerHTML = `<div class="test-result test-fail"><i class="fas fa-times me-2"></i>Firebase error: ${error.message}</div>`;
+                console.error('❌ Firebase test failed:', error);
+            }
+        }
+        
+        function testAdminPanel() {
+            console.log('🔧 Testing admin panel functionality...');
+            
+            // Test if admin panel can be loaded in iframe
+            const iframe = document.createElement('iframe');
+            iframe.src = 'admin.html';
+            iframe.style.display = 'none';
+            iframe.onload = function() {
+                console.log('✅ Admin panel loaded successfully');
+                
+                // Check for errors in iframe
+                setTimeout(() => {
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const scripts = iframeDoc.querySelectorAll('script');
+                        console.log(`📊 Admin panel has ${scripts.length} scripts`);
+                        
+                        // Check if admin panel debug tools are available
+                        if (iframe.contentWindow.adminPanelDebug) {
+                            console.log('✅ Admin panel debug tools available');
+                            const status = iframe.contentWindow.adminPanelDebug.status();
+                            console.log('📊 Admin panel status:', status);
+                        } else {
+                            console.warn('⚠️ Admin panel debug tools not available');
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ Error accessing admin panel iframe:', error);
+                    }
+                    
+                    document.body.removeChild(iframe);
+                }, 3000);
+            };
+            
+            iframe.onerror = function() {
+                console.error('❌ Failed to load admin panel');
+                document.body.removeChild(iframe);
+            };
+            
+            document.body.appendChild(iframe);
+        }
+        
+        function showDiagnostics() {
+            const diagnostics = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                errors: errors,
+                dependencies: {
+                    firebase: typeof firebase !== 'undefined',
+                    bootstrap: typeof bootstrap !== 'undefined',
+                    chart: typeof Chart !== 'undefined',
+                    exceljs: typeof ExcelJS !== 'undefined',
+                    fileSaver: typeof saveAs !== 'undefined'
+                },
+                performance: {
+                    loadTime: performance.now(),
+                    memory: performance.memory ? {
+                        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
+                        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB'
+                    } : 'Not available'
+                }
+            };
+            
+            console.log('🔍 Diagnostics:', diagnostics);
+            
+            // Show in new window
+            const diagnosticsWindow = window.open('', '_blank', 'width=800,height=600');
+            diagnosticsWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Admin Panel Diagnostics</title>
+                        <style>
+                            body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+                            pre { background: #fff; padding: 15px; border-radius: 5px; overflow: auto; border: 1px solid #ddd; }
+                            h1 { color: #333; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>🔍 Admin Panel Diagnostics</h1>
+                        <pre>${JSON.stringify(diagnostics, null, 2)}</pre>
+                    </body>
+                </html>
+            `);
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', function() {
+            console.log('🚀 Admin Panel Test Page Loaded');
+            setTimeout(runTests, 1000);
+        });
+        
+        // Global error handler
+        window.addEventListener('error', function(event) {
+            console.error('Global error:', event.error?.message || event.message);
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
+    </script>
+</body>
+</html>

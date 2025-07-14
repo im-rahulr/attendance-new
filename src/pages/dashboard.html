@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - lowrybunks</title>
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        .user-profile {
+            display: flex;
+            align-items: center;
+            background-color: #f7f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .user-profile .profile-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+        .user-info h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .user-info p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(12, 10, 10, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .status-unmarked {
+            color: #ff9800;
+            font-weight: 500;
+        }
+        .status-present {
+            color: #4caf50;
+            font-weight: 500;
+        }
+        .status-absent {
+            color: #f44336;
+            font-weight: 500;
+        }
+
+        /* Loader Animation */
+        .loader {
+            --background: linear-gradient(135deg, #17c33c, #1f872f);
+            --shadow: rgba(31, 80, 14, 0.28);
+            --text: #6C7486;
+            --page: rgba(255, 255, 255, 0.36);
+            --page-fold: rgba(239, 228, 228, 0.52);
+            --duration: 3s;
+            width: 200px;
+            height: 140px;
+            position: relative;
+        }
+
+        .loader:before, .loader:after {
+            --r: -6deg;
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            width: 120px;
+            top: 80%;
+            box-shadow: 0 16px 12px var(--shadow);
+            transform: rotate(var(--r));
+        }
+
+        .loader:before {
+            left: 4px;
+        }
+
+        .loader:after {
+            --r: 6deg;
+            right: 4px;
+        }
+
+        .loader div {
+            width: 100%;
+            height: 100%;
+            border-radius: 13px;
+            position: relative;
+            z-index: 1;
+            perspective: 600px;
+            box-shadow: 0 4px 6px var(--shadow);
+            background-image: var(--background);
+        }
+
+        .loader div ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            position: relative;
+        }
+
+        .loader div ul li {
+            --r: 180deg;
+            --o: 0;
+            --c: var(--page);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            transform-origin: 100% 50%;
+            color: var(--c);
+            opacity: var(--o);
+            transform: rotateY(var(--r));
+            -webkit-animation: var(--duration) ease infinite;
+            animation: var(--duration) ease infinite;
+        }
+
+        .loader div ul li:nth-child(2) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-2;
+            animation-name: page-2;
+        }
+
+        .loader div ul li:nth-child(3) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-3;
+            animation-name: page-3;
+        }
+
+        .loader div ul li:nth-child(4) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-4;
+            animation-name: page-4;
+        }
+
+        .loader div ul li:nth-child(5) {
+            --c: var(--page-fold);
+            -webkit-animation-name: page-5;
+            animation-name: page-5;
+        }
+
+        .loader div ul li svg {
+            width: 90px;
+            height: 120px;
+            display: block;
+        }
+
+        .loader div ul li:first-child {
+            --r: 0deg;
+            --o: 1;
+        }
+
+        .loader div ul li:last-child {
+            --o: 1;
+        }
+
+        .loader-text {
+            display: block;
+            left: 0;
+            right: 0;
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        @keyframes page-2 {
+            0% { transform: rotateY(180deg); opacity: 0; }
+            20% { opacity: 1; }
+            35%, 100% { opacity: 0; }
+            50%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-3 {
+            15% { transform: rotateY(180deg); opacity: 0; }
+            35% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+            65%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-4 {
+            30% { transform: rotateY(180deg); opacity: 0; }
+            50% { opacity: 1; }
+            65%, 100% { opacity: 0; }
+            80%, 100% { transform: rotateY(0deg); }
+        }
+
+        @keyframes page-5 {
+            45% { transform: rotateY(180deg); opacity: 0; }
+            65% { opacity: 1; }
+            80%, 100% { opacity: 0; }
+            95%, 100% { transform: rotateY(0deg); }
+        }
+
+        /* Button click animations */
+        .btn-present, .btn-absent {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-present.active {
+            background-color: #55f05a89;
+            color: rgb(14, 1, 1);
+        }
+        
+        .btn-absent.active {
+            background-color: #f6655b;
+            color: rgb(23, 6, 6);
+        }
+
+        .btn-present:after, .btn-absent:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-present.animate:after, .btn-absent.animate:after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        /* Notification badge styles */
+        .notification-badge {
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 70px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item span:not(.notification-badge) {
+            font-size: 11px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+            <!-- <div class="profile-icon" id="profileIcon">JS</div> -->
+        </div>
+        
+        <!-- Greeting Section -->
+        <div class="greeting-section">
+            <h1 class="greeting">Hello, <span id="userName">User</span>!</h1>
+            <p class="welcome-text">Welcome back to your dashboard</p>
+        </div>
+        
+        <!-- Today's Classes Section -->
+        <div class="classes-section">
+            <h2 class="section-title">Today's classes</h2>
+            <!-- Class cards will be dynamically generated here by script.js -->
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-badge" id="navNotificationBadge" style="display: none;"></span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- New Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader">
+            <div>
+                <ul>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                    <li>
+                        <svg fill="currentColor" viewBox="0 0 90 120">
+                            <path d="M90,0 L90,120 L11,120 C4.92486775,120 0,115.075132 0,109 L0,11 C0,4.92486775 4.92486775,0 11,0 L90,0 Z M71.5,81 L18.5,81 C17.1192881,81 16,82.1192881 16,83.5 C16,84.8254834 17.0315359,85.9100387 18.3356243,85.9946823 L18.5,86 L71.5,86 C72.8807119,86 74,84.8807119 74,83.5 C74,82.1745166 72.9684641,81.0899613 71.6643757,81.0053177 L71.5,81 Z M71.5,57 L18.5,57 C17.1192881,57 16,58.1192881 16,59.5 C16,60.8254834 17.0315359,61.9100387 18.3356243,61.9946823 L18.5,62 L71.5,62 C72.8807119,62 74,60.8807119 74,59.5 C74,58.1192881 72.8807119,57 71.5,57 Z M71.5,33 L18.5,33 C17.1192881,33 16,34.1192881 16,35.5 C16,36.8254834 17.0315359,37.9100387 18.3356243,37.9946823 L18.5,38 L71.5,38 C72.8807119,38 74,36.8807119 74,35.5 C74,34.1192881 72.8807119,33 71.5,33 Z"></path>
+                        </svg>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <p class="mt-2 loader-text" id="loadingText">Loading...</p>
+    </div>
+    
+    <!-- Bootstrap Toast -->
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
+        <div id="liveToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Attendance updated successfully!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../components/theme.js"></script>
+    <script src="../utils/validation.js"></script>
+    <script src="../api/auth.js"></script>
+    <script src="../components/notifications.js"></script>
+    <script src="../utils/script.js"></script>
+    
+    <script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+        authDomain: "attendance-a9a19.firebaseapp.com",
+        projectId: "attendance-a9a19",
+        storageBucket: "attendance-a9a19.appspot.com",
+        messagingSenderId: "1055787262218",
+        appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+        measurementId: "G-3XPB4VLFYH"
+    };
+    
+    // Initialize Firebase if not already initialized
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    // Override the showLoading and hideLoading functions from script.js
+    window.showLoading = function(message = "Loading...") {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
+        
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+    };
+    
+    window.hideLoading = function() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    };
+    
+    // Override the showToast function from script.js
+    window.showToast = function(message, duration = 3000) {
+        const toastEl = document.getElementById('liveToast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        if (toastMessage) {
+            toastMessage.textContent = message;
+        }
+        
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, { delay: duration });
+            toast.show();
+        }
+    };
+    
+    // Update dashboard UI with data
+    function updateDashboardUI(data) {
+        console.log("Updating dashboard UI with data:", data);
+        
+        if (!data || !data.todaysClasses) {
+            console.log("No attendance data available");
+            return;
+        }
+        
+        const classesSection = document.querySelector('.classes-section');
+        if (!classesSection) return;
+        
+        // Keep the title
+        const title = classesSection.querySelector('.section-title');
+        classesSection.innerHTML = '';
+        if (title) {
+            classesSection.appendChild(title);
+        }
+        
+        // Check if there are any classes
+        if (data.todaysClasses.length === 0) {
+            const noClassesMsg = document.createElement('div');
+            noClassesMsg.className = 'alert alert-info';
+            noClassesMsg.textContent = 'No subjects have been added by the administrator yet.';
+            classesSection.appendChild(noClassesMsg);
+            return;
+        }
+        
+        // Add class cards dynamically based on subjects
+        data.todaysClasses.forEach(classData => {
+            const classCard = document.createElement('div');
+            classCard.className = 'class-card';
+
+            let statusText = 'Mark your attendance';
+            let statusClass = 'status-unmarked';
+
+            // Add visual indicator for marked attendance
+            if (classData.status === 'present') {
+                statusText = 'Present';
+                statusClass = 'status-present';
+                classCard.classList.add('attendance-marked');
+            } else if (classData.status === 'absent') {
+                statusText = 'Absent';
+                statusClass = 'status-absent';
+                classCard.classList.add('attendance-marked');
+            }
+
+            classCard.innerHTML = `
+                <div class="class-info">
+                    <div class="subject">${classData.subject}</div>
+                    <div class="status">Status: <span class="${statusClass}">${statusText}</span></div>
+                </div>
+                <div class="class-label">${classData.label}</div>
+                <div class="attendance-buttons">
+                    <button class="btn-present ${classData.status === 'present' ? 'active' : ''}" data-class-id="${classData.id}">Present</button>
+                    <button class="btn-absent ${classData.status === 'absent' ? 'active' : ''}" data-class-id="${classData.id}">Absent</button>
+                </div>
+            `;
+
+            classesSection.appendChild(classCard);
+        });
+        
+        // Re-attach event listeners to buttons
+        document.querySelectorAll('.btn-present, .btn-absent').forEach(button => {
+            button.addEventListener('click', function() {
+                const classId = parseInt(this.getAttribute('data-class-id'));
+                const status = this.classList.contains('btn-present') ? 'present' : 'absent';
+                if (typeof updateAttendance === 'function') {
+                    updateAttendance(classId, status);
+                }
+            });
+        });
+    }
+    
+    // Setup real-time listener for user's attendance data
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Content Loaded - Setting up listeners");
+        
+        // Initialize data to ensure the dashboard is populated
+        if (typeof initializeData === 'function') {
+            initializeData();
+        }
+        
+        // Check if Firebase Auth and Firestore are initialized
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+            // Set up real-time listener for the current user
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    console.log("User authenticated:", user.uid);
+                    
+                    // Set user's initials in profile icon
+                    const profileIcon = document.getElementById('profileIcon');
+                    if (profileIcon) {
+                        const name = user.displayName || user.email || 'User';
+                        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+                        profileIcon.textContent = initials;
+                    }
+                    
+                    // Set user's name in greeting
+                    const userName = document.getElementById('userName');
+                    if (userName) {
+                        userName.textContent = user.displayName || 'User';
+                    }
+                    
+                    // Set up real-time listener for user's attendance data
+                    const userRef = firebase.firestore().collection('users').doc(user.uid);
+                    
+                    // Listen for real-time updates
+                    userRef.onSnapshot(
+                        function(doc) {
+                            console.log("Received Firestore update");
+                            if (doc.exists && doc.data().attendanceData) {
+                                const data = doc.data().attendanceData;
+                                console.log("Attendance data received:", data);
+                                updateDashboardUI(data);
+                            } else {
+                                console.log("No attendance data in document");
+                            }
+                        },
+                        function(error) {
+                            console.error("Real-time listener error:", error);
+                        }
+                    );
+                } else {
+                    console.log("No authenticated user");
+                }
+            });
+        } else {
+            console.error("Firebase not properly initialized");
+        }
+    });
+    
+    // Force refresh on page load
+    window.addEventListener('load', function() {
+        console.log("Window loaded - Forcing data refresh");
+        
+        // Show loading indicator
+        showLoading("Loading your attendance data...");
+        
+        // Check if user is authenticated
+        if (firebase.auth().currentUser) {
+            console.log("User is already authenticated on page load");
+            const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+            
+            // Force a refresh from server
+            userRef.get({ source: "server" })
+                .then(async function(doc) {
+                    if (doc.exists && doc.data().attendanceData) {
+                        console.log("Got fresh data from server");
+                        let attendanceData = doc.data().attendanceData;
+
+                        // Check if daily reset is needed
+                        if (typeof needsDailyReset === 'function' && needsDailyReset(attendanceData)) {
+                            console.log("Dashboard: Daily reset needed");
+
+                            // Get today's classes from admin subjects
+                            try {
+                                const subjectsSnapshot = await firebase.firestore().collection('subjects').get();
+                                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                                const today = new Date();
+                                const currentDay = daysOfWeek[today.getDay()];
+
+                                const todaysClasses = [];
+                                subjectsSnapshot.forEach(subjectDoc => {
+                                    const subjectData = subjectDoc.data();
+                                    const classDays = subjectData.classDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+                                    if (classDays.includes(currentDay)) {
+                                        todaysClasses.push({
+                                            id: todaysClasses.length + 1,
+                                            subject: subjectData.name,
+                                            status: 'unmarked',
+                                            classOrder: subjectData.classOrder || 999
+                                        });
+                                    }
+                                });
+
+                                // Apply daily reset
+                                if (typeof resetDailyAttendance === 'function') {
+                                    attendanceData = resetDailyAttendance(attendanceData, todaysClasses);
+
+                                    // Update the data in Firestore
+                                    await userRef.update({
+                                        attendanceData: attendanceData,
+                                        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+
+                                    console.log("Dashboard: Daily reset completed and saved");
+                                }
+                            } catch (error) {
+                                console.error("Dashboard: Error during daily reset:", error);
+                            }
+                        }
+
+                        updateDashboardUI(attendanceData);
+                    } else {
+                        console.log("No data found on server");
+                    }
+                    hideLoading();
+                })
+                .catch(function(error) {
+                    console.error("Error fetching data on page load:", error);
+                    hideLoading();
+                    showToast("Error loading attendance data. Please try again.");
+                });
+        } else {
+            console.log("Waiting for auth state to resolve");
+            // The onAuthStateChanged handler will take care of it
+            setTimeout(function() {
+                hideLoading();
+            }, 2000);
+        }
+    });
+    </script>
+</body>
+</html> 
