@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    /* Base mobile-first styles */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    table { border-collapse: collapse !important; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+    /* Fluid layouts */
+    .container { width: 100% !important; max-width: 600px !important; }
+    .mobile-center { text-align: center !important; }
+
+    /* Typography */
+    h1 { font-size: 24px; margin: 0; }
+    h2 { font-size: 20px; margin: 0; }
+    p, h3 { margin: 0; line-height: 1.5; }
+
+    /* Button */
+    .cta-button { padding: 14px 28px; border-radius: 6px; font-size: 16px; color: #ffffff; text-decoration: none; background-color: #0A84FF; display: inline-block; }
+
+    /* Responsive tweaks */
+    @media only screen and (max-width: 600px) {
+      h1 { font-size: 20px !important; }
+      h2 { font-size: 18px !important; }
+      .cta-button { width: 90% !important; display: block !important; padding: 12px 0 !important; }
+      .content-padding { padding: 15px !important; }
+    }
+  </style>
+</head>
+<body style="background:#ffffff;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;color:#1d1d1f;margin:0;padding:0;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" bgcolor="#ffffff">
+    <tr>
+      <td align="center" class="mobile-center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0" role="presentation" bgcolor="#ffffff">
+          <!-- Header -->
+          <tr>
+            <td bgcolor="#000000" style="padding:20px;text-align:center;">
+              <h1 style="color:#ffffff;">🎉 Welcome!</h1>
+            </td>
+          </tr>
+
+          <!-- Welcome -->
+          <tr>
+            <td class="content-padding" style="padding:20px;">
+              <h2>Hello, {{userName}}!</h2>
+              <p>Your account is ready. Here's what you can do next:</p>
+            </td>
+          </tr>
+
+          <!-- Features -->
+          <tr>
+            <td class="content-padding" style="padding:20px;border-top:1px solid #eaeaea;">
+              <h3>📊 Track attendance</h3>
+              <p>Monitor your attendance across all subjects effortlessly.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="content-padding" style="padding:20px;border-top:1px solid #eaeaea;">
+              <h3>📈 View reports</h3>
+              <p>Get detailed analytics and insights.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="content-padding" style="padding:20px;border-top:1px solid #eaeaea;">
+              <h3>🔔 Get reminders</h3>
+              <p>Never miss a session with custom notifications.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="content-padding" style="padding:20px;border-top:1px solid #eaeaea;">
+              <h3>📱 Use any device</h3>
+              <p>Access your data from phone, tablet or desktop.</p>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td class="content-padding" style="padding:30px;text-align:center;">
+              <a href="https://lowry-days.netlify.app/" class="cta-button">Go to Dashboard →</a>
+              <p style="margin-top:15px;font-size:14px;">Already started? <a href="https://lowry-days.netlify.app/" style="color:#0A84FF;text-decoration:none;">Go directly to your dashboard.</a></p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="content-padding" style="padding:30px;border-top:1px solid #eaeaea;font-size:12px;color:#666;text-align:center;">
+              Need help? Contact our support team at <a href="mailto:lowrybunks@hi2.in" style="color:#0A84FF;">lowrybunks@hi2.in</a><br>
+              © 2024 Attendly by CodeCraft.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

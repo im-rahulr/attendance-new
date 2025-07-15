@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email System Test Suite - Attendly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0A84FF;
+            --background: #0D1117;
+            --card-bg: #fdfeff;
+            --text-main: #F0F6FC;
+            --text-muted: #7D8590;
+            --border-color: #30363D;
+            --success: #238636;
+            --danger: #DA3633;
+            --warning: #D29922;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .test-result.success {
+            background: rgba(35, 134, 54, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .test-result.error {
+            background: rgba(218, 54, 51, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .test-result.warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .test-result.info {
+            background: rgba(10, 132, 255, 0.1);
+            border-left-color: var(--primary);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .form-control, .form-select {
+            background: var(--background);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--background);
+            border-color: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 0 0 0.2rem rgba(10, 132, 255, 0.25);
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .spinner-border {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-envelope-open-text me-2"></i>
+                            Email System Test Suite
+                        </h3>
+                        <p class="mb-0 text-muted">Comprehensive testing for the welcome email system</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Test Controls -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="testEmail" class="form-label">Test Email Address</label>
+                                    <input type="email" class="form-control" id="testEmail" 
+                                           placeholder="Enter email for testing" value="admin@admin.com">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="testUserName" class="form-label">Test User Name</label>
+                                    <input type="text" class="form-control" id="testUserName" 
+                                           placeholder="Enter user name for testing" value="Test User">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Buttons -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-primary" onclick="runAllTests()">
+                                        <i class="fas fa-play me-1"></i>Run All Tests
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testEmailService()">
+                                        <i class="fas fa-cog me-1"></i>Test Email Service
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testTemplateManagement()">
+                                        <i class="fas fa-file-alt me-1"></i>Test Templates
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testUserTracking()">
+                                        <i class="fas fa-users me-1"></i>Test User Tracking
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testWelcomeEmail()">
+                                        <i class="fas fa-envelope me-1"></i>Test Welcome Email
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="clearResults()">
+                                        <i class="fas fa-trash me-1"></i>Clear Results
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Results -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Test Results</h5>
+                                <div id="testProgress" class="text-muted">Ready to run tests</div>
+                            </div>
+                            <div class="card-body">
+                                <div id="testResults" class="test-results">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-flask fa-2x mb-2"></i>
+                                        <p>Click "Run All Tests" to start testing the email system</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">System Status</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="systemStatus">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-spinner fa-spin me-2"></i>
+                                                <span>Checking system status...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Email Statistics</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="emailStats">
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <div class="h5 mb-0" id="statsSent">-</div>
+                                                    <small class="text-muted">Sent</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="h5 mb-0" id="statsFailed">-</div>
+                                                    <small class="text-muted">Failed</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="h5 mb-0" id="statsPending">-</div>
+                                                    <small class="text-muted">Pending</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Email Service -->
+    <script src="../components/email-service.js"></script>
+    
+    <!-- Test Suite Script -->
+    <script>
+        // Test suite variables
+        let testResults = [];
+        let currentTestIndex = 0;
+        let totalTests = 0;
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+            authDomain: "attendance-a9a19.firebaseapp.com",
+            projectId: "attendance-a9a19",
+            storageBucket: "attendance-a9a19.appspot.com",
+            messagingSenderId: "1055787262218",
+            appId: "1:1055787262218:web:c0c9c33d771456888d5af3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadEmailStatistics();
+        });
+
+        /**
+         * Add test result to display
+         */
+        function addTestResult(testName, status, message, details = null) {
+            const result = { testName, status, message, details, timestamp: new Date() };
+            testResults.push(result);
+
+            const resultsContainer = document.getElementById('testResults');
+            
+            // Clear initial message if this is the first test
+            if (testResults.length === 1) {
+                resultsContainer.innerHTML = '';
+            }
+
+            const resultElement = document.createElement('div');
+            resultElement.className = `test-result ${status}`;
+            
+            let icon = 'info-circle';
+            switch (status) {
+                case 'success': icon = 'check-circle'; break;
+                case 'error': icon = 'exclamation-circle'; break;
+                case 'warning': icon = 'exclamation-triangle'; break;
+            }
+
+            resultElement.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <i class="fas fa-${icon} me-2"></i>
+                        <strong>${testName}</strong>
+                        <div class="mt-1">${message}</div>
+                        ${details ? `<small class="text-muted">${details}</small>` : ''}
+                    </div>
+                    <small class="text-muted">${result.timestamp.toLocaleTimeString()}</small>
+                </div>
+            `;
+
+            resultsContainer.appendChild(resultElement);
+            resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+
+        /**
+         * Update test progress
+         */
+        function updateTestProgress(current, total, currentTest = '') {
+            const progressElement = document.getElementById('testProgress');
+            if (total > 0) {
+                const percentage = Math.round((current / total) * 100);
+                progressElement.textContent = `${current}/${total} tests completed (${percentage}%) - ${currentTest}`;
+            } else {
+                progressElement.textContent = currentTest || 'Ready to run tests';
+            }
+        }
+
+        /**
+         * Clear test results
+         */
+        function clearResults() {
+            testResults = [];
+            currentTestIndex = 0;
+            totalTests = 0;
+            
+            document.getElementById('testResults').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-flask fa-2x mb-2"></i>
+                    <p>Click "Run All Tests" to start testing the email system</p>
+                </div>
+            `;
+            
+            updateTestProgress(0, 0);
+        }
+
+        /**
+         * Check system status
+         */
+        async function checkSystemStatus() {
+            const statusContainer = document.getElementById('systemStatus');
+            statusContainer.innerHTML = '';
+
+            const checks = [
+                { name: 'Firebase', check: () => typeof firebase !== 'undefined' },
+                { name: 'Firestore', check: () => firebase.firestore !== undefined },
+                { name: 'Auth', check: () => firebase.auth !== undefined },
+                { name: 'Email Service', check: () => window.emailService !== undefined }
+            ];
+
+            for (const { name, check } of checks) {
+                const isOk = check();
+                const statusElement = document.createElement('div');
+                statusElement.className = 'd-flex align-items-center mb-2';
+                statusElement.innerHTML = `
+                    <i class="fas fa-${isOk ? 'check-circle text-success' : 'times-circle text-danger'} me-2"></i>
+                    <span>${name}: ${isOk ? 'OK' : 'Not Available'}</span>
+                `;
+                statusContainer.appendChild(statusElement);
+            }
+        }
+
+        /**
+         * Load email statistics
+         */
+        async function loadEmailStatistics() {
+            try {
+                if (window.emailService && window.emailService.getEmailStatistics) {
+                    const stats = await window.emailService.getEmailStatistics();
+                    document.getElementById('statsSent').textContent = stats.sent;
+                    document.getElementById('statsFailed').textContent = stats.failed;
+                    document.getElementById('statsPending').textContent = stats.pending;
+                }
+            } catch (error) {
+                console.error('Error loading email statistics:', error);
+            }
+        }
+
+        /**
+         * Run all tests
+         */
+        async function runAllTests() {
+            clearResults();
+            currentTestIndex = 0;
+            totalTests = 7;
+
+            updateTestProgress(0, totalTests, 'Starting tests...');
+
+            const tests = [
+                { name: 'Email Service Initialization', func: testEmailService },
+                { name: 'Template Management', func: testTemplateManagement },
+                { name: 'User Tracking System', func: testUserTracking },
+                { name: 'Welcome Email Sending', func: testWelcomeEmail },
+                { name: 'Email Statistics', func: testEmailStatistics },
+                { name: 'Error Handling', func: testErrorHandling },
+                { name: 'Database Integration', func: testDatabaseIntegration }
+            ];
+
+            for (let i = 0; i < tests.length; i++) {
+                const test = tests[i];
+                currentTestIndex = i + 1;
+                updateTestProgress(currentTestIndex, totalTests, test.name);
+
+                try {
+                    await test.func();
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between tests
+                } catch (error) {
+                    addTestResult(test.name, 'error', `Test failed: ${error.message}`, error.stack);
+                }
+            }
+
+            updateTestProgress(totalTests, totalTests, 'All tests completed');
+            await loadEmailStatistics(); // Refresh stats after tests
+        }
+
+        /**
+         * Test email service initialization
+         */
+        async function testEmailService() {
+            try {
+                // Check if email service exists
+                if (!window.emailService) {
+                    addTestResult('Email Service', 'error', 'Email service not found');
+                    return;
+                }
+
+                // Test initialization
+                if (!window.emailService.initialized) {
+                    await window.emailService.init();
+                }
+
+                if (window.emailService.initialized) {
+                    addTestResult('Email Service', 'success', 'Email service initialized successfully');
+                } else {
+                    addTestResult('Email Service', 'error', 'Email service failed to initialize');
+                }
+
+                // Test email templates
+                const template = window.emailService.getEmailTemplate('welcome');
+                if (template && template.subject && template.body) {
+                    addTestResult('Email Templates', 'success', 'Welcome email template loaded',
+                                `Subject: ${template.subject.substring(0, 50)}...`);
+                } else {
+                    addTestResult('Email Templates', 'error', 'Welcome email template not found or invalid');
+                }
+
+            } catch (error) {
+                addTestResult('Email Service', 'error', `Initialization failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test template management
+         */
+        async function testTemplateManagement() {
+            try {
+                if (!window.emailService) {
+                    addTestResult('Template Management', 'error', 'Email service not available');
+                    return;
+                }
+
+                // Test template preview
+                const preview = window.emailService.previewEmailTemplate('welcome', {
+                    userName: 'Test User',
+                    userEmail: 'test@example.com'
+                });
+
+                if (preview && preview.subject && preview.body) {
+                    addTestResult('Template Preview', 'success', 'Template preview generated successfully',
+                                `Preview subject: ${preview.subject.substring(0, 50)}...`);
+                } else {
+                    addTestResult('Template Preview', 'error', 'Template preview failed');
+                }
+
+                // Test template saving (simulation)
+                const testTemplate = {
+                    subject: 'Test Welcome Email - {{userName}}',
+                    body: '<h1>Welcome {{userName}}!</h1><p>Test email body</p>'
+                };
+
+                try {
+                    await window.emailService.saveEmailTemplate('test', testTemplate);
+                    addTestResult('Template Saving', 'success', 'Template saved successfully');
+                } catch (error) {
+                    addTestResult('Template Saving', 'warning', `Template saving test: ${error.message}`);
+                }
+
+            } catch (error) {
+                addTestResult('Template Management', 'error', `Template management test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test user tracking system
+         */
+        async function testUserTracking() {
+            try {
+                if (!window.emailService) {
+                    addTestResult('User Tracking', 'error', 'Email service not available');
+                    return;
+                }
+
+                const testUserId = 'test-user-' + Date.now();
+                const testEmail = document.getElementById('testEmail').value || 'test@example.com';
+
+                // Test checking welcome email status
+                const hasReceived = await window.emailService.hasReceivedWelcomeEmail(testUserId);
+                addTestResult('Email Status Check', 'success',
+                            `Email status check completed for test user`,
+                            `Has received welcome email: ${hasReceived}`);
+
+                // Test email statistics
+                const stats = await window.emailService.getEmailStatistics();
+                if (stats && typeof stats.sent === 'number') {
+                    addTestResult('Email Statistics', 'success',
+                                `Email statistics retrieved successfully`,
+                                `Sent: ${stats.sent}, Failed: ${stats.failed}, Pending: ${stats.pending}`);
+                } else {
+                    addTestResult('Email Statistics', 'error', 'Failed to retrieve email statistics');
+                }
+
+            } catch (error) {
+                addTestResult('User Tracking', 'error', `User tracking test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test welcome email sending
+         */
+        async function testWelcomeEmail() {
+            try {
+                if (!window.emailService) {
+                    addTestResult('Welcome Email', 'error', 'Email service not available');
+                    return;
+                }
+
+                const testEmail = document.getElementById('testEmail').value || 'test@example.com';
+                const testUserName = document.getElementById('testUserName').value || 'Test User';
+                const testUserId = 'test-user-' + Date.now();
+
+                // Test welcome email sending (simulation mode)
+                const result = await window.emailService.sendWelcomeEmail(testEmail, testUserName, testUserId);
+
+                if (result.success) {
+                    addTestResult('Welcome Email', 'success',
+                                `Welcome email sent successfully to ${testEmail}`,
+                                `Message ID: ${result.messageId || 'Simulated'}`);
+                } else {
+                    addTestResult('Welcome Email', 'warning',
+                                `Welcome email test completed with simulated result`,
+                                `Error: ${result.error || 'Simulation mode'}`);
+                }
+
+            } catch (error) {
+                addTestResult('Welcome Email', 'error', `Welcome email test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test email statistics
+         */
+        async function testEmailStatistics() {
+            try {
+                await loadEmailStatistics();
+                addTestResult('Statistics Loading', 'success', 'Email statistics loaded and displayed');
+            } catch (error) {
+                addTestResult('Statistics Loading', 'error', `Statistics loading failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test error handling
+         */
+        async function testErrorHandling() {
+            try {
+                if (!window.emailService) {
+                    addTestResult('Error Handling', 'error', 'Email service not available');
+                    return;
+                }
+
+                // Test with invalid email
+                try {
+                    await window.emailService.sendWelcomeEmail('invalid-email', 'Test User', 'test-user');
+                    addTestResult('Error Handling', 'warning', 'Invalid email test completed (may be handled by service)');
+                } catch (error) {
+                    addTestResult('Error Handling', 'success', 'Invalid email properly rejected', error.message);
+                }
+
+                // Test with missing parameters
+                try {
+                    await window.emailService.sendWelcomeEmail('', '', '');
+                    addTestResult('Parameter Validation', 'warning', 'Empty parameters test completed');
+                } catch (error) {
+                    addTestResult('Parameter Validation', 'success', 'Empty parameters properly rejected', error.message);
+                }
+
+            } catch (error) {
+                addTestResult('Error Handling', 'error', `Error handling test failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Test database integration
+         */
+        async function testDatabaseIntegration() {
+            try {
+                // Test Firebase connection
+                if (typeof firebase === 'undefined') {
+                    addTestResult('Database Integration', 'error', 'Firebase not available');
+                    return;
+                }
+
+                const db = firebase.firestore();
+
+                // Test reading email templates collection
+                try {
+                    const templatesSnapshot = await db.collection('emailTemplates').limit(1).get();
+                    addTestResult('Database Read', 'success',
+                                `Email templates collection accessible`,
+                                `Found ${templatesSnapshot.size} template(s)`);
+                } catch (error) {
+                    addTestResult('Database Read', 'warning',
+                                `Email templates collection test: ${error.message}`);
+                }
+
+                // Test reading email logs collection
+                try {
+                    const logsSnapshot = await db.collection('emailLogs').limit(1).get();
+                    addTestResult('Email Logs', 'success',
+                                `Email logs collection accessible`,
+                                `Found ${logsSnapshot.size} log(s)`);
+                } catch (error) {
+                    addTestResult('Email Logs', 'warning',
+                                `Email logs collection test: ${error.message}`);
+                }
+
+            } catch (error) {
+                addTestResult('Database Integration', 'error', `Database integration test failed: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

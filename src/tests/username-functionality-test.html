@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Username Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .template-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Username Functionality Test</h1>
+        <p>Test username substitution in email templates and verify proper name handling.</p>
+
+        <!-- Test Configuration -->
+        <div class="test-section">
+            <h3>⚙️ Test Configuration</h3>
+            <div class="form-group">
+                <label for="testEmail">Test Email Address:</label>
+                <input type="email" id="testEmail" placeholder="your-email@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="testUserName">Test User Name:</label>
+                <input type="text" id="testUserName" placeholder="John Doe" required>
+            </div>
+            <button onclick="updateTestConfig()">Update Test Config</button>
+        </div>
+
+        <!-- Template Variable Processing Test -->
+        <div class="test-section">
+            <h3>🔧 Template Variable Processing Test</h3>
+            <p>Test the template variable substitution function.</p>
+            <button onclick="testTemplateProcessing()">Test Template Processing</button>
+            <div id="templateProcessingResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Email Template Preview Test -->
+        <div class="test-section">
+            <h3>👁️ Email Template Preview Test</h3>
+            <p>Preview how templates look with actual user data.</p>
+            <button onclick="testTemplatePreview()">Preview Template</button>
+            <div id="templatePreviewResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Admin Panel Email Test -->
+        <div class="test-section">
+            <h3>📧 Admin Panel Email Test</h3>
+            <p>Test email sending from admin panel with username substitution.</p>
+            <button onclick="testAdminPanelEmail()">Test Admin Email</button>
+            <div id="adminEmailResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Welcome Email Test -->
+        <div class="test-section">
+            <h3>🎉 Welcome Email Test</h3>
+            <p>Test welcome email functionality with username substitution.</p>
+            <button onclick="testWelcomeEmail()">Test Welcome Email</button>
+            <div id="welcomeEmailResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- User Name Retrieval Test -->
+        <div class="test-section">
+            <h3>👤 User Name Retrieval Test</h3>
+            <p>Test how user names are retrieved from different sources.</p>
+            <button onclick="testUserNameRetrieval()">Test Name Retrieval</button>
+            <div id="nameRetrievalResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="../config/firebase-config.js"></script>
+    <script src="../components/email-service.js"></script>
+
+    <script>
+        let testConfig = {
+            email: 'test@example.com',
+            userName: 'John Doe'
+        };
+
+        function updateTestConfig() {
+            const email = document.getElementById('testEmail').value;
+            const userName = document.getElementById('testUserName').value;
+            
+            if (email && userName) {
+                testConfig.email = email;
+                testConfig.userName = userName;
+                showResult('templateProcessingResult', 'info', `Test config updated: ${userName} (${email})`);
+            } else {
+                showResult('templateProcessingResult', 'error', 'Please enter both email and name');
+            }
+        }
+
+        function showResult(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+            element.innerHTML = message;
+        }
+
+        async function testTemplateProcessing() {
+            showResult('templateProcessingResult', 'info', 'Testing template processing...');
+            
+            try {
+                // Wait for email service to be ready
+                if (!window.emailService || !window.emailService.initialized) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    if (window.emailService && !window.emailService.initialized) {
+                        await window.emailService.init();
+                    }
+                }
+
+                if (!window.emailService) {
+                    throw new Error('Email service not available');
+                }
+
+                // Test template processing
+                const testTemplate = 'Hello {{userName}}! Welcome to {{companyName}}. Your email is {{userEmail}}.';
+                const testVariables = {
+                    userName: testConfig.userName,
+                    userEmail: testConfig.email,
+                    companyName: 'Attendly'
+                };
+
+                const processed = window.emailService.processTemplateVariables(testTemplate, testVariables);
+                
+                showResult('templateProcessingResult', 'success', `
+                    <strong>✅ Template processing successful!</strong><br>
+                    <strong>Original:</strong> ${testTemplate}<br>
+                    <strong>Processed:</strong> ${processed}<br>
+                    <strong>Variables used:</strong> ${JSON.stringify(testVariables, null, 2)}
+                `);
+            } catch (error) {
+                showResult('templateProcessingResult', 'error', `❌ Template processing failed: ${error.message}`);
+            }
+        }
+
+        async function testTemplatePreview() {
+            showResult('templatePreviewResult', 'info', 'Testing template preview...');
+            
+            try {
+                if (!window.emailService || !window.emailService.initialized) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    if (window.emailService && !window.emailService.initialized) {
+                        await window.emailService.init();
+                    }
+                }
+
+                const preview = window.emailService.previewEmailTemplate('welcome', {
+                    userName: testConfig.userName,
+                    userEmail: testConfig.email
+                });
+
+                if (preview) {
+                    showResult('templatePreviewResult', 'success', `
+                        <strong>✅ Template preview generated!</strong><br>
+                        <div class="template-preview">
+                            <strong>Subject:</strong> ${preview.subject}<br><br>
+                            <strong>Body Preview:</strong><br>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${preview.body.substring(0, 500)}...
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    throw new Error('No preview generated');
+                }
+            } catch (error) {
+                showResult('templatePreviewResult', 'error', `❌ Template preview failed: ${error.message}`);
+            }
+        }
+
+        async function testAdminPanelEmail() {
+            showResult('adminEmailResult', 'info', 'Testing admin panel email...');
+            
+            try {
+                if (!window.emailService || !window.emailService.initialized) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    if (window.emailService && !window.emailService.initialized) {
+                        await window.emailService.init();
+                    }
+                }
+
+                // Test the admin panel email function
+                const emailData = {
+                    to_email: testConfig.email,
+                    to_name: testConfig.userName,
+                    subject: 'Test Email for {{userName}}',
+                    html_content: '<h2>Hello {{userName}}!</h2><p>This is a test email sent to {{userEmail}}.</p>',
+                    from_name: 'Attendly Team',
+                    from_email: 'website.po45@gmail.com'
+                };
+
+                const templateVariables = {
+                    userName: testConfig.userName,
+                    userEmail: testConfig.email
+                };
+
+                const result = await window.emailService.sendProcessedEmail(emailData, templateVariables);
+
+                if (result.success) {
+                    showResult('adminEmailResult', 'success', `
+                        <strong>✅ Admin panel email sent successfully!</strong><br>
+                        Message ID: ${result.messageId}<br>
+                        Status: ${result.deliveryStatus}<br>
+                        <em>Check your email inbox for the test message with proper username substitution.</em>
+                    `);
+                } else {
+                    showResult('adminEmailResult', 'error', `❌ Admin panel email failed: ${result.error}`);
+                }
+            } catch (error) {
+                showResult('adminEmailResult', 'error', `❌ Admin panel email error: ${error.message}`);
+            }
+        }
+
+        async function testWelcomeEmail() {
+            showResult('welcomeEmailResult', 'info', 'Testing welcome email...');
+            
+            try {
+                if (!window.emailService || !window.emailService.initialized) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    if (window.emailService && !window.emailService.initialized) {
+                        await window.emailService.init();
+                    }
+                }
+
+                // Test welcome email function
+                const result = await window.emailService.sendWelcomeEmail(
+                    testConfig.email,
+                    testConfig.userName,
+                    'test-user-id'
+                );
+
+                if (result.success) {
+                    showResult('welcomeEmailResult', 'success', `
+                        <strong>✅ Welcome email sent successfully!</strong><br>
+                        Message ID: ${result.messageId}<br>
+                        Status: ${result.deliveryStatus}<br>
+                        <em>Check your email inbox for the welcome message with proper username substitution.</em>
+                    `);
+                } else {
+                    showResult('welcomeEmailResult', 'error', `❌ Welcome email failed: ${result.error}`);
+                }
+            } catch (error) {
+                showResult('welcomeEmailResult', 'error', `❌ Welcome email error: ${error.message}`);
+            }
+        }
+
+        function testUserNameRetrieval() {
+            showResult('nameRetrievalResult', 'info', 'Testing user name retrieval...');
+            
+            try {
+                const currentUser = firebase.auth().currentUser;
+                let nameInfo = {
+                    firebaseDisplayName: currentUser?.displayName || 'Not available',
+                    firebaseEmail: currentUser?.email || 'Not available',
+                    extractedFromEmail: testConfig.email.split('@')[0],
+                    formattedFromEmail: testConfig.email.split('@')[0].charAt(0).toUpperCase() + 
+                                       testConfig.email.split('@')[0].slice(1).replace(/[._]/g, ' '),
+                    testConfigName: testConfig.userName
+                };
+
+                showResult('nameRetrievalResult', 'success', `
+                    <strong>✅ User name retrieval test complete!</strong><br>
+                    <pre>${JSON.stringify(nameInfo, null, 2)}</pre>
+                    <strong>Recommended name:</strong> ${nameInfo.firebaseDisplayName !== 'Not available' ? 
+                        nameInfo.firebaseDisplayName : nameInfo.formattedFromEmail}
+                `);
+            } catch (error) {
+                showResult('nameRetrievalResult', 'error', `❌ Name retrieval error: ${error.message}`);
+            }
+        }
+
+        // Auto-initialize when page loads
+        window.addEventListener('load', () => {
+            console.log('🧪 Username Functionality Test Page Loaded');
+            
+            // Set default values
+            document.getElementById('testEmail').value = 'john.doe@example.com';
+            document.getElementById('testUserName').value = 'John Doe';
+            updateTestConfig();
+        });
+    </script>
+</body>
+</html>

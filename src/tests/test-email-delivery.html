@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Delivery Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .server-status {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status-healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-unhealthy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Email Delivery Test</h1>
+        <p>Test the real email delivery functionality of your attendance application.</p>
+        
+        <div id="serverStatus" class="server-status">
+            Checking email server status...
+        </div>
+
+        <form id="emailTestForm">
+            <div class="form-group">
+                <label for="testEmail">Recipient Email:</label>
+                <input type="email" id="testEmail" name="testEmail" required 
+                       placeholder="Enter the email address to test">
+            </div>
+
+            <div class="form-group">
+                <label for="testName">Recipient Name:</label>
+                <input type="text" id="testName" name="testName" 
+                       placeholder="Enter recipient name (optional)">
+            </div>
+
+            <div class="form-group">
+                <label for="testSubject">Email Subject:</label>
+                <input type="text" id="testSubject" name="testSubject" 
+                       value="Test Email from Attendly System" required>
+            </div>
+
+            <div class="form-group">
+                <label for="testMessage">Email Message:</label>
+                <textarea id="testMessage" name="testMessage" required>Hello!
+
+This is a test email from the Attendly attendance tracking system.
+
+If you receive this email, it means the email delivery system is working correctly.
+
+Best regards,
+Attendly Team</textarea>
+            </div>
+
+            <button type="submit" id="sendTestBtn">Send Test Email</button>
+            <button type="button" id="checkServerBtn">Check Server Status</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Email server configuration
+        const EMAIL_SERVER_URL = 'http://localhost:3002';
+
+        // DOM elements
+        const form = document.getElementById('emailTestForm');
+        const sendBtn = document.getElementById('sendTestBtn');
+        const checkServerBtn = document.getElementById('checkServerBtn');
+        const resultDiv = document.getElementById('result');
+        const serverStatusDiv = document.getElementById('serverStatus');
+
+        // Check server status on page load
+        window.addEventListener('load', checkServerStatus);
+
+        // Form submission handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await sendTestEmail();
+        });
+
+        // Check server button handler
+        checkServerBtn.addEventListener('click', checkServerStatus);
+
+        /**
+         * Check email server status
+         */
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${EMAIL_SERVER_URL}/health`);
+                const status = await response.json();
+
+                if (status.status === 'healthy') {
+                    serverStatusDiv.className = 'server-status status-healthy';
+                    serverStatusDiv.innerHTML = '✅ Email server is healthy and ready';
+                    sendBtn.disabled = false;
+                } else {
+                    throw new Error('Server reported unhealthy status');
+                }
+            } catch (error) {
+                serverStatusDiv.className = 'server-status status-unhealthy';
+                serverStatusDiv.innerHTML = '❌ Email server is not available. Please start it with: npm run email-server';
+                sendBtn.disabled = true;
+            }
+        }
+
+        /**
+         * Send test email
+         */
+        async function sendTestEmail() {
+            const formData = new FormData(form);
+            const emailData = {
+                to_email: formData.get('testEmail'),
+                to_name: formData.get('testName') || 'Test User',
+                subject: formData.get('testSubject'),
+                html_content: formData.get('testMessage').replace(/\n/g, '<br>'),
+                text_content: formData.get('testMessage'),
+                from_name: 'Attendly Team',
+                from_email: 'website.po45@gmail.com'
+            };
+
+            // Show loading state
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            showResult('Sending test email...', 'info');
+
+            try {
+                const response = await fetch(`${EMAIL_SERVER_URL}/send-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(emailData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResult(`
+                        <strong>✅ Email sent successfully!</strong><br>
+                        <strong>Message ID:</strong> ${result.messageId}<br>
+                        <strong>Delivered At:</strong> ${new Date(result.deliveredAt).toLocaleString()}<br>
+                        <strong>Provider:</strong> ${result.provider}<br>
+                        <strong>Status:</strong> ${result.deliveryStatus}<br><br>
+                        <em>Please check the recipient's inbox (and spam folder) for the test email.</em>
+                    `, 'success');
+                } else {
+                    showResult(`
+                        <strong>❌ Email sending failed</strong><br>
+                        <strong>Error:</strong> ${result.error}<br>
+                        <strong>Status:</strong> ${result.deliveryStatus}<br>
+                        <strong>Retryable:</strong> ${result.retryable ? 'Yes' : 'No'}
+                    `, 'error');
+                }
+            } catch (error) {
+                showResult(`
+                    <strong>❌ Network error occurred</strong><br>
+                    <strong>Error:</strong> ${error.message}<br><br>
+                    <em>Make sure the email server is running: npm run email-server</em>
+                `, 'error');
+            } finally {
+                // Reset button state
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Test Email';
+            }
+        }
+
+        /**
+         * Show result message
+         */
+        function showResult(message, type) {
+            resultDiv.innerHTML = message;
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

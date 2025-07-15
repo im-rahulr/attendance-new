@@ -187,6 +187,9 @@ function setupAuthListeners() {
                     });
                 }
 
+                // Check if this is a first-time login and trigger welcome email
+                checkAndSendWelcomeEmail(userCredential.user);
+
                 // Redirect to dashboard
                 window.location.href = 'dashboard.html';
             })
@@ -366,8 +369,14 @@ function setupAuthListeners() {
                             }
                         });
                     }).then(() => {
+                        // Mark user as new for welcome email trigger
+                        return db.collection('users').doc(userCredential.user.uid).update({
+                            isNewUser: true,
+                            firstLoginPending: true
+                        });
+                    }).then(() => {
                         // Redirect to dashboard
-                        window.location.href = 'dashboard';
+                        window.location.href = 'dashboard.html';
                     });
                 })
                 .catch((error) => {
@@ -491,6 +500,52 @@ function setupAuthListeners() {
                     });
             }
         });
+    }
+}
+
+/**
+ * Check if user is logging in for the first time and send welcome email
+ * @param {Object} user - Firebase user object
+ */
+async function checkAndSendWelcomeEmail(user) {
+    try {
+        if (!user || !db) return;
+
+        // Get user document
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) return;
+
+        const userData = userDoc.data();
+
+        // Check if this is a first-time login
+        if (userData.isNewUser === true && userData.firstLoginPending === true) {
+            console.log('First-time login detected for user:', user.email);
+
+            // Update user document to mark first login complete
+            await db.collection('users').doc(user.uid).update({
+                firstLoginPending: false,
+                firstLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Send welcome email if email service is available
+            if (window.emailService) {
+                console.log('Sending welcome email to:', user.email);
+                window.emailService.sendWelcomeEmail(
+                    user.email,
+                    user.displayName || userData.name || 'Valued User',
+                    user.uid
+                ).then(result => {
+                    console.log('Welcome email result:', result);
+                }).catch(error => {
+                    console.error('Error sending welcome email:', error);
+                });
+            } else {
+                console.warn('Email service not available, welcome email not sent');
+            }
+        }
+    } catch (error) {
+        console.error('Error checking first-time login:', error);
     }
 }
 

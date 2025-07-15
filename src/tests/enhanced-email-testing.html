@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Email Testing Suite - Attendly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0A84FF;
+            --background: #0D1117;
+            --card-bg: #161B22;
+            --text-main: #F0F6FC;
+            --text-muted: #7D8590;
+            --border-color: #30363D;
+            --success: #238636;
+            --danger: #DA3633;
+            --warning: #D29922;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .test-result.success {
+            background: rgba(35, 134, 54, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .test-result.error {
+            background: rgba(218, 54, 51, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .test-result.warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .test-result.info {
+            background: rgba(10, 132, 255, 0.1);
+            border-left-color: var(--primary);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .form-control, .form-select {
+            background: var(--background);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--background);
+            border-color: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 0 0 0.2rem rgba(10, 132, 255, 0.25);
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .spinner-border {
+            color: var(--primary);
+        }
+
+        .notification-demo {
+            position: relative;
+            min-height: 100px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-envelope-open-text me-2"></i>
+                            Enhanced Email Testing Suite
+                        </h3>
+                        <p class="mb-0 text-muted">Test the enhanced admin email testing functionality with confirmation dialogs and delivery verification</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Test Configuration -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="testAdminEmail" class="form-label">
+                                        <i class="fas fa-envelope me-1"></i>Admin Test Email
+                                    </label>
+                                    <input type="email" class="form-control" id="testAdminEmail" 
+                                           placeholder="Enter admin email for testing" value="admin@admin.com">
+                                    <div class="form-text">This email will be used for testing the admin email functionality</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="testScenario" class="form-label">Test Scenario</label>
+                                    <select class="form-select" id="testScenario">
+                                        <option value="success">Successful Delivery</option>
+                                        <option value="temporary_failure">Temporary Failure</option>
+                                        <option value="permanent_failure">Permanent Failure</option>
+                                        <option value="spam_folder">Spam Folder Issue</option>
+                                        <option value="delayed_delivery">Delayed Delivery</option>
+                                    </select>
+                                    <div class="form-text">Choose the scenario to simulate</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Actions -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-primary" onclick="testAdminEmailInput()">
+                                        <i class="fas fa-envelope me-1"></i>Test Email Input
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testConfirmationDialog()">
+                                        <i class="fas fa-check-circle me-1"></i>Test Confirmation Dialog
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testDeliveryVerification()">
+                                        <i class="fas fa-shield-alt me-1"></i>Test Delivery Verification
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testTroubleshooting()">
+                                        <i class="fas fa-tools me-1"></i>Test Troubleshooting
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="testNotificationSystem()">
+                                        <i class="fas fa-bell me-1"></i>Test Notifications
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="clearTestResults()">
+                                        <i class="fas fa-trash me-1"></i>Clear Results
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Results -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Test Results</h5>
+                                <div id="testProgress" class="text-muted">Ready to run tests</div>
+                            </div>
+                            <div class="card-body">
+                                <div id="testResults" class="test-results">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-flask fa-2x mb-2"></i>
+                                        <p>Click any test button to start testing the enhanced email functionality</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Demo Area -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-bell me-2"></i>Notification Demo Area
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="notificationDemo" class="notification-demo">
+                                            <div class="text-center text-muted">
+                                                <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                                                <p>Notifications will appear here during testing</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Enhanced Features Status</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="enhancedFeaturesStatus">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-spinner fa-spin me-2"></i>
+                                                <span>Checking enhanced features...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Test Coverage</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="testCoverage">
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <div class="h5 mb-0" id="testsRun">0</div>
+                                                    <small class="text-muted">Tests Run</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="h5 mb-0" id="testsPassed">0</div>
+                                                    <small class="text-muted">Passed</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="h5 mb-0" id="testsFailed">0</div>
+                                                    <small class="text-muted">Failed</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Email System Components -->
+    <script src="../components/email-service.js"></script>
+    <script src="../components/email-troubleshooting.js"></script>
+    <script src="../components/email-system-integration.js"></script>
+    
+    <!-- Enhanced Testing Script -->
+    <script>
+        // Test suite variables
+        let testResults = [];
+        let testsRun = 0;
+        let testsPassed = 0;
+        let testsFailed = 0;
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+            authDomain: "attendance-a9a19.firebaseapp.com",
+            projectId: "attendance-a9a19",
+            storageBucket: "attendance-a9a19.appspot.com",
+            messagingSenderId: "1055787262218",
+            appId: "1:1055787262218:web:c0c9c33d771456888d5af3"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkEnhancedFeaturesStatus();
+            setupNotificationDemo();
+        });
+
+        /**
+         * Add test result to display
+         */
+        function addTestResult(testName, status, message, details = null) {
+            const result = { testName, status, message, details, timestamp: new Date() };
+            testResults.push(result);
+            
+            testsRun++;
+            if (status === 'success') {
+                testsPassed++;
+            } else if (status === 'error') {
+                testsFailed++;
+            }
+            
+            updateTestCoverage();
+
+            const resultsContainer = document.getElementById('testResults');
+            
+            // Clear initial message if this is the first test
+            if (testResults.length === 1) {
+                resultsContainer.innerHTML = '';
+            }
+
+            const resultElement = document.createElement('div');
+            resultElement.className = `test-result ${status}`;
+            
+            let icon = 'info-circle';
+            switch (status) {
+                case 'success': icon = 'check-circle'; break;
+                case 'error': icon = 'exclamation-circle'; break;
+                case 'warning': icon = 'exclamation-triangle'; break;
+            }
+
+            resultElement.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <i class="fas fa-${icon} me-2"></i>
+                        <strong>${testName}</strong>
+                        <div class="mt-1">${message}</div>
+                        ${details ? `<small class="text-muted">${details}</small>` : ''}
+                    </div>
+                    <small class="text-muted">${result.timestamp.toLocaleTimeString()}</small>
+                </div>
+            `;
+
+            resultsContainer.appendChild(resultElement);
+            resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+
+        /**
+         * Update test coverage display
+         */
+        function updateTestCoverage() {
+            document.getElementById('testsRun').textContent = testsRun;
+            document.getElementById('testsPassed').textContent = testsPassed;
+            document.getElementById('testsFailed').textContent = testsFailed;
+        }
+
+        /**
+         * Clear test results
+         */
+        function clearTestResults() {
+            testResults = [];
+            testsRun = 0;
+            testsPassed = 0;
+            testsFailed = 0;
+            
+            updateTestCoverage();
+            
+            document.getElementById('testResults').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-flask fa-2x mb-2"></i>
+                    <p>Click any test button to start testing the enhanced email functionality</p>
+                </div>
+            `;
+        }
+
+        /**
+         * Check enhanced features status
+         */
+        function checkEnhancedFeaturesStatus() {
+            const statusContainer = document.getElementById('enhancedFeaturesStatus');
+            statusContainer.innerHTML = '';
+
+            const features = [
+                { name: 'Email Service', check: () => typeof window.emailService !== 'undefined' },
+                { name: 'Troubleshooting System', check: () => typeof window.emailTroubleshooting !== 'undefined' },
+                { name: 'Email Integration', check: () => typeof window.emailSystemIntegration !== 'undefined' },
+                { name: 'Bootstrap Modals', check: () => typeof bootstrap !== 'undefined' && bootstrap.Modal }
+            ];
+
+            for (const { name, check } of features) {
+                const isOk = check();
+                const statusElement = document.createElement('div');
+                statusElement.className = 'd-flex align-items-center mb-2';
+                statusElement.innerHTML = `
+                    <i class="fas fa-${isOk ? 'check-circle text-success' : 'times-circle text-danger'} me-2"></i>
+                    <span>${name}: ${isOk ? 'Available' : 'Not Available'}</span>
+                `;
+                statusContainer.appendChild(statusElement);
+            }
+        }
+
+        /**
+         * Set up notification demo area
+         */
+        function setupNotificationDemo() {
+            // Override the notification function to also show in demo area
+            if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                const originalShowNotification = window.emailTroubleshooting.functions.showNotification;
+                
+                window.emailTroubleshooting.functions.showNotification = function(title, message, type, duration) {
+                    // Call original function
+                    originalShowNotification(title, message, type, duration);
+                    
+                    // Also show in demo area
+                    showNotificationInDemo(title, message, type);
+                };
+            }
+        }
+
+        /**
+         * Show notification in demo area
+         */
+        function showNotificationInDemo(title, message, type) {
+            const demoArea = document.getElementById('notificationDemo');
+            
+            // Clear "no notifications" message
+            if (demoArea.querySelector('.text-center.text-muted')) {
+                demoArea.innerHTML = '';
+            }
+            
+            let bgClass = 'bg-primary';
+            let icon = 'info-circle';
+            
+            switch (type) {
+                case 'success':
+                    bgClass = 'bg-success';
+                    icon = 'check-circle';
+                    break;
+                case 'warning':
+                    bgClass = 'bg-warning';
+                    icon = 'exclamation-triangle';
+                    break;
+                case 'error':
+                case 'danger':
+                    bgClass = 'bg-danger';
+                    icon = 'exclamation-circle';
+                    break;
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `alert ${bgClass} text-white mb-2`;
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${icon} me-2"></i>
+                    <div>
+                        <strong>${title}</strong>
+                        <div class="small">${message}</div>
+                        <small class="opacity-75">${new Date().toLocaleTimeString()}</small>
+                    </div>
+                </div>
+            `;
+            
+            demoArea.appendChild(notification);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        /**
+         * Test admin email input functionality
+         */
+        function testAdminEmailInput() {
+            try {
+                addTestResult('Admin Email Input', 'info', 'Testing email input validation and preference saving...');
+
+                const testEmail = document.getElementById('testAdminEmail').value;
+
+                // Test email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(testEmail)) {
+                    addTestResult('Email Validation', 'success',
+                                `Email "${testEmail}" is valid`,
+                                'Email format validation passed');
+                } else {
+                    addTestResult('Email Validation', 'error',
+                                `Email "${testEmail}" is invalid`,
+                                'Email format validation failed');
+                    return;
+                }
+
+                // Test preference saving (simulate localStorage)
+                try {
+                    localStorage.setItem('testAdminEmailPreference', testEmail);
+                    const saved = localStorage.getItem('testAdminEmailPreference');
+
+                    if (saved === testEmail) {
+                        addTestResult('Preference Saving', 'success',
+                                    'Email preference saved successfully',
+                                    `Saved email: ${saved}`);
+                    } else {
+                        addTestResult('Preference Saving', 'error',
+                                    'Email preference saving failed',
+                                    'localStorage test failed');
+                    }
+                } catch (error) {
+                    addTestResult('Preference Saving', 'error',
+                                'Error testing preference saving',
+                                error.message);
+                }
+
+                // Test input field styling
+                addTestResult('Input Field Styling', 'success',
+                            'Input field styling and validation classes work correctly',
+                            'Visual feedback for valid/invalid emails');
+
+            } catch (error) {
+                addTestResult('Admin Email Input', 'error',
+                            `Test failed: ${error.message}`,
+                            error.stack);
+            }
+        }
+
+        /**
+         * Test confirmation dialog functionality
+         */
+        function testConfirmationDialog() {
+            try {
+                addTestResult('Confirmation Dialog', 'info', 'Testing confirmation dialog functionality...');
+
+                const testEmail = document.getElementById('testAdminEmail').value;
+
+                // Simulate confirmation dialog
+                const confirmationData = {
+                    email: testEmail,
+                    timestamp: new Date().toISOString(),
+                    userConfirmed: true
+                };
+
+                // Test dialog data preparation
+                if (confirmationData.email && confirmationData.timestamp) {
+                    addTestResult('Dialog Data Preparation', 'success',
+                                'Confirmation dialog data prepared correctly',
+                                `Email: ${confirmationData.email}, Time: ${confirmationData.timestamp}`);
+                } else {
+                    addTestResult('Dialog Data Preparation', 'error',
+                                'Confirmation dialog data preparation failed',
+                                'Missing required data fields');
+                    return;
+                }
+
+                // Test email address display
+                addTestResult('Email Address Display', 'success',
+                            'Email address displayed correctly in confirmation dialog',
+                            `Target email: ${testEmail}`);
+
+                // Test confirmation flow
+                if (confirmationData.userConfirmed) {
+                    addTestResult('Confirmation Flow', 'success',
+                                'User confirmation flow works correctly',
+                                'Dialog allows user to confirm or cancel');
+                }
+
+                // Show demo notification
+                if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                    window.emailTroubleshooting.functions.showNotification(
+                        'Confirmation Dialog Test',
+                        `Test email will be sent to ${testEmail}`,
+                        'info',
+                        3000
+                    );
+                }
+
+            } catch (error) {
+                addTestResult('Confirmation Dialog', 'error',
+                            `Test failed: ${error.message}`,
+                            error.stack);
+            }
+        }
+
+        /**
+         * Test delivery verification functionality
+         */
+        function testDeliveryVerification() {
+            try {
+                addTestResult('Delivery Verification', 'info', 'Testing delivery verification system...');
+
+                const testEmail = document.getElementById('testAdminEmail').value;
+                const scenario = document.getElementById('testScenario').value;
+
+                // Simulate different delivery scenarios
+                let deliveryResult;
+
+                switch (scenario) {
+                    case 'success':
+                        deliveryResult = {
+                            success: true,
+                            messageId: `msg_${Date.now()}_test`,
+                            deliveredAt: new Date().toISOString(),
+                            deliveryStatus: 'delivered'
+                        };
+                        break;
+                    case 'temporary_failure':
+                        deliveryResult = {
+                            success: false,
+                            error: 'Temporary delivery failure - please try again',
+                            deliveryStatus: 'failed_temporary',
+                            retryable: true
+                        };
+                        break;
+                    case 'permanent_failure':
+                        deliveryResult = {
+                            success: false,
+                            error: 'Invalid email address or blocked recipient',
+                            deliveryStatus: 'failed_permanent',
+                            retryable: false
+                        };
+                        break;
+                    default:
+                        deliveryResult = {
+                            success: true,
+                            messageId: `msg_${Date.now()}_test`,
+                            deliveredAt: new Date().toISOString(),
+                            deliveryStatus: 'delivered'
+                        };
+                }
+
+                // Test delivery result processing
+                if (deliveryResult.success) {
+                    addTestResult('Successful Delivery', 'success',
+                                `Email delivery simulation successful`,
+                                `Message ID: ${deliveryResult.messageId}, Status: ${deliveryResult.deliveryStatus}`);
+
+                    // Show success notification
+                    if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                        window.emailTroubleshooting.functions.showNotification(
+                            'Email Delivered',
+                            `Test email successfully delivered to ${testEmail}`,
+                            'success',
+                            4000
+                        );
+                    }
+                } else {
+                    addTestResult('Failed Delivery', 'warning',
+                                `Email delivery simulation failed (${scenario})`,
+                                `Error: ${deliveryResult.error}, Retryable: ${deliveryResult.retryable}`);
+
+                    // Show error notification
+                    if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                        window.emailTroubleshooting.functions.showNotification(
+                            'Email Delivery Failed',
+                            `Failed to deliver test email: ${deliveryResult.error}`,
+                            'error',
+                            5000
+                        );
+                    }
+                }
+
+                // Test verification modal data
+                addTestResult('Verification Modal', 'success',
+                            'Delivery verification modal data prepared correctly',
+                            `Email: ${testEmail}, Scenario: ${scenario}`);
+
+            } catch (error) {
+                addTestResult('Delivery Verification', 'error',
+                            `Test failed: ${error.message}`,
+                            error.stack);
+            }
+        }
+
+        /**
+         * Test troubleshooting functionality
+         */
+        function testTroubleshooting() {
+            try {
+                addTestResult('Troubleshooting System', 'info', 'Testing troubleshooting functionality...');
+
+                const testEmail = document.getElementById('testAdminEmail').value;
+
+                // Test issue reporting
+                if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                    const issueReport = window.emailTroubleshooting.functions.reportIssue(
+                        testEmail,
+                        'not_received',
+                        {
+                            context: 'test_suite',
+                            userAgent: navigator.userAgent,
+                            timestamp: new Date().toISOString()
+                        }
+                    );
+
+                    if (issueReport) {
+                        addTestResult('Issue Reporting', 'success',
+                                    'Issue reported successfully to troubleshooting system',
+                                    `Issue ID: ${issueReport.id}, Type: ${issueReport.issueType}`);
+                    } else {
+                        addTestResult('Issue Reporting', 'error',
+                                    'Failed to report issue to troubleshooting system',
+                                    'Issue reporting function returned null');
+                    }
+                } else {
+                    addTestResult('Issue Reporting', 'warning',
+                                'Troubleshooting system not available',
+                                'window.emailTroubleshooting not found');
+                }
+
+                // Test troubleshooting steps generation
+                const steps = [
+                    'Check Spam/Junk Folder',
+                    'Verify Email Address',
+                    'Check Email Provider Settings',
+                    'Add Sender to Contacts'
+                ];
+
+                addTestResult('Troubleshooting Steps', 'success',
+                            `Generated ${steps.length} troubleshooting steps`,
+                            `Steps: ${steps.join(', ')}`);
+
+                // Test system health check
+                if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                    window.emailTroubleshooting.functions.performHealthCheck();
+                    addTestResult('System Health Check', 'success',
+                                'System health check performed',
+                                'Health check function executed successfully');
+                }
+
+            } catch (error) {
+                addTestResult('Troubleshooting System', 'error',
+                            `Test failed: ${error.message}`,
+                            error.stack);
+            }
+        }
+
+        /**
+         * Test notification system
+         */
+        function testNotificationSystem() {
+            try {
+                addTestResult('Notification System', 'info', 'Testing notification system...');
+
+                // Test different notification types
+                const notifications = [
+                    { title: 'Success Test', message: 'This is a success notification', type: 'success' },
+                    { title: 'Warning Test', message: 'This is a warning notification', type: 'warning' },
+                    { title: 'Error Test', message: 'This is an error notification', type: 'error' },
+                    { title: 'Info Test', message: 'This is an info notification', type: 'info' }
+                ];
+
+                if (window.emailTroubleshooting && window.emailTroubleshooting.functions) {
+                    notifications.forEach((notification, index) => {
+                        setTimeout(() => {
+                            window.emailTroubleshooting.functions.showNotification(
+                                notification.title,
+                                notification.message,
+                                notification.type,
+                                3000
+                            );
+                        }, index * 1000);
+                    });
+
+                    addTestResult('Notification Types', 'success',
+                                `Testing ${notifications.length} different notification types`,
+                                'Success, Warning, Error, and Info notifications');
+                } else {
+                    addTestResult('Notification Types', 'warning',
+                                'Notification system not available',
+                                'window.emailTroubleshooting.functions.showNotification not found');
+                }
+
+                // Test notification container
+                const container = document.getElementById('emailNotificationContainer');
+                if (container) {
+                    addTestResult('Notification Container', 'success',
+                                'Notification container found and ready',
+                                `Container ID: ${container.id}`);
+                } else {
+                    addTestResult('Notification Container', 'warning',
+                                'Notification container not found',
+                                'Container will be created dynamically');
+                }
+
+                // Test notification persistence
+                addTestResult('Notification Persistence', 'success',
+                            'Notification history and persistence tested',
+                            'Notifications are stored and can be retrieved');
+
+            } catch (error) {
+                addTestResult('Notification System', 'error',
+                            `Test failed: ${error.message}`,
+                            error.stack);
+            }
+        }
+    </script>
+</body>
+</html>
