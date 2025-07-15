@@ -1732,8 +1732,11 @@
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
-                                <div class="card-header">
+                                <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Notifications</h5>
+                                    <button class="btn btn-sm btn-outline-danger" id="deleteAllNotificationsBtn" title="Delete all notifications">
+                                        <i class="fas fa-trash-alt me-1"></i>Delete All
+                                    </button>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -5675,8 +5678,7 @@
                         console.log('✅ Admin panel initialization complete');
                     }, 2000);
 
-                    // Initialize notification management
-                    initializeNotificationManagement();
+                    // Notification management will be initialized by initializeAdminFeatures()
 
                     // Add listener for save subject changes button
                     const saveSubjectBtn = document.getElementById('saveSubjectChanges');
@@ -10149,6 +10151,14 @@ service cloud.firestore {
 
     // Notification Management Functions
     function initializeNotificationManagement() {
+        // Prevent multiple initializations
+        if (window.notificationManagementInitialized) {
+            console.log('Notification management already initialized, skipping...');
+            return;
+        }
+
+        console.log('Initializing notification management...');
+
         // Load users for specific notification dropdown
         loadUsersForNotifications();
 
@@ -10160,6 +10170,17 @@ service cloud.firestore {
 
         // Load all notifications
         loadAllNotifications();
+
+        // Setup delete all notifications button
+        const deleteAllBtn = document.getElementById('deleteAllNotificationsBtn');
+        if (deleteAllBtn && !deleteAllBtn.dataset.listenerAdded) {
+            deleteAllBtn.addEventListener('click', deleteAllNotifications);
+            deleteAllBtn.dataset.listenerAdded = 'true';
+        }
+
+        // Mark as initialized
+        window.notificationManagementInitialized = true;
+        console.log('Notification management initialization completed');
     }
 
     function loadUsersForNotifications() {
@@ -10186,23 +10207,46 @@ service cloud.firestore {
         const recipientSelect = document.getElementById('notificationRecipient');
         const specificUserDiv = document.getElementById('specificUserDiv');
 
+        // Check if form is already set up to prevent duplicate event listeners
+        if (form && form.dataset.setupComplete === 'true') {
+            console.log('Notification form already set up, skipping...');
+            return;
+        }
+
+        if (!form) {
+            console.error('Notification form not found');
+            return;
+        }
+
         // Show/hide specific user dropdown
-        recipientSelect.addEventListener('change', function() {
-            if (this.value === 'specific') {
-                specificUserDiv.style.display = 'block';
-            } else {
-                specificUserDiv.style.display = 'none';
-            }
-        });
+        if (recipientSelect) {
+            recipientSelect.addEventListener('change', function() {
+                if (this.value === 'specific') {
+                    if (specificUserDiv) specificUserDiv.style.display = 'block';
+                } else {
+                    if (specificUserDiv) specificUserDiv.style.display = 'none';
+                }
+            });
+        }
 
         // Handle form submission
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             sendNotification();
         });
+
+        // Mark form as set up
+        form.dataset.setupComplete = 'true';
+        console.log('Notification form setup completed');
     }
 
     function sendNotification() {
+        // Prevent multiple rapid submissions
+        if (window.notificationSending) {
+            console.log('Notification already being sent, ignoring duplicate request');
+            return;
+        }
+
         const authorName = document.getElementById('authorName').value;
         const title = document.getElementById('notificationTitle').value;
         const message = document.getElementById('notificationMessage').value;
@@ -10218,6 +10262,17 @@ service cloud.firestore {
         if (recipient === 'specific' && !specificUser) {
             showToast('Please select a specific user', 'error');
             return;
+        }
+
+        // Set sending flag
+        window.notificationSending = true;
+        console.log('Starting notification send process...');
+
+        // Disable submit button to prevent multiple clicks
+        const submitBtn = document.querySelector('#notificationForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
         }
 
         const notificationData = {
@@ -10263,6 +10318,7 @@ service cloud.firestore {
                 return batch.commit();
             })
             .then(() => {
+                console.log('Notification sent to all users successfully');
                 showToast('Notification sent to all users successfully!', 'success');
                 clearNotificationForm();
                 loadRecentNotifications();
@@ -10270,7 +10326,11 @@ service cloud.firestore {
             })
             .catch(error => {
                 console.error('Error sending notification to all users:', error);
-                showToast('Error sending notification', 'error');
+                showToast('Error sending notification: ' + error.message, 'error');
+            })
+            .finally(() => {
+                // Reset sending flag and restore button
+                resetNotificationSendingState();
             });
     }
 
@@ -10289,6 +10349,7 @@ service cloud.firestore {
                 }
             })
             .then(() => {
+                console.log('Notification sent to specific user successfully');
                 showToast('Notification sent successfully!', 'success');
                 clearNotificationForm();
                 loadRecentNotifications();
@@ -10296,13 +10357,34 @@ service cloud.firestore {
             })
             .catch(error => {
                 console.error('Error sending notification:', error);
-                showToast('Error sending notification', 'error');
+                showToast('Error sending notification: ' + error.message, 'error');
+            })
+            .finally(() => {
+                // Reset sending flag and restore button
+                resetNotificationSendingState();
             });
+    }
+
+    function resetNotificationSendingState() {
+        // Reset sending flag
+        window.notificationSending = false;
+
+        // Restore submit button
+        const submitBtn = document.querySelector('#notificationForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-send me-2"></i>Send Notification';
+        }
+
+        console.log('Notification sending state reset');
     }
 
     function clearNotificationForm() {
         document.getElementById('notificationForm').reset();
         document.getElementById('specificUserDiv').style.display = 'none';
+
+        // Also reset the sending state when clearing the form
+        resetNotificationSendingState();
     }
 
     function loadRecentNotifications() {
@@ -10394,6 +10476,105 @@ service cloud.firestore {
                     showToast('Error deleting notification', 'error');
                 });
         }
+    }
+
+    // Function to delete all notifications
+    function deleteAllNotifications() {
+        // Show confirmation dialog with detailed warning
+        const confirmMessage = `⚠️ WARNING: This action will permanently delete ALL notifications from the system.
+
+This includes:
+• All sent notifications to users
+• All read and unread messages
+• All notification history
+
+This action CANNOT be undone.
+
+Are you absolutely sure you want to proceed?`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        // Second confirmation for extra safety
+        const secondConfirm = prompt('To confirm this destructive action, please type "DELETE ALL" (without quotes):');
+        if (secondConfirm !== 'DELETE ALL') {
+            showToast('Action cancelled - confirmation text did not match', 'warning');
+            return;
+        }
+
+        // Show loading state
+        const deleteBtn = document.getElementById('deleteAllNotificationsBtn');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Deleting...';
+        deleteBtn.disabled = true;
+
+        // Get all notifications and delete them in batches
+        firebase.firestore()
+            .collection('notifications')
+            .get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    showToast('No notifications to delete', 'info');
+                    return;
+                }
+
+                const totalNotifications = snapshot.size;
+                console.log(`Deleting ${totalNotifications} notifications...`);
+
+                // Delete in batches of 500 (Firestore batch limit)
+                const batchSize = 500;
+                const batches = [];
+                let currentBatch = firebase.firestore().batch();
+                let operationCount = 0;
+
+                snapshot.forEach(doc => {
+                    currentBatch.delete(doc.ref);
+                    operationCount++;
+
+                    if (operationCount === batchSize) {
+                        batches.push(currentBatch);
+                        currentBatch = firebase.firestore().batch();
+                        operationCount = 0;
+                    }
+                });
+
+                // Add the last batch if it has operations
+                if (operationCount > 0) {
+                    batches.push(currentBatch);
+                }
+
+                // Execute all batches
+                return Promise.all(batches.map(batch => batch.commit()));
+            })
+            .then(() => {
+                showToast('All notifications deleted successfully', 'success');
+                loadRecentNotifications();
+                loadAllNotifications();
+
+                // Log the action for audit purposes
+                console.log(`Admin ${currentUser.email} deleted all notifications at ${new Date().toISOString()}`);
+
+                // Optionally log to a separate audit collection
+                firebase.firestore().collection('adminAuditLog').add({
+                    action: 'DELETE_ALL_NOTIFICATIONS',
+                    adminEmail: currentUser.email,
+                    adminUid: currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    details: 'All notifications were deleted from the system'
+                }).catch(error => {
+                    console.warn('Failed to log audit entry:', error);
+                });
+            })
+            .catch(error => {
+                console.error('Error deleting all notifications:', error);
+                showToast('Error deleting notifications: ' + error.message, 'error');
+            })
+            .finally(() => {
+                // Restore button state
+                deleteBtn.innerHTML = originalText;
+                deleteBtn.disabled = false;
+            });
     }
 
     // Remove the duplicate auth state listener - we already have one above

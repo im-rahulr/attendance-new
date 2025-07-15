@@ -27,6 +27,9 @@ class NotificationManager {
             return;
         }
 
+        // Clean up existing listeners before setting up new ones
+        this.cleanup();
+
         console.log("Setting up notification listener for user:", this.currentUser.uid);
 
         const unsubscribe = firebase.firestore()
@@ -57,9 +60,9 @@ class NotificationManager {
 
                 this.updateNotificationBadges();
 
-                // Notify listeners
+                // Notify listeners (excluding unsubscribe functions)
                 this.listeners.forEach(listener => {
-                    if (typeof listener === 'function') {
+                    if (typeof listener === 'function' && !listener._isUnsubscribe) {
                         listener(this.notifications, this.unreadCount);
                     }
                 });
@@ -67,6 +70,9 @@ class NotificationManager {
                 console.error("Error in notification listener:", error);
             });
 
+        // Mark the unsubscribe function and store it
+        unsubscribe._isUnsubscribe = true;
+        this.unsubscribeFunction = unsubscribe;
         this.listeners.push(unsubscribe);
     }
 
@@ -102,7 +108,18 @@ class NotificationManager {
 
     // Add listener for notification updates
     addListener(callback) {
-        this.listeners.push(callback);
+        // Prevent duplicate listeners
+        if (typeof callback === 'function' && !callback._isUnsubscribe) {
+            const existingIndex = this.listeners.findIndex(listener =>
+                listener === callback && !listener._isUnsubscribe
+            );
+            if (existingIndex === -1) {
+                this.listeners.push(callback);
+                console.log('Added notification listener, total listeners:', this.listeners.filter(l => !l._isUnsubscribe).length);
+            } else {
+                console.log('Listener already exists, skipping duplicate');
+            }
+        }
     }
 
     // Remove listener
@@ -163,8 +180,16 @@ class NotificationManager {
 
     // Clean up listeners
     cleanup() {
+        // Clean up the main unsubscribe function
+        if (this.unsubscribeFunction && typeof this.unsubscribeFunction === 'function') {
+            console.log("Cleaning up notification listener");
+            this.unsubscribeFunction();
+            this.unsubscribeFunction = null;
+        }
+
+        // Clean up any other unsubscribe functions in listeners array
         this.listeners.forEach(listener => {
-            if (typeof listener === 'function' && listener.name === 'unsubscribe') {
+            if (typeof listener === 'function' && listener._isUnsubscribe) {
                 listener();
             }
         });
