@@ -295,6 +295,23 @@
             font-size: 11px;
             font-weight: 500;
         }
+
+        /* Quick Access Cards */
+        .quick-access-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quick-access-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px var(--shadow-light);
+            border-color: var(--accent-primary);
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -310,7 +327,40 @@
             <h1 class="greeting">Hello, <span id="userName">User</span>!</h1>
             <p class="welcome-text">Welcome back to your dashboard</p>
         </div>
-        
+
+        <!-- Quick Access Section -->
+        <div class="quick-access-section" style="margin: 20px; margin-bottom: 30px;">
+            <h2 class="section-title" style="font-size: 18px; margin-bottom: 15px; color: var(--text-primary);">
+                <i class="fas fa-bolt" style="margin-right: 8px;"></i>Quick Access
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                <a href="documentation.html" style="text-decoration: none; color: inherit;">
+                    <div class="quick-access-card">
+                        <i class="fas fa-book" style="font-size: 20px; color: #58A6FF; margin-bottom: 8px;"></i>
+                        <div style="font-size: 12px; font-weight: 500; color: var(--text-primary);">Documentation</div>
+                    </div>
+                </a>
+                <a href="system-specs.html" style="text-decoration: none; color: inherit;">
+                    <div class="quick-access-card">
+                        <i class="fas fa-server" style="font-size: 20px; color: #4CAF50; margin-bottom: 8px;"></i>
+                        <div style="font-size: 12px; font-weight: 500; color: var(--text-primary);">System Specs</div>
+                    </div>
+                </a>
+                <a href="changelog.html" style="text-decoration: none; color: inherit;">
+                    <div class="quick-access-card">
+                        <i class="fas fa-history" style="font-size: 20px; color: #FF9800; margin-bottom: 8px;"></i>
+                        <div style="font-size: 12px; font-weight: 500; color: var(--text-primary);">Changelog</div>
+                    </div>
+                </a>
+                <a href="about.html" style="text-decoration: none; color: inherit;">
+                    <div class="quick-access-card">
+                        <i class="fas fa-info-circle" style="font-size: 20px; color: #9C27B0; margin-bottom: 8px;"></i>
+                        <div style="font-size: 12px; font-weight: 500; color: var(--text-primary);">About</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Today's Classes Section -->
         <div class="classes-section">
             <h2 class="section-title">Today's classes</h2>
