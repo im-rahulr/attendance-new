@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Activity Logging Test - Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            margin: 5px;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        .status-info { background-color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-center mb-4">🔍 User Activity Logging System Test</h1>
+        
+        <!-- System Status Section -->
+        <div class="test-section">
+            <h3>📊 System Status</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><span id="firebaseStatus" class="status-indicator status-error"></span>Firebase Connection</p>
+                    <p><span id="activityTrackerStatus" class="status-indicator status-error"></span>Activity Tracker</p>
+                    <p><span id="authStatus" class="status-indicator status-error"></span>Authentication</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span id="firestoreStatus" class="status-indicator status-error"></span>Firestore Database</p>
+                    <p><span id="loggingStatus" class="status-indicator status-error"></span>Logging Functions</p>
+                    <p><span id="userStatus" class="status-indicator status-error"></span>Current User</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Actions Section -->
+        <div class="test-section">
+            <h3>🧪 Test Actions</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Basic Logging Tests</h5>
+                    <button class="btn btn-primary test-button" onclick="testBasicLogging()">Test Basic Logging</button>
+                    <button class="btn btn-info test-button" onclick="testPageView()">Test Page View</button>
+                    <button class="btn btn-success test-button" onclick="testButtonClick()">Test Button Click</button>
+                    <button class="btn btn-warning test-button" onclick="testFormSubmission()">Test Form Submission</button>
+                </div>
+                <div class="col-md-6">
+                    <h5>Advanced Tests</h5>
+                    <button class="btn btn-secondary test-button" onclick="testDataModification()">Test Data Modification</button>
+                    <button class="btn btn-dark test-button" onclick="testErrorLogging()">Test Error Logging</button>
+                    <button class="btn btn-outline-primary test-button" onclick="testOfflineLogging()">Test Offline Logging</button>
+                    <button class="btn btn-outline-success test-button" onclick="viewStoredLogs()">View Stored Logs</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results Section -->
+        <div class="test-section">
+            <h3>📋 Test Results</h3>
+            <div class="log-output" id="testResults">
+                <p>Click "Check System Status" to begin testing...</p>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="checkSystemStatus()">Check System Status</button>
+                <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+                <button class="btn btn-success" onclick="runAllTests()">Run All Tests</button>
+            </div>
+        </div>
+
+        <!-- Database Logs Section -->
+        <div class="test-section">
+            <h3>💾 Recent Database Logs</h3>
+            <div class="log-output" id="databaseLogs">
+                <p>Click "View Stored Logs" to load recent logs from database...</p>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-info" onclick="refreshDatabaseLogs()">Refresh Database Logs</button>
+                <button class="btn btn-warning" onclick="clearDatabaseLogs()">Clear Test Logs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../components/theme.js"></script>
+    <script src="../utils/validation.js"></script>
+    <script src="../utils/script.js"></script>
+    <script src="../api/auth.js"></script>
+    <script src="../components/notifications.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+            authDomain: "attendance-a9a19.firebaseapp.com",
+            projectId: "attendance-a9a19",
+            storageBucket: "attendance-a9a19.appspot.com",
+            messagingSenderId: "1055787262218",
+            appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+            measurementId: "G-3XPB4VLFYH"
+        };
+        
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        let testResults = [];
+        
+        function logResult(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            testResults.push(logEntry);
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = testResults.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        function updateStatus(elementId, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `status-indicator ${isSuccess ? 'status-success' : 'status-error'}`;
+        }
+
+        function checkSystemStatus() {
+            logResult('🔍 Checking system status...', 'info');
+            
+            // Check Firebase
+            try {
+                if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                    updateStatus('firebaseStatus', true);
+                    logResult('✅ Firebase is initialized', 'success');
+                } else {
+                    updateStatus('firebaseStatus', false);
+                    logResult('❌ Firebase is not initialized', 'error');
+                }
+            } catch (error) {
+                updateStatus('firebaseStatus', false);
+                logResult(`❌ Firebase error: ${error.message}`, 'error');
+            }
+
+            // Check Firestore
+            try {
+                if (firebase.firestore) {
+                    updateStatus('firestoreStatus', true);
+                    logResult('✅ Firestore is available', 'success');
+                } else {
+                    updateStatus('firestoreStatus', false);
+                    logResult('❌ Firestore is not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('firestoreStatus', false);
+                logResult(`❌ Firestore error: ${error.message}`, 'error');
+            }
+
+            // Check Activity Tracker
+            try {
+                if (typeof activityTracker !== 'undefined' && activityTracker) {
+                    updateStatus('activityTrackerStatus', true);
+                    logResult('✅ Activity Tracker is initialized', 'success');
+                } else {
+                    updateStatus('activityTrackerStatus', false);
+                    logResult('❌ Activity Tracker is not initialized', 'error');
+                }
+            } catch (error) {
+                updateStatus('activityTrackerStatus', false);
+                logResult(`❌ Activity Tracker error: ${error.message}`, 'error');
+            }
+
+            // Check Authentication
+            try {
+                if (firebase.auth && firebase.auth().currentUser) {
+                    updateStatus('authStatus', true);
+                    updateStatus('userStatus', true);
+                    logResult(`✅ User is authenticated: ${firebase.auth().currentUser.email}`, 'success');
+                } else {
+                    updateStatus('authStatus', true);
+                    updateStatus('userStatus', false);
+                    logResult('⚠️ Firebase Auth available but no user logged in', 'warning');
+                }
+            } catch (error) {
+                updateStatus('authStatus', false);
+                updateStatus('userStatus', false);
+                logResult(`❌ Authentication error: ${error.message}`, 'error');
+            }
+
+            // Check Logging Functions
+            try {
+                if (typeof logUserActivity === 'function') {
+                    updateStatus('loggingStatus', true);
+                    logResult('✅ Logging functions are available', 'success');
+                } else {
+                    updateStatus('loggingStatus', false);
+                    logResult('❌ Logging functions are not available', 'error');
+                }
+            } catch (error) {
+                updateStatus('loggingStatus', false);
+                logResult(`❌ Logging functions error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBasicLogging() {
+            logResult('🧪 Testing basic logging functionality...', 'info');
+            
+            try {
+                if (typeof logUserActivity === 'function') {
+                    await logUserActivity('Test basic logging', {
+                        testType: 'basic_logging',
+                        timestamp: new Date().toISOString(),
+                        testData: 'This is a test log entry'
+                    });
+                    logResult('✅ Basic logging test completed successfully', 'success');
+                } else {
+                    logResult('❌ logUserActivity function not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Basic logging test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPageView() {
+            logResult('🧪 Testing page view tracking...', 'info');
+            
+            try {
+                if (typeof trackPageView === 'function') {
+                    trackPageView('logging-test', {
+                        testType: 'page_view_test',
+                        timestamp: new Date().toISOString()
+                    });
+                    logResult('✅ Page view tracking test completed successfully', 'success');
+                } else {
+                    logResult('❌ trackPageView function not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Page view tracking test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testButtonClick() {
+            logResult('🧪 Testing button click tracking...', 'info');
+            
+            try {
+                if (typeof trackButtonClick === 'function') {
+                    trackButtonClick('test-button', {
+                        testType: 'button_click_test',
+                        timestamp: new Date().toISOString()
+                    });
+                    logResult('✅ Button click tracking test completed successfully', 'success');
+                } else {
+                    logResult('❌ trackButtonClick function not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Button click tracking test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFormSubmission() {
+            logResult('🧪 Testing form submission tracking...', 'info');
+            
+            try {
+                if (typeof trackFormSubmission === 'function') {
+                    trackFormSubmission('test-form', {
+                        testField1: 'test value 1',
+                        testField2: 'test value 2',
+                        password: 'secret123' // This should be redacted
+                    });
+                    logResult('✅ Form submission tracking test completed successfully', 'success');
+                } else {
+                    logResult('❌ trackFormSubmission function not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Form submission tracking test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDataModification() {
+            logResult('🧪 Testing data modification tracking...', 'info');
+            
+            try {
+                if (typeof trackDataModification === 'function') {
+                    trackDataModification('update', 'test_record', 'test_id_123', {
+                        field1: 'old_value',
+                        field2: 'new_value'
+                    });
+                    logResult('✅ Data modification tracking test completed successfully', 'success');
+                } else {
+                    logResult('❌ trackDataModification function not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Data modification tracking test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testErrorLogging() {
+            logResult('🧪 Testing error logging...', 'info');
+            
+            try {
+                // Simulate an error
+                const testError = new Error('This is a test error for logging verification');
+                
+                if (typeof logUserActivity === 'function') {
+                    await logUserActivity('Test error occurred', {
+                        errorType: 'test_error',
+                        errorMessage: testError.message,
+                        errorStack: testError.stack,
+                        timestamp: new Date().toISOString()
+                    });
+                    logResult('✅ Error logging test completed successfully', 'success');
+                } else {
+                    logResult('❌ Error logging function not available', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Error logging test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testOfflineLogging() {
+            logResult('🧪 Testing offline logging (simulation)...', 'info');
+            
+            try {
+                // Simulate offline condition
+                if (activityTracker) {
+                    const originalOnlineStatus = activityTracker.isOnline;
+                    activityTracker.isOnline = false;
+                    
+                    await logUserActivity('Test offline logging', {
+                        testType: 'offline_test',
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Restore online status
+                    activityTracker.isOnline = originalOnlineStatus;
+                    
+                    logResult('✅ Offline logging test completed (check queue)', 'success');
+                } else {
+                    logResult('❌ Activity tracker not available for offline test', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Offline logging test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function viewStoredLogs() {
+            logResult('🧪 Retrieving stored logs from database...', 'info');
+            
+            try {
+                if (firebase.firestore && firebase.auth().currentUser) {
+                    const db = firebase.firestore();
+                    const logsRef = db.collection('userLogs')
+                        .where('userId', '==', firebase.auth().currentUser.uid)
+                        .orderBy('timestamp', 'desc')
+                        .limit(10);
+                    
+                    const snapshot = await logsRef.get();
+                    
+                    if (snapshot.empty) {
+                        logResult('⚠️ No logs found in database for current user', 'warning');
+                    } else {
+                        logResult(`✅ Found ${snapshot.size} log entries in database`, 'success');
+                        
+                        const databaseLogsDiv = document.getElementById('databaseLogs');
+                        let logsHtml = '';
+                        
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            const timestamp = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown';
+                            logsHtml += `[${timestamp}] ${data.activity || data.message} - ${JSON.stringify(data.additionalData || {})}\n`;
+                        });
+                        
+                        databaseLogsDiv.textContent = logsHtml;
+                    }
+                } else {
+                    logResult('❌ Cannot retrieve logs: Firestore not available or user not authenticated', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Failed to retrieve stored logs: ${error.message}`, 'error');
+            }
+        }
+
+        async function refreshDatabaseLogs() {
+            await viewStoredLogs();
+        }
+
+        async function clearDatabaseLogs() {
+            logResult('🧪 Clearing test logs from database...', 'info');
+            
+            try {
+                if (firebase.firestore && firebase.auth().currentUser) {
+                    const db = firebase.firestore();
+                    const logsRef = db.collection('userLogs')
+                        .where('userId', '==', firebase.auth().currentUser.uid)
+                        .where('additionalData.testType', '!=', null);
+                    
+                    const snapshot = await logsRef.get();
+                    
+                    const batch = db.batch();
+                    snapshot.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    
+                    await batch.commit();
+                    logResult(`✅ Cleared ${snapshot.size} test log entries from database`, 'success');
+                } else {
+                    logResult('❌ Cannot clear logs: Firestore not available or user not authenticated', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ Failed to clear test logs: ${error.message}`, 'error');
+            }
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('testResults').innerHTML = '<p>Results cleared. Click "Check System Status" to begin testing...</p>';
+        }
+
+        async function runAllTests() {
+            logResult('🚀 Running all tests...', 'info');
+            
+            checkSystemStatus();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testBasicLogging();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testPageView();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testButtonClick();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testFormSubmission();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testDataModification();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testErrorLogging();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testOfflineLogging();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await viewStoredLogs();
+            
+            logResult('🎉 All tests completed!', 'success');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            logResult('📄 Logging test page loaded', 'info');
+            
+            // Wait a bit for Firebase to initialize, then check status
+            setTimeout(checkSystemStatus, 2000);
+        });
+    </script>
+</body>
+</html>

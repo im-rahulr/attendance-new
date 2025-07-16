@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailJS Integration Test - Attendly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0D1117;
+            --bg-secondary: #161B22;
+            --bg-tertiary: #21262D;
+            --border-color: #30363D;
+            --text-primary: #F0F6FC;
+            --text-secondary: #C9D1D9;
+            --text-muted: #8B949E;
+            --accent-blue: #58A6FF;
+            --accent-green: #238636;
+            --accent-red: #DA3633;
+            --accent-yellow: #D29922;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .card-header {
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.25rem rgba(88, 166, 255, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-success {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .btn-warning {
+            background-color: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            color: var(--bg-primary);
+        }
+
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .test-success {
+            background-color: rgba(35, 134, 54, 0.1);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .test-error {
+            background-color: rgba(218, 54, 51, 0.1);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .test-warning {
+            background-color: rgba(210, 153, 34, 0.1);
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+        }
+
+        .test-info {
+            background-color: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background-color: var(--accent-green);
+            color: white;
+        }
+
+        .status-offline {
+            background-color: var(--accent-red);
+            color: white;
+        }
+
+        .status-loading {
+            background-color: var(--accent-yellow);
+            color: var(--bg-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-envelope me-2"></i>
+                            EmailJS Integration Test Suite
+                        </h4>
+                        <small class="text-muted">Comprehensive testing for EmailJS welcome email system</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- System Status -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-server fa-2x mb-2"></i>
+                                        <h6>EmailJS Service</h6>
+                                        <span id="emailjsStatus" class="status-badge status-loading">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                        <h6>Error Handler</h6>
+                                        <span id="errorHandlerStatus" class="status-badge status-loading">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-database fa-2x mb-2"></i>
+                                        <h6>Firebase</h6>
+                                        <span id="firebaseStatus" class="status-badge status-loading">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-template fa-2x mb-2"></i>
+                                        <h6>Templates</h6>
+                                        <span id="templateStatus" class="status-badge status-loading">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Controls -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-play me-2"></i>Test Controls</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-primary" onclick="runSystemCheck()">
+                                                <i class="fas fa-check-circle me-1"></i>Run System Check
+                                            </button>
+                                            <button class="btn btn-success" onclick="testWelcomeEmail()">
+                                                <i class="fas fa-paper-plane me-1"></i>Test Welcome Email
+                                            </button>
+                                            <button class="btn btn-info" onclick="testTemplateLoading()">
+                                                <i class="fas fa-file-alt me-1"></i>Test Template Loading
+                                            </button>
+                                            <button class="btn btn-warning" onclick="testErrorHandling()">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Test Error Handling
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="runAllTests()">
+                                                <i class="fas fa-tasks me-1"></i>Run All Tests
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Test Configuration</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="testEmail" class="form-label">Test Email Address</label>
+                                            <input type="email" class="form-control" id="testEmail" 
+                                                   value="rahulhitwo@gmail.com" placeholder="Enter test email">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="testUserName" class="form-label">Test User Name</label>
+                                            <input type="text" class="form-control" id="testUserName" 
+                                                   value="Test User" placeholder="Enter test user name">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="testUserId" class="form-label">Test User ID</label>
+                                            <input type="text" class="form-control" id="testUserId" 
+                                                   value="test-user-123" placeholder="Enter test user ID">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-list me-2"></i>Test Results</h6>
+                                        <button class="btn btn-sm btn-outline-secondary float-end" onclick="clearResults()">
+                                            <i class="fas fa-trash me-1"></i>Clear
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="testResults" style="max-height: 400px; overflow-y: auto;">
+                                            <div class="test-result test-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                Ready to run tests. Click any test button to begin.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Test Statistics</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="h5 text-success mb-0" id="testsPassedCount">0</div>
+                                                <small class="text-muted">Passed</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="h5 text-danger mb-0" id="testsFailedCount">0</div>
+                                                <small class="text-muted">Failed</small>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="h5 text-info mb-0" id="testsRunCount">0</div>
+                                                <small class="text-muted">Total</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="../config/firebase-config.js"></script>
+    
+    <!-- EmailJS Components -->
+    <script src="../components/emailjs-error-handler.js"></script>
+    <script src="../components/emailjs-service.js"></script>
+    
+    <!-- Database Initialization Script -->
+    <script src="../../scripts/init-emailjs-database.js"></script>
+
+    <script>
+        // Test Suite Implementation
+        let testStats = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
+        // Initialize test suite
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 EmailJS Integration Test Suite Loaded');
+            setTimeout(checkSystemStatus, 1000);
+        });
+
+        // System Status Checks
+        async function checkSystemStatus() {
+            console.log('🔍 Checking system status...');
+
+            // Check EmailJS Service
+            const emailjsStatus = document.getElementById('emailjsStatus');
+            if (window.emailJSService) {
+                try {
+                    const isOnline = await window.emailJSService.testConnectivity();
+                    if (isOnline) {
+                        emailjsStatus.className = 'status-badge status-online';
+                        emailjsStatus.textContent = 'Online';
+                    } else {
+                        emailjsStatus.className = 'status-badge status-offline';
+                        emailjsStatus.textContent = 'Offline';
+                    }
+                } catch (error) {
+                    emailjsStatus.className = 'status-badge status-offline';
+                    emailjsStatus.textContent = 'Error';
+                }
+            } else {
+                emailjsStatus.className = 'status-badge status-offline';
+                emailjsStatus.textContent = 'Not Found';
+            }
+
+            // Check Error Handler
+            const errorHandlerStatus = document.getElementById('errorHandlerStatus');
+            if (window.emailJSErrorHandler) {
+                errorHandlerStatus.className = 'status-badge status-online';
+                errorHandlerStatus.textContent = 'Loaded';
+            } else {
+                errorHandlerStatus.className = 'status-badge status-offline';
+                errorHandlerStatus.textContent = 'Not Found';
+            }
+
+            // Check Firebase
+            const firebaseStatus = document.getElementById('firebaseStatus');
+            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                try {
+                    await firebase.firestore().enableNetwork();
+                    firebaseStatus.className = 'status-badge status-online';
+                    firebaseStatus.textContent = 'Connected';
+                } catch (error) {
+                    firebaseStatus.className = 'status-badge status-offline';
+                    firebaseStatus.textContent = 'Error';
+                }
+            } else {
+                firebaseStatus.className = 'status-badge status-offline';
+                firebaseStatus.textContent = 'Not Found';
+            }
+
+            // Check Templates
+            const templateStatus = document.getElementById('templateStatus');
+            try {
+                if (window.emailJSService) {
+                    const template = await window.emailJSService.getWelcomeTemplate();
+                    if (template && template.subject && template.content) {
+                        templateStatus.className = 'status-badge status-online';
+                        templateStatus.textContent = 'Available';
+                    } else {
+                        templateStatus.className = 'status-badge status-offline';
+                        templateStatus.textContent = 'Missing';
+                    }
+                } else {
+                    templateStatus.className = 'status-badge status-offline';
+                    templateStatus.textContent = 'Service Missing';
+                }
+            } catch (error) {
+                templateStatus.className = 'status-badge status-offline';
+                templateStatus.textContent = 'Error';
+            }
+        }
+
+        // Test Functions
+        async function runSystemCheck() {
+            addTestResult('info', 'Running comprehensive system check...');
+
+            let allPassed = true;
+
+            // Test 1: EmailJS Service Initialization
+            try {
+                if (!window.emailJSService) {
+                    throw new Error('EmailJS service not found');
+                }
+
+                const isInitialized = window.emailJSService.isInitialized;
+                if (!isInitialized) {
+                    const initResult = await window.emailJSService.init();
+                    if (!initResult) {
+                        throw new Error('Failed to initialize EmailJS service');
+                    }
+                }
+
+                addTestResult('success', '✅ EmailJS service initialization: PASSED');
+                incrementTestCount(true);
+            } catch (error) {
+                addTestResult('error', `❌ EmailJS service initialization: FAILED - ${error.message}`);
+                incrementTestCount(false);
+                allPassed = false;
+            }
+
+            // Test 2: Error Handler Availability
+            try {
+                if (!window.emailJSErrorHandler) {
+                    throw new Error('Error handler not found');
+                }
+
+                const stats = window.emailJSErrorHandler.getDeliveryStats();
+                addTestResult('success', '✅ Error handler availability: PASSED');
+                incrementTestCount(true);
+            } catch (error) {
+                addTestResult('error', `❌ Error handler availability: FAILED - ${error.message}`);
+                incrementTestCount(false);
+                allPassed = false;
+            }
+
+            // Test 3: Firebase Connection
+            try {
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase not loaded');
+                }
+
+                const db = firebase.firestore();
+                await db.collection('test').limit(1).get();
+                addTestResult('success', '✅ Firebase connection: PASSED');
+                incrementTestCount(true);
+            } catch (error) {
+                addTestResult('error', `❌ Firebase connection: FAILED - ${error.message}`);
+                incrementTestCount(false);
+                allPassed = false;
+            }
+
+            // Test 4: Database Schema
+            try {
+                if (typeof initializeEmailJSDatabase === 'function') {
+                    addTestResult('success', '✅ Database initialization script: PASSED');
+                    incrementTestCount(true);
+                } else {
+                    throw new Error('Database initialization function not found');
+                }
+            } catch (error) {
+                addTestResult('error', `❌ Database initialization script: FAILED - ${error.message}`);
+                incrementTestCount(false);
+                allPassed = false;
+            }
+
+            // Summary
+            if (allPassed) {
+                addTestResult('success', '🎉 System check completed successfully! All components are working.');
+            } else {
+                addTestResult('warning', '⚠️ System check completed with some failures. Check individual test results.');
+            }
+        }
+
+        async function testWelcomeEmail() {
+            const email = document.getElementById('testEmail').value.trim();
+            const userName = document.getElementById('testUserName').value.trim();
+            const userId = document.getElementById('testUserId').value.trim();
+
+            if (!email || !userName) {
+                addTestResult('error', '❌ Please fill in test email and user name');
+                return;
+            }
+
+            addTestResult('info', `📧 Testing welcome email to ${email}...`);
+
+            try {
+                if (!window.emailJSService) {
+                    throw new Error('EmailJS service not available');
+                }
+
+                const result = await window.emailJSService.sendWelcomeEmail(email, userName, userId);
+
+                if (result.success) {
+                    addTestResult('success', `✅ Welcome email test: PASSED - Email sent successfully (ID: ${result.messageId})`);
+                    incrementTestCount(true);
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+            } catch (error) {
+                addTestResult('error', `❌ Welcome email test: FAILED - ${error.message}`);
+                incrementTestCount(false);
+            }
+        }
+
+        async function testTemplateLoading() {
+            addTestResult('info', '📄 Testing template loading...');
+
+            try {
+                if (!window.emailJSService) {
+                    throw new Error('EmailJS service not available');
+                }
+
+                const template = await window.emailJSService.getWelcomeTemplate();
+
+                if (template && template.subject && template.content) {
+                    addTestResult('success', `✅ Template loading: PASSED - Subject: "${template.subject.substring(0, 50)}..."`);
+                    incrementTestCount(true);
+
+                    // Test template processing
+                    const processed = window.emailJSService.processTemplate(template.content, {
+                        userName: 'Test User',
+                        userEmail: 'test@example.com'
+                    });
+
+                    if (processed.includes('Test User')) {
+                        addTestResult('success', '✅ Template processing: PASSED - Variables replaced correctly');
+                        incrementTestCount(true);
+                    } else {
+                        throw new Error('Template variable replacement failed');
+                    }
+                } else {
+                    throw new Error('Template missing required fields');
+                }
+            } catch (error) {
+                addTestResult('error', `❌ Template loading: FAILED - ${error.message}`);
+                incrementTestCount(false);
+            }
+        }
+
+        async function testErrorHandling() {
+            addTestResult('info', '🛡️ Testing error handling...');
+
+            try {
+                if (!window.emailJSErrorHandler) {
+                    throw new Error('Error handler not available');
+                }
+
+                // Test error logging
+                window.emailJSErrorHandler.logError(new Error('Test error'), 1, ['test@example.com']);
+
+                // Test delivery stats
+                const stats = window.emailJSErrorHandler.getDeliveryStats();
+
+                // Test recent errors
+                const errors = window.emailJSErrorHandler.getRecentErrors(1);
+
+                if (errors.length > 0 && errors[0].error === 'Test error') {
+                    addTestResult('success', '✅ Error handling: PASSED - Error logging works correctly');
+                    incrementTestCount(true);
+                } else {
+                    throw new Error('Error logging verification failed');
+                }
+            } catch (error) {
+                addTestResult('error', `❌ Error handling: FAILED - ${error.message}`);
+                incrementTestCount(false);
+            }
+        }
+
+        async function runAllTests() {
+            addTestResult('info', '🚀 Running complete test suite...');
+            clearStats();
+
+            await runSystemCheck();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await testTemplateLoading();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await testErrorHandling();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await testWelcomeEmail();
+
+            addTestResult('info', `📊 Test suite completed: ${testStats.passed} passed, ${testStats.failed} failed, ${testStats.total} total`);
+        }
+
+        // Utility Functions
+        function addTestResult(type, message) {
+            const resultsContainer = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+
+            const icon = type === 'success' ? 'check-circle' :
+                        type === 'error' ? 'times-circle' :
+                        type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+            resultDiv.innerHTML = `
+                <i class="fas fa-${icon} me-2"></i>
+                <span class="small text-muted">[${new Date().toLocaleTimeString()}]</span>
+                ${message}
+            `;
+
+            resultsContainer.appendChild(resultDiv);
+            resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+
+        function incrementTestCount(passed) {
+            testStats.total++;
+            if (passed) {
+                testStats.passed++;
+            } else {
+                testStats.failed++;
+            }
+            updateTestStats();
+        }
+
+        function updateTestStats() {
+            document.getElementById('testsPassedCount').textContent = testStats.passed;
+            document.getElementById('testsFailedCount').textContent = testStats.failed;
+            document.getElementById('testsRunCount').textContent = testStats.total;
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = `
+                <div class="test-result test-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Test results cleared. Ready to run tests.
+                </div>
+            `;
+            clearStats();
+        }
+
+        function clearStats() {
+            testStats = { passed: 0, failed: 0, total: 0 };
+            updateTestStats();
+        }
+    </script>
+</body>
+</html>

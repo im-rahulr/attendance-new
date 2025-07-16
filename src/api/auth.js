@@ -187,8 +187,8 @@ function setupAuthListeners() {
                     });
                 }
 
-                // Check if this is a first-time login and trigger welcome email
-                checkAndSendWelcomeEmail(userCredential.user);
+                // Check if this is a first-time login
+                checkFirstTimeLogin(userCredential.user);
 
                 // Redirect to dashboard
                 window.location.href = 'dashboard.html';
@@ -504,10 +504,10 @@ function setupAuthListeners() {
 }
 
 /**
- * Check if user is logging in for the first time and send welcome email
+ * Check if user is logging in for the first time
  * @param {Object} user - Firebase user object
  */
-async function checkAndSendWelcomeEmail(user) {
+async function checkFirstTimeLogin(user) {
     try {
         if (!user || !db) return;
 
@@ -528,20 +528,21 @@ async function checkAndSendWelcomeEmail(user) {
                 firstLoginAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // Send welcome email if email service is available
-            if (window.emailService) {
-                console.log('Sending welcome email to:', user.email);
-                window.emailService.sendWelcomeEmail(
-                    user.email,
-                    user.displayName || userData.name || 'Valued User',
-                    user.uid
-                ).then(result => {
+            // Send welcome email using EmailJS service
+            if (window.emailJSService && window.emailJSService.isInitialized) {
+                console.log('Sending welcome email via EmailJS to:', user.email);
+                try {
+                    const result = await window.emailJSService.sendWelcomeEmail(
+                        user.email,
+                        user.displayName || userData.name || 'Valued User',
+                        user.uid
+                    );
                     console.log('Welcome email result:', result);
-                }).catch(error => {
+                } catch (error) {
                     console.error('Error sending welcome email:', error);
-                });
+                }
             } else {
-                console.warn('Email service not available, welcome email not sent');
+                console.warn('EmailJS service not available, welcome email not sent');
             }
         }
     } catch (error) {

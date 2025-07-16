@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Logs Test - Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0D1117;
+            color: #F0F6FC;
+            font-family: 'Inter', sans-serif;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #161B22;
+            border: 1px solid #30363D;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .log-output {
+            background: #0D1117;
+            border: 1px solid #30363D;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        .status-info { background-color: #17a2b8; }
+        .btn-primary { background-color: #238636; border-color: #238636; }
+        .btn-primary:hover { background-color: #2ea043; border-color: #2ea043; }
+        .btn-secondary { background-color: #30363D; border-color: #30363D; }
+        .btn-danger { background-color: #da3633; border-color: #da3633; }
+        .btn-warning { background-color: #fb8500; border-color: #fb8500; }
+        .btn-info { background-color: #1f6feb; border-color: #1f6feb; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="text-center mb-4">🔍 Admin Panel User Logs Test</h1>
+        
+        <!-- Authentication Status -->
+        <div class="test-section">
+            <h3>🔐 Authentication Status</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><span id="authStatus" class="status-indicator status-error"></span>Authentication</p>
+                    <p><span id="adminStatus" class="status-indicator status-error"></span>Admin Access</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span id="firestoreStatus" class="status-indicator status-error"></span>Firestore Connection</p>
+                    <p><span id="logsCollectionStatus" class="status-indicator status-error"></span>User Logs Collection</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="checkAuthStatus()">Check Authentication</button>
+                <button class="btn btn-secondary" onclick="loginAsAdmin()">Login as Admin</button>
+            </div>
+        </div>
+
+        <!-- Test Actions -->
+        <div class="test-section">
+            <h3>🧪 Test Actions</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Generate Test Logs</h5>
+                    <button class="btn btn-info" onclick="generateTestLogs()">Generate Test Logs</button>
+                    <button class="btn btn-warning" onclick="generateBulkLogs()">Generate Bulk Logs (10)</button>
+                </div>
+                <div class="col-md-6">
+                    <h5>Admin Panel Tests</h5>
+                    <button class="btn btn-primary" onclick="testAdminLogRetrieval()">Test Log Retrieval</button>
+                    <button class="btn btn-secondary" onclick="testLogFiltering()">Test Log Filtering</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-section">
+            <h3>📋 Test Results</h3>
+            <div class="log-output" id="testResults">
+                <p>Click "Check Authentication" to begin testing...</p>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" onclick="runFullTest()">Run Full Test Suite</button>
+                <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+                <button class="btn btn-danger" onclick="clearTestLogs()">Clear Test Logs</button>
+            </div>
+        </div>
+
+        <!-- Database Logs Preview -->
+        <div class="test-section">
+            <h3>💾 Database Logs Preview</h3>
+            <div class="log-output" id="databasePreview">
+                <p>Click "Test Log Retrieval" to load logs from database...</p>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-info" onclick="refreshDatabasePreview()">Refresh Preview</button>
+                <button class="btn btn-warning" onclick="exportTestResults()">Export Test Results</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../components/theme.js"></script>
+    <script src="../utils/validation.js"></script>
+    <script src="../utils/script.js"></script>
+    <script src="../api/auth.js"></script>
+    <script src="../components/notifications.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+            authDomain: "attendance-a9a19.firebaseapp.com",
+            projectId: "attendance-a9a19",
+            storageBucket: "attendance-a9a19.appspot.com",
+            messagingSenderId: "1055787262218",
+            appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+            measurementId: "G-3XPB4VLFYH"
+        };
+        
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        let testResults = [];
+        let db = firebase.firestore();
+        let auth = firebase.auth();
+        
+        function logResult(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            testResults.push(logEntry);
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = testResults.join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        function updateStatus(elementId, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `status-indicator ${isSuccess ? 'status-success' : 'status-error'}`;
+        }
+
+        async function checkAuthStatus() {
+            logResult('🔍 Checking authentication status...', 'info');
+            
+            try {
+                const currentUser = auth.currentUser;
+                
+                if (currentUser) {
+                    updateStatus('authStatus', true);
+                    logResult(`✅ User authenticated: ${currentUser.email}`, 'success');
+                    
+                    // Check admin status
+                    const adminEmails = ['admin@admin.com', 'admin@example.com', 'administrator@attendance.com'];
+                    const isAdmin = adminEmails.includes(currentUser.email);
+                    
+                    updateStatus('adminStatus', isAdmin);
+                    if (isAdmin) {
+                        logResult('✅ Admin access confirmed', 'success');
+                    } else {
+                        logResult('❌ User is not an admin', 'error');
+                    }
+                } else {
+                    updateStatus('authStatus', false);
+                    updateStatus('adminStatus', false);
+                    logResult('❌ No user authenticated', 'error');
+                }
+                
+                // Test Firestore connection
+                await db.collection('test').limit(1).get();
+                updateStatus('firestoreStatus', true);
+                logResult('✅ Firestore connection successful', 'success');
+                
+                // Test userLogs collection access
+                const logsSnapshot = await db.collection('userLogs').limit(1).get();
+                updateStatus('logsCollectionStatus', true);
+                logResult(`✅ User logs collection accessible (${logsSnapshot.size} sample docs)`, 'success');
+                
+            } catch (error) {
+                logResult(`❌ Authentication check failed: ${error.message}`, 'error');
+                updateStatus('firestoreStatus', false);
+                updateStatus('logsCollectionStatus', false);
+            }
+        }
+
+        async function loginAsAdmin() {
+            logResult('🔐 Attempting admin login...', 'info');
+            
+            try {
+                // For testing, we'll use a predefined admin account
+                // In production, this should be handled through proper login flow
+                const email = 'admin@admin.com';
+                const password = 'admin123'; // This should be changed in production
+                
+                await auth.signInWithEmailAndPassword(email, password);
+                logResult('✅ Admin login successful', 'success');
+                
+                // Recheck status
+                setTimeout(checkAuthStatus, 1000);
+                
+            } catch (error) {
+                logResult(`❌ Admin login failed: ${error.message}`, 'error');
+                logResult('💡 Please ensure admin account exists or login manually', 'info');
+            }
+        }
+
+        async function generateTestLogs() {
+            logResult('🧪 Generating test logs...', 'info');
+            
+            try {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error('No authenticated user');
+                }
+                
+                const testActivities = [
+                    'Test page view',
+                    'Test button click',
+                    'Test form submission',
+                    'Test data modification',
+                    'Test error logging'
+                ];
+                
+                for (let i = 0; i < testActivities.length; i++) {
+                    await db.collection('userLogs').add({
+                        activity: testActivities[i],
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'Test User',
+                        userEmail: currentUser.email,
+                        page: '/admin-logs-test.html',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        additionalData: {
+                            testType: 'admin_logs_test',
+                            testIndex: i + 1,
+                            generatedAt: new Date().toISOString()
+                        }
+                    });
+                }
+                
+                logResult(`✅ Generated ${testActivities.length} test logs`, 'success');
+                
+            } catch (error) {
+                logResult(`❌ Failed to generate test logs: ${error.message}`, 'error');
+            }
+        }
+
+        async function generateBulkLogs() {
+            logResult('🧪 Generating bulk test logs...', 'info');
+            
+            try {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error('No authenticated user');
+                }
+                
+                const batch = db.batch();
+                
+                for (let i = 0; i < 10; i++) {
+                    const logRef = db.collection('userLogs').doc();
+                    batch.set(logRef, {
+                        activity: `Bulk test log ${i + 1}`,
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'Test User',
+                        userEmail: currentUser.email,
+                        page: '/admin-logs-test.html',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        additionalData: {
+                            testType: 'bulk_test',
+                            bulkIndex: i + 1,
+                            generatedAt: new Date().toISOString()
+                        }
+                    });
+                }
+                
+                await batch.commit();
+                logResult('✅ Generated 10 bulk test logs', 'success');
+                
+            } catch (error) {
+                logResult(`❌ Failed to generate bulk logs: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminLogRetrieval() {
+            logResult('🔍 Testing admin log retrieval...', 'info');
+            
+            try {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error('No authenticated user');
+                }
+                
+                // Test admin access to user logs
+                const logsSnapshot = await db.collection('userLogs')
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+                
+                logResult(`✅ Retrieved ${logsSnapshot.size} logs from database`, 'success');
+                
+                // Display logs in preview
+                const previewDiv = document.getElementById('databasePreview');
+                let previewHtml = '';
+                
+                logsSnapshot.forEach((doc, index) => {
+                    const logData = doc.data();
+                    const timestamp = logData.timestamp ? logData.timestamp.toDate().toLocaleString() : 'No timestamp';
+                    previewHtml += `[${timestamp}] ${logData.activity || 'Unknown activity'} - ${logData.userEmail || 'Unknown user'}\n`;
+                });
+                
+                previewDiv.textContent = previewHtml || 'No logs found';
+                
+                if (logsSnapshot.size > 0) {
+                    logResult('✅ Admin log retrieval test passed', 'success');
+                } else {
+                    logResult('⚠️ No logs found in database', 'warning');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Admin log retrieval test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogFiltering() {
+            logResult('🔍 Testing log filtering functionality...', 'info');
+            
+            try {
+                // Test different filter scenarios
+                const filters = [
+                    { field: 'activity', operator: '>=', value: 'Test' },
+                    { field: 'userEmail', operator: '==', value: auth.currentUser?.email }
+                ];
+                
+                for (const filter of filters) {
+                    const snapshot = await db.collection('userLogs')
+                        .where(filter.field, filter.operator, filter.value)
+                        .limit(5)
+                        .get();
+                    
+                    logResult(`✅ Filter test (${filter.field} ${filter.operator} ${filter.value}): ${snapshot.size} results`, 'success');
+                }
+                
+            } catch (error) {
+                logResult(`❌ Log filtering test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearTestLogs() {
+            logResult('🗑️ Clearing test logs...', 'info');
+            
+            try {
+                const testLogsSnapshot = await db.collection('userLogs')
+                    .where('additionalData.testType', 'in', ['admin_logs_test', 'bulk_test'])
+                    .get();
+                
+                if (testLogsSnapshot.empty) {
+                    logResult('ℹ️ No test logs to clear', 'info');
+                    return;
+                }
+                
+                const batch = db.batch();
+                testLogsSnapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                logResult(`✅ Cleared ${testLogsSnapshot.size} test logs`, 'success');
+                
+            } catch (error) {
+                logResult(`❌ Failed to clear test logs: ${error.message}`, 'error');
+            }
+        }
+
+        async function refreshDatabasePreview() {
+            await testAdminLogRetrieval();
+        }
+
+        async function runFullTest() {
+            logResult('🚀 Running full test suite...', 'info');
+            
+            await checkAuthStatus();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await generateTestLogs();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testAdminLogRetrieval();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testLogFiltering();
+            
+            logResult('🎉 Full test suite completed!', 'success');
+        }
+
+        function clearResults() {
+            testResults = [];
+            document.getElementById('testResults').innerHTML = '<p>Results cleared. Click "Check Authentication" to begin testing...</p>';
+        }
+
+        function exportTestResults() {
+            const results = testResults.join('\n');
+            const blob = new Blob([results], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `admin_logs_test_results_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            logResult('📄 Admin logs test page loaded', 'info');
+            
+            // Wait for Firebase to initialize, then check status
+            setTimeout(checkAuthStatus, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -937,8 +937,9 @@
                 <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link" id="errors-tab" data-bs-toggle="tab" data-bs-target="#errors-content" type="button" role="tab" aria-controls="errors-content" aria-selected="false"><i class="fas fa-exclamation-triangle me-2"></i>Error Logs</button>
                 </li> -->
+
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="email-templates-tab" data-bs-toggle="tab" data-bs-target="#email-templates-content" type="button" role="tab" aria-controls="email-templates-content" aria-selected="false"><i class="fas fa-envelope me-2"></i>Email Templates</button>
+                    <button class="nav-link" id="email-system-tab" data-bs-toggle="tab" data-bs-target="#email-system-content" type="button" role="tab" aria-controls="email-system-content" aria-selected="false"><i class="fas fa-envelope me-2"></i>Email System</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="contact-submissions-tab" data-bs-toggle="tab" data-bs-target="#contact-submissions-content" type="button" role="tab" aria-controls="contact-submissions-content" aria-selected="false"><i class="fas fa-comments me-2"></i>Contact Submissions</button>
@@ -1290,8 +1291,11 @@
                                 <button id="exportLogsBtn" class="btn btn-sm btn-outline-success me-2">
                                     <i class="fas fa-file-excel me-1"></i>Export Logs
                                 </button>
-                                <button id="clearLogsBtn" class="btn btn-sm btn-outline-danger">
+                                <button id="clearLogsBtn" class="btn btn-sm btn-outline-danger me-2">
                                     <i class="fas fa-trash me-1"></i>Clear Logs
+                                </button>
+                                <button id="debugLogsBtn" class="btn btn-sm btn-outline-warning" onclick="debugUserLogs()">
+                                    <i class="fas fa-bug me-1"></i>Debug
                                 </button>
                             </div>
                         </div>
@@ -2448,134 +2452,161 @@
                     </div>
                 </div>
 
-                <!-- Email Templates Content -->
-                <div class="tab-pane fade" id="email-templates-content" role="tabpanel" aria-labelledby="email-templates-tab">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Welcome Email Template</h5>
-                                    <div>
-                                        <button class="btn btn-outline-primary btn-sm me-2" id="previewEmailBtn">
-                                            <i class="fas fa-eye me-1"></i>Preview
-                                        </button>
-                                        <button class="btn btn-primary btn-sm" id="saveEmailTemplateBtn">
-                                            <i class="fas fa-save me-1"></i>Save Template
-                                        </button>
+
+            </div>
+        </div>
+
+        <!-- EmailJS System Content -->
+        <div class="tab-pane fade" id="email-system-content" role="tabpanel" aria-labelledby="email-system-tab">
+            <div class="row">
+                <!-- EmailJS Status and Controls -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>EmailJS Welcome Email System</h5>
+                            <small class="text-muted">Manage welcome email templates and delivery</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-dark border-secondary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-server fa-2x text-primary mb-2"></i>
+                                            <h6>EmailJS Status</h6>
+                                            <div id="emailjsServiceStatus" class="badge bg-secondary">Checking...</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card-body">
-                                    <form id="emailTemplateForm">
-                                        <div class="mb-3">
-                                            <label for="emailSubject" class="form-label">Email Subject</label>
-                                            <input type="text" class="form-control" id="emailSubject"
-                                                   placeholder="Welcome to Attendly - Your Attendance Tracking Journey Begins!"
-                                                   maxlength="200">
-                                            <div class="form-text">Maximum 200 characters. Use {{userName}} for personalization.</div>
+                                <div class="col-md-6">
+                                    <div class="card bg-dark border-secondary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-paper-plane fa-2x text-success mb-2"></i>
+                                            <h6>Welcome Emails Today</h6>
+                                            <div class="h4 text-success" id="welcomeEmailsToday">0</div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                        <div class="mb-3">
-                                            <label for="emailBody" class="form-label">Email Body (HTML)</label>
-                                            <textarea class="form-control" id="emailBody" rows="15"
-                                                      placeholder="Enter your HTML email template here..."></textarea>
-                                            <div class="form-text">
-                                                Available variables: {{userName}}, {{userEmail}}, {{dashboardUrl}}
-                                            </div>
-                                        </div>
-
-                                        <div class="alert alert-info">
-                                            <h6><i class="fas fa-info-circle me-2"></i>Template Variables</h6>
-                                            <ul class="mb-0">
-                                                <li><code>{{userName}}</code> - User's display name</li>
-                                                <li><code>{{userEmail}}</code> - User's email address</li>
-                                                <li><code>{{dashboardUrl}}</code> - Link to user dashboard</li>
-                                            </ul>
-                                        </div>
-                                    </form>
+                            <div class="mt-4">
+                                <h6>Quick Actions</h6>
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button class="btn btn-primary" id="testWelcomeEmailBtn">
+                                        <i class="fas fa-paper-plane me-1"></i>Test Welcome Email
+                                    </button>
+                                    <button class="btn btn-outline-info" id="checkEmailjsStatusBtn">
+                                        <i class="fas fa-sync me-1"></i>Check Status
+                                    </button>
+                                    <button class="btn btn-outline-secondary" id="viewEmailjsLogsBtn">
+                                        <i class="fas fa-list me-1"></i>View Delivery Logs
+                                    </button>
+                                    <button class="btn btn-outline-warning" id="editTemplateBtn">
+                                        <i class="fas fa-edit me-1"></i>Edit Template
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Email Settings</h6>
+                    <!-- Email Template Editor -->
+                    <div class="card mt-3" id="templateEditorCard" style="display: none;">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-edit me-2"></i>Welcome Email Template Editor</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="templateSubject" class="form-label">Email Subject</label>
+                                <input type="text" class="form-control" id="templateSubject"
+                                       placeholder="Welcome to Attendly - Your Attendance Tracking Journey Begins!">
+                            </div>
+                            <div class="mb-3">
+                                <label for="templateContent" class="form-label">Email Content (HTML)</label>
+                                <textarea class="form-control" id="templateContent" rows="10"
+                                          placeholder="Enter HTML email template content..."></textarea>
+                                <small class="text-muted">
+                                    Available variables: {{userName}}, {{userEmail}}, {{dashboardUrl}}, {{currentDate}}, {{supportEmail}}
+                                </small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success" id="saveTemplateBtn">
+                                    <i class="fas fa-save me-1"></i>Save Template
+                                </button>
+                                <button class="btn btn-outline-info" id="previewTemplateBtn">
+                                    <i class="fas fa-eye me-1"></i>Preview
+                                </button>
+                                <button class="btn btn-outline-secondary" id="cancelEditBtn">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Email and Statistics -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Test Welcome Email</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="testWelcomeEmailAddress" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="testWelcomeEmailAddress"
+                                       placeholder="Enter email address" value="rahulhitwo@gmail.com">
+                            </div>
+                            <div class="mb-3">
+                                <label for="testWelcomeUserName" class="form-label">User Name</label>
+                                <input type="text" class="form-control" id="testWelcomeUserName"
+                                       placeholder="Enter user name" value="Test User">
+                            </div>
+                            <button class="btn btn-success w-100" id="sendTestWelcomeEmailBtn">
+                                <i class="fas fa-paper-plane me-1"></i>Send Test Welcome Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Email Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border rounded p-2 bg-dark">
+                                        <div class="h6 mb-0 text-success" id="welcomeEmailsSuccessCount">0</div>
+                                        <small class="text-muted">Successful</small>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Email Service Status</label>
-                                        <div id="emailServiceStatus" class="alert alert-secondary">
-                                            <i class="fas fa-spinner fa-spin me-2"></i>Checking...
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="adminTestEmail" class="form-label">
-                                            <i class="fas fa-envelope me-1"></i>Test Email Address
-                                        </label>
-                                        <input type="email" class="form-control" id="adminTestEmail"
-                                               placeholder="Enter your email for testing"
-                                               title="Email address where test emails will be sent">
-                                        <div class="form-text">
-                                            <i class="fas fa-info-circle me-1"></i>
-                                            Enter your preferred email address to receive test emails
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Welcome Email Statistics</label>
-                                        <div class="row text-center">
-                                            <div class="col-6">
-                                                <div class="border rounded p-2">
-                                                    <div class="h5 mb-0" id="emailsSentCount">0</div>
-                                                    <small class="text-muted">Sent</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="border rounded p-2">
-                                                    <div class="h5 mb-0" id="emailsFailedCount">0</div>
-                                                    <small class="text-muted">Failed</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-outline-info btn-sm" onclick="testEmailServerConnectivity()">
-                                                <i class="fas fa-wifi me-1"></i>Test Server Connection
-                                            </button>
-                                            <button class="btn btn-outline-success btn-sm" id="testEmailBtn">
-                                                <i class="fas fa-paper-plane me-1"></i>Send Test Email
-                                            </button>
-                                            <div class="form-check form-switch mt-1 ms-1">
-                                                <input class="form-check-input" type="checkbox" id="saveEmailPreference" checked>
-                                                <label class="form-check-label small" for="saveEmailPreference">
-                                                    Save email preference for future tests
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <button class="btn btn-outline-info btn-sm w-100" id="resetTemplateBtn">
-                                            <i class="fas fa-undo me-1"></i>Reset to Default
-                                        </button>
+                                <div class="col-6">
+                                    <div class="border rounded p-2 bg-dark">
+                                        <div class="h6 mb-0 text-danger" id="welcomeEmailsFailedCount">0</div>
+                                        <small class="text-muted">Failed</small>
                                     </div>
                                 </div>
                             </div>
+                            <div class="mt-3">
+                                <small class="text-muted">Last 30 days</small>
+                            </div>
+                        </div>
+                    </div>
 
-                            <div class="card mt-3">
-                                <div class="card-header">
-                                    <h6 class="mb-0"><i class="fas fa-history me-2"></i>Recent Email Activity</h6>
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>EmailJS Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="small">
+                                <div class="mb-2">
+                                    <strong>Service:</strong> EmailJS
                                 </div>
-                                <div class="card-body">
-                                    <div id="recentEmailActivity" class="small">
-                                        <div class="text-center text-muted">
-                                            <i class="fas fa-inbox fa-2x mb-2"></i>
-                                            <p>No recent activity</p>
-                                        </div>
-                                    </div>
+                                <div class="mb-2">
+                                    <strong>Public Key:</strong> 7dVX0Su-MyNkMUoP_
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Service ID:</strong> service_emailjs
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Template ID:</strong> template_welcome
                                 </div>
                             </div>
                         </div>
@@ -2713,259 +2744,13 @@
         </div>
     </div>
 
-    <!-- Email Preview Modal -->
-    <div class="modal fade" id="emailPreviewModal" tabindex="-1" aria-labelledby="emailPreviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="emailPreviewModalLabel">
-                        <i class="fas fa-eye me-2"></i>Email Preview
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Subject:</strong></label>
-                        <div id="previewSubject" class="form-control-plaintext border rounded p-2 bg-light"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Email Body:</strong></label>
-                        <div id="previewBody" class="border rounded p-3" style="max-height: 400px; overflow-y: auto;"></div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="sendTestFromPreview">
-                        <i class="fas fa-paper-plane me-1"></i>Send Test Email
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Test Email Confirmation Modal -->
-    <div class="modal fade" id="testEmailConfirmModal" tabindex="-1" aria-labelledby="testEmailConfirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="testEmailConfirmModalLabel">
-                        <i class="fas fa-paper-plane me-2"></i>Confirm Test Email
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Test Email Confirmation</strong>
-                    </div>
-                    <p>You are about to send a test email to:</p>
-                    <div class="bg-light p-3 rounded mb-3">
-                        <i class="fas fa-envelope me-2"></i>
-                        <strong id="confirmEmailAddress">email@example.com</strong>
-                    </div>
-                    <p class="mb-0">Please confirm that this is the correct email address where you want to receive the test email.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmSendTestEmail">
-                        <i class="fas fa-paper-plane me-1"></i>Send Test Email
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Email Delivery Verification Modal -->
-    <div class="modal fade" id="emailDeliveryModal" tabindex="-1" aria-labelledby="emailDeliveryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="emailDeliveryModalLabel">
-                        <i class="fas fa-check-circle me-2"></i>Email Delivery Verification
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="deliverySuccessContent">
-                        <div class="alert alert-success">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>Test email sent successfully!</strong>
-                        </div>
-                        <p>A test email has been sent to:</p>
-                        <div class="bg-light p-3 rounded mb-3">
-                            <i class="fas fa-envelope me-2"></i>
-                            <strong id="deliveryEmailAddress">email@example.com</strong>
-                        </div>
-                        <div class="mb-3">
-                            <p><strong>Email Details:</strong></p>
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-clock me-2"></i>Sent at: <span id="deliveryTimestamp">--</span></li>
-                                <li><i class="fas fa-tag me-2"></i>Message ID: <span id="deliveryMessageId">--</span></li>
-                                <li><i class="fas fa-server me-2"></i>Status: <span id="deliveryStatus" class="badge bg-success">Delivered</span></li>
-                            </ul>
-                        </div>
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Did you receive the email?</strong>
-                            <p class="mb-2 mt-2">Please check your inbox (and spam folder) for the test email.</p>
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="button" class="btn btn-success btn-sm" id="confirmEmailReceived">
-                                    <i class="fas fa-check me-1"></i>Yes, I received it
-                                </button>
-                                <button type="button" class="btn btn-warning btn-sm" id="reportEmailNotReceived">
-                                    <i class="fas fa-times me-1"></i>No, I didn't receive it
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div id="deliveryErrorContent" style="display: none;">
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <strong>Email delivery failed!</strong>
-                        </div>
-                        <p>There was an error sending the test email:</p>
-                        <div class="bg-light p-3 rounded mb-3">
-                            <code id="deliveryErrorMessage">Error details will appear here</code>
-                        </div>
-                        <div class="alert alert-info">
-                            <i class="fas fa-lightbulb me-2"></i>
-                            <strong>Troubleshooting Tips:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>Check your internet connection</li>
-                                <li>Verify the email address is correct</li>
-                                <li>Try again in a few minutes</li>
-                                <li>Contact system administrator if the problem persists</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="retryTestEmail" style="display: none;">
-                        <i class="fas fa-redo me-1"></i>Retry Sending
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Troubleshooting Modal -->
-    <div class="modal fade" id="troubleshootingModal" tabindex="-1" aria-labelledby="troubleshootingModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="troubleshootingModalLabel">
-                        <i class="fas fa-tools me-2"></i>Email Delivery Troubleshooting
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Email not received?</strong> Let's troubleshoot the issue.
-                    </div>
 
-                    <div class="accordion" id="troubleshootingAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="checkSpamHeading">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#checkSpamCollapse">
-                                    <i class="fas fa-shield-alt me-2"></i>Check Spam/Junk Folder
-                                </button>
-                            </h2>
-                            <div id="checkSpamCollapse" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
-                                <div class="accordion-body">
-                                    <p>Test emails might be filtered as spam. Please check:</p>
-                                    <ul>
-                                        <li>Your spam/junk folder</li>
-                                        <li>Promotions tab (Gmail)</li>
-                                        <li>Social tab (Gmail)</li>
-                                        <li>Updates tab (Gmail)</li>
-                                    </ul>
-                                    <button class="btn btn-outline-primary btn-sm" id="checkedSpamFolder">
-                                        <i class="fas fa-check me-1"></i>I checked spam folder
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="emailSettingsHeading">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailSettingsCollapse">
-                                    <i class="fas fa-cog me-2"></i>Email Provider Settings
-                                </button>
-                            </h2>
-                            <div id="emailSettingsCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
-                                <div class="accordion-body">
-                                    <p>Some email providers have strict filtering. Try:</p>
-                                    <ul>
-                                        <li>Adding <code>website.po45@gmail.com</code> to your contacts</li>
-                                        <li>Whitelisting the sender domain</li>
-                                        <li>Checking email filtering rules</li>
-                                        <li>Temporarily disabling email filters</li>
-                                    </ul>
-                                    <button class="btn btn-outline-primary btn-sm" id="checkedEmailSettings">
-                                        <i class="fas fa-check me-1"></i>I checked email settings
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="retryOptionsHeading">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#retryOptionsCollapse">
-                                    <i class="fas fa-redo me-2"></i>Retry Options
-                                </button>
-                            </h2>
-                            <div id="retryOptionsCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
-                                <div class="accordion-body">
-                                    <p>If you still haven't received the email:</p>
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-primary" id="retryWithDifferentEmail">
-                                            <i class="fas fa-envelope me-1"></i>Try with different email address
-                                        </button>
-                                        <button class="btn btn-outline-primary" id="retryAfterDelay">
-                                            <i class="fas fa-clock me-1"></i>Retry after 5 minutes
-                                        </button>
-                                        <button class="btn btn-outline-secondary" id="contactSupport">
-                                            <i class="fas fa-life-ring me-1"></i>Contact technical support
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>System Status:</strong>
-                            <div id="troubleshootingSystemStatus" class="mt-2">
-                                <div class="d-flex justify-content-between">
-                                    <span>Email Service:</span>
-                                    <span class="badge bg-success">Online</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span>SMTP Connection:</span>
-                                    <span class="badge bg-success">Connected</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span>Last Test Email:</span>
-                                    <span id="lastTestEmailTime">--</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" id="troubleshootingComplete">
-                        <i class="fas fa-check me-1"></i>Issue Resolved
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Toast -->
     <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
@@ -3545,10 +3330,9 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="../components/theme.js"></script>
     <script src="../utils/logger.js"></script>
-    <script src="../components/email-service.js"></script>
-    <script src="../components/email-template-manager.js"></script>
-    <script src="../components/email-troubleshooting.js"></script>
-    <script src="../components/email-system-integration.js"></script>
+    <script src="../components/emailjs-error-handler.js"></script>
+    <script src="../components/emailjs-service.js"></script>
+
     <script src="../components/admin-auth.js"></script>
     <script src="../components/mcp-integration.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12982,6 +12766,349 @@ Are you absolutely sure you want to proceed?`;
     window.exportSingleUserReport = exportSingleUserReport;
     window.viewSubjectDetails = viewSubjectDetails;
     window.exportSingleSubjectReport = exportSingleSubjectReport;
+
+    // EmailJS System Functionality
+    function initializeEmailJSSystem() {
+        // Check EmailJS service status
+        updateEmailJSServiceStatus();
+
+        // Load email statistics
+        loadWelcomeEmailStatistics();
+
+        // Set up event listeners
+        setupEmailJSEventListeners();
+
+        // Load current template
+        loadCurrentTemplate();
+    }
+
+    function updateEmailJSServiceStatus() {
+        const statusElement = document.getElementById('emailjsServiceStatus');
+        if (window.emailJSService && window.emailJSService.isInitialized) {
+            statusElement.className = 'badge bg-success';
+            statusElement.textContent = 'Online';
+        } else {
+            statusElement.className = 'badge bg-warning';
+            statusElement.textContent = 'Initializing...';
+
+            // Try to initialize
+            if (window.emailJSService) {
+                window.emailJSService.init().then(success => {
+                    if (success) {
+                        statusElement.className = 'badge bg-success';
+                        statusElement.textContent = 'Online';
+                    } else {
+                        statusElement.className = 'badge bg-danger';
+                        statusElement.textContent = 'Offline';
+                    }
+                });
+            } else {
+                statusElement.className = 'badge bg-danger';
+                statusElement.textContent = 'Service Not Found';
+            }
+        }
+    }
+
+    function loadWelcomeEmailStatistics() {
+        // Load welcome email statistics from Firebase
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            firebase.firestore().collection('emailDeliveryLogs')
+                .where('timestamp', '>=', today)
+                .where('emailType', '==', 'welcome')
+                .get()
+                .then(snapshot => {
+                    let successCount = 0;
+                    let failedCount = 0;
+
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.status === 'success') {
+                            successCount++;
+                        } else {
+                            failedCount++;
+                        }
+                    });
+
+                    document.getElementById('welcomeEmailsToday').textContent = successCount + failedCount;
+                    document.getElementById('welcomeEmailsSuccessCount').textContent = successCount;
+                    document.getElementById('welcomeEmailsFailedCount').textContent = failedCount;
+                })
+                .catch(error => {
+                    console.warn('Failed to load welcome email statistics:', error);
+                });
+        }
+    }
+
+    function setupEmailJSEventListeners() {
+        // Test welcome email button
+        const testWelcomeEmailBtn = document.getElementById('testWelcomeEmailBtn');
+        const sendTestWelcomeEmailBtn = document.getElementById('sendTestWelcomeEmailBtn');
+
+        if (testWelcomeEmailBtn) {
+            testWelcomeEmailBtn.addEventListener('click', showTestWelcomeEmailForm);
+        }
+
+        if (sendTestWelcomeEmailBtn) {
+            sendTestWelcomeEmailBtn.addEventListener('click', sendTestWelcomeEmail);
+        }
+
+        // Check status button
+        const checkStatusBtn = document.getElementById('checkEmailjsStatusBtn');
+        if (checkStatusBtn) {
+            checkStatusBtn.addEventListener('click', updateEmailJSServiceStatus);
+        }
+
+        // View logs button
+        const viewLogsBtn = document.getElementById('viewEmailjsLogsBtn');
+        if (viewLogsBtn) {
+            viewLogsBtn.addEventListener('click', viewEmailJSLogs);
+        }
+
+        // Template editor buttons
+        const editTemplateBtn = document.getElementById('editTemplateBtn');
+        const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+        const previewTemplateBtn = document.getElementById('previewTemplateBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+        if (editTemplateBtn) {
+            editTemplateBtn.addEventListener('click', showTemplateEditor);
+        }
+
+        if (saveTemplateBtn) {
+            saveTemplateBtn.addEventListener('click', saveTemplate);
+        }
+
+        if (previewTemplateBtn) {
+            previewTemplateBtn.addEventListener('click', previewTemplate);
+        }
+
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', hideTemplateEditor);
+        }
+    }
+
+    function showTestWelcomeEmailForm() {
+        // Switch to email system tab if not already active
+        const emailTab = document.getElementById('email-system-tab');
+        if (emailTab) {
+            emailTab.click();
+        }
+
+        // Focus on email input
+        const emailInput = document.getElementById('testWelcomeEmailAddress');
+        if (emailInput) {
+            emailInput.focus();
+        }
+    }
+
+    async function sendTestWelcomeEmail() {
+        const emailInput = document.getElementById('testWelcomeEmailAddress');
+        const nameInput = document.getElementById('testWelcomeUserName');
+        const sendBtn = document.getElementById('sendTestWelcomeEmailBtn');
+
+        if (!emailInput || !nameInput || !sendBtn) return;
+
+        const email = emailInput.value.trim();
+        const name = nameInput.value.trim() || 'Test User';
+
+        if (!email) {
+            showToast('Please enter an email address', 'danger');
+            return;
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Please enter a valid email address', 'danger');
+            return;
+        }
+
+        // Show loading state
+        const originalText = sendBtn.innerHTML;
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
+
+        try {
+            if (window.emailJSService) {
+                const result = await window.emailJSService.sendWelcomeEmail(email, name, 'test-user-id');
+
+                if (result.success) {
+                    showToast('Test welcome email sent successfully!', 'success');
+                    loadWelcomeEmailStatistics(); // Refresh stats
+                } else {
+                    showToast(`Failed to send test welcome email: ${result.error}`, 'danger');
+                }
+            } else {
+                showToast('EmailJS service not available', 'danger');
+            }
+        } catch (error) {
+            console.error('Error sending test welcome email:', error);
+            showToast('Error sending test welcome email', 'danger');
+        } finally {
+            // Reset button state
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = originalText;
+        }
+    }
+
+    function viewEmailJSLogs() {
+        // Open email delivery logs modal or page
+        showToast('Opening email delivery logs...', 'info');
+        // TODO: Implement logs viewer
+    }
+
+    // Template management functions
+    async function loadCurrentTemplate() {
+        try {
+            if (window.emailJSService) {
+                const template = await window.emailJSService.getWelcomeTemplate();
+                // Template is loaded automatically by the service
+                console.log('Current template loaded');
+            }
+        } catch (error) {
+            console.warn('Failed to load current template:', error);
+        }
+    }
+
+    function showTemplateEditor() {
+        const editorCard = document.getElementById('templateEditorCard');
+        if (editorCard) {
+            editorCard.style.display = 'block';
+            loadTemplateForEditing();
+        }
+    }
+
+    function hideTemplateEditor() {
+        const editorCard = document.getElementById('templateEditorCard');
+        if (editorCard) {
+            editorCard.style.display = 'none';
+        }
+    }
+
+    async function loadTemplateForEditing() {
+        try {
+            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                const templateDoc = await firebase.firestore()
+                    .collection('emailTemplates')
+                    .doc('welcome')
+                    .get();
+
+                if (templateDoc.exists) {
+                    const data = templateDoc.data();
+                    document.getElementById('templateSubject').value = data.subject || '';
+                    document.getElementById('templateContent').value = data.content || '';
+                } else {
+                    // Load default template
+                    document.getElementById('templateSubject').value = 'Welcome to Attendly - Your Attendance Tracking Journey Begins!';
+                    document.getElementById('templateContent').value = window.emailJSService ? window.emailJSService.getDefaultWelcomeTemplate() : '';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading template for editing:', error);
+            showToast('Error loading template', 'danger');
+        }
+    }
+
+    async function saveTemplate() {
+        const subject = document.getElementById('templateSubject').value.trim();
+        const content = document.getElementById('templateContent').value.trim();
+        const saveBtn = document.getElementById('saveTemplateBtn');
+
+        if (!subject || !content) {
+            showToast('Please fill in both subject and content', 'danger');
+            return;
+        }
+
+        // Show loading state
+        const originalText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+
+        try {
+            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                await firebase.firestore().collection('emailTemplates').doc('welcome').set({
+                    id: 'welcome',
+                    name: 'Welcome Email',
+                    description: 'Email sent to new users upon registration',
+                    subject: subject,
+                    content: content,
+                    variables: ['userName', 'userEmail', 'dashboardUrl', 'currentDate', 'supportEmail'],
+                    isActive: true,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: firebase.auth().currentUser?.email || 'admin',
+                    version: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true });
+
+                showToast('Template saved successfully!', 'success');
+                hideTemplateEditor();
+            } else {
+                throw new Error('Firebase not available');
+            }
+        } catch (error) {
+            console.error('Error saving template:', error);
+            showToast('Error saving template', 'danger');
+        } finally {
+            // Reset button state
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+        }
+    }
+
+    function previewTemplate() {
+        const subject = document.getElementById('templateSubject').value.trim();
+        const content = document.getElementById('templateContent').value.trim();
+
+        if (!subject || !content) {
+            showToast('Please fill in both subject and content', 'danger');
+            return;
+        }
+
+        // Process template with sample data
+        const sampleData = {
+            userName: 'John Doe',
+            userEmail: 'john.doe@example.com',
+            dashboardUrl: `${window.location.origin}/src/pages/dashboard.html`,
+            currentDate: new Date().toLocaleDateString(),
+            supportEmail: 'support@attendly.com'
+        };
+
+        let processedContent = content;
+        Object.keys(sampleData).forEach(key => {
+            const placeholder = `{{${key}}}`;
+            processedContent = processedContent.replace(new RegExp(placeholder, 'g'), sampleData[key]);
+        });
+
+        // Open preview in new window
+        const previewWindow = window.open('', '_blank', 'width=800,height=600');
+        previewWindow.document.write(`
+            <html>
+                <head>
+                    <title>Email Template Preview</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+                        .preview-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                        .subject { font-size: 18px; font-weight: bold; margin-bottom: 20px; padding: 10px; background: #e9ecef; border-radius: 4px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-container">
+                        <div class="subject">Subject: ${subject}</div>
+                        <div class="content">${processedContent}</div>
+                    </div>
+                </body>
+            </html>
+        `);
+        previewWindow.document.close();
+    }
+
+    // Initialize EmailJS system when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for other scripts to load
+        setTimeout(initializeEmailJSSystem, 1000);
+    });
 
     </script>
 </body>

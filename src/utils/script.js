@@ -4,6 +4,55 @@ let firebaseAuth;
 let firebaseDb;
 let firebaseRtdb; // Realtime Database reference for presence
 
+// Initialize Firebase services immediately when script loads
+function initializeFirebaseServices() {
+    try {
+        if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+            firebaseAuth = firebase.auth();
+            firebaseDb = firebase.firestore();
+
+            // Check if Realtime Database is available (for presence)
+            if (firebase.database) {
+                firebaseRtdb = firebase.database();
+            }
+
+            console.log("Firebase services initialized successfully");
+            return true;
+        } else {
+            console.warn("Firebase not yet available, will retry...");
+            return false;
+        }
+    } catch (error) {
+        console.error("Error initializing Firebase services:", error);
+        return false;
+    }
+}
+
+// Try to initialize Firebase services immediately
+if (typeof window !== 'undefined') {
+    // Try immediate initialization
+    if (!initializeFirebaseServices()) {
+        // If not available, wait for DOM content loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try again after DOM is loaded
+            if (!initializeFirebaseServices()) {
+                // If still not available, set up a retry mechanism
+                let retryCount = 0;
+                const maxRetries = 10;
+                const retryInterval = setInterval(() => {
+                    if (initializeFirebaseServices() || retryCount >= maxRetries) {
+                        clearInterval(retryInterval);
+                        if (retryCount >= maxRetries) {
+                            console.error("Failed to initialize Firebase services after maximum retries");
+                        }
+                    }
+                    retryCount++;
+                }, 500);
+            }
+        });
+    }
+}
+
 // Initialize attendance data if not exists
 function initializeData() {
     console.log("Initializing data...");
@@ -16,13 +65,9 @@ function initializeData() {
         return;
     }
 
-    // Initialize Firebase references
-    firebaseAuth = firebase.auth();
-    firebaseDb = firebase.firestore();
-    
-    // Check if Realtime Database is available (for presence)
-    if (firebase.database) {
-        firebaseRtdb = firebase.database();
+    // Ensure Firebase services are initialized
+    if (!firebaseAuth || !firebaseDb) {
+        initializeFirebaseServices();
     }
 
     // Check if user is authenticated
@@ -2238,11 +2283,93 @@ function setupAutoTracking() {
     });
 }
 
-// Initialize auto-tracking when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupAutoTracking);
-} else {
+// Enhanced page view tracking function
+function trackCurrentPageView() {
+    const pageName = window.location.pathname;
+    const pageTitle = document.title;
+    const referrer = document.referrer;
+
+    // Determine page type based on pathname
+    let pageType = 'unknown';
+    if (pageName.includes('dashboard')) pageType = 'dashboard';
+    else if (pageName.includes('login')) pageType = 'login';
+    else if (pageName.includes('profile')) pageType = 'profile';
+    else if (pageName.includes('report')) pageType = 'report';
+    else if (pageName.includes('admin')) pageType = 'admin';
+    else if (pageName.includes('contact')) pageType = 'contact';
+    else if (pageName.includes('about')) pageType = 'about';
+    else if (pageName.includes('changelog')) pageType = 'changelog';
+    else if (pageName === '/' || pageName.includes('index')) pageType = 'home';
+
+    trackPageView(pageType, {
+        fullPath: pageName,
+        pageTitle: pageTitle,
+        referrer: referrer,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        screenResolution: `${screen.width}x${screen.height}`,
+        viewportSize: `${window.innerWidth}x${window.innerHeight}`
+    });
+}
+
+// Initialize comprehensive tracking when DOM is ready
+function initializeComprehensiveTracking() {
+    console.log('🔍 Initializing comprehensive user activity tracking...');
+
+    // Track initial page view
+    trackCurrentPageView();
+
+    // Set up auto-tracking for interactions
     setupAutoTracking();
+
+    // Track authentication state changes
+    if (firebaseAuth) {
+        firebaseAuth.onAuthStateChanged((user) => {
+            if (user) {
+                logUserActivity('User authenticated', {
+                    userId: user.uid,
+                    userEmail: user.email,
+                    displayName: user.displayName,
+                    authMethod: 'firebase',
+                    timestamp: new Date().toISOString()
+                });
+            } else {
+                logUserActivity('User signed out', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+    }
+
+    // Track page unload
+    window.addEventListener('beforeunload', () => {
+        logUserActivity('Page unload', {
+            page: window.location.pathname,
+            timestamp: new Date().toISOString()
+        });
+    });
+
+    // Track page visibility changes
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            logUserActivity('Page hidden', {
+                page: window.location.pathname,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            logUserActivity('Page visible', {
+                page: window.location.pathname,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+}
+
+// Initialize tracking when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeComprehensiveTracking);
+} else {
+    initializeComprehensiveTracking();
 }
 
 // Helper functions for user agent parsing

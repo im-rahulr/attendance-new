@@ -840,6 +840,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <script src="../components/theme.js"></script>
+    <script src="../utils/validation.js"></script>
+    <script src="../utils/script.js"></script>
     <script src="../api/auth.js"></script>
     <script src="../components/notifications.js"></script>
     <script>
@@ -1185,10 +1187,30 @@
                         return;
                     }
 
+                    // Log logout attempt
+                    if (window.logUserActivity) {
+                        window.logUserActivity('User logout initiated', {
+                            logoutMethod: 'profile_page',
+                            page: window.location.pathname,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+
                     // Sign out with proper error handling
                     auth.signOut()
                         .then(() => {
                             console.log('User signed out successfully from profile page');
+
+                            // Log successful logout
+                            if (window.logUserActivity) {
+                                window.logUserActivity('User logout successful', {
+                                    logoutMethod: 'profile_page',
+                                    page: window.location.pathname,
+                                    timestamp: new Date().toISOString(),
+                                    logoutSuccess: true
+                                });
+                            }
+
                             // Clear any cached data
                             if (typeof localStorage !== 'undefined') {
                                 localStorage.clear();
@@ -1200,6 +1222,19 @@
                         })
                         .catch((error) => {
                             console.error("Error signing out:", error);
+
+                            // Log failed logout
+                            if (window.logUserActivity) {
+                                window.logUserActivity('User logout failed', {
+                                    logoutMethod: 'profile_page',
+                                    page: window.location.pathname,
+                                    errorCode: error.code,
+                                    errorMessage: error.message,
+                                    timestamp: new Date().toISOString(),
+                                    logoutSuccess: false
+                                });
+                            }
+
                             showError("Failed to sign out. Please try again.");
                             hideLoading();
                         });

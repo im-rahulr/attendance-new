@@ -1,1283 +1,1087 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Changelog - lowrybunks</title>
-    <!-- Add Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../styles/style.css">
+    <title>Project Changes Log</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Changelog specific styles */
-        .changelog-page {
-            padding-bottom: 100px; /* Space for bottom navigation */
-        }
-
-        .log-header {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 20px;
-            margin: 20px;
-            padding: 30px 20px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 8px 32px var(--shadow-medium);
-        }
-
-        [data-theme="dark"] .log-header {
-            background: linear-gradient(135deg, #161B22, #0D1117);
-            border: 1px solid #30363D;
-            color: #F0F6FC;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .log-header h1 {
+        * {
             margin: 0;
-            font-size: 28px;
-            font-weight: 700;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
             margin-bottom: 8px;
         }
 
-        .log-header p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 16px;
+        .header .subtitle {
+            color: #9ca3af;
+            font-size: 0.95rem;
         }
 
-        .log-section {
-            margin: 20px;
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 16px var(--shadow-light);
-            border: 1px solid var(--border-color);
+        .updated-by {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-top: 16px;
         }
 
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-primary);
+        .updated-by .icon {
+            width: 16px;
+            height: 16px;
+            background-color: #10b981;
+            border-radius: 50%;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 8px 16px;
+            background-color: #e53e3e;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .close-button:hover {
+            background-color: #c53030;
+        }
+
+        .home-button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 8px 16px;
+            background-color: #3182ce;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .home-button:hover {
+            background-color: #2c5282;
+        }
+
+        .back-button {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #d1d5db;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            background: none;
+            border: none;
+        }
+
+        .back-button:hover {
+            color: #fff;
+        }
+
+        .back-button.show {
+            display: flex;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #404040;
+        }
+
+        .change-entry {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 20px 0;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+        }
+
+        .change-entry:hover {
+            transform: translateX(4px);
+        }
+
+        .change-entry::before {
+            content: '';
+            position: absolute;
+            left: -38px;
+            top: 20px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            border: 2px solid #1a1a1a;
+        }
+
+        .change-entry.expanded {
+            cursor: default;
+            transform: none;
+            padding-bottom: 24px;
+            margin-bottom: 40px;
+        }
+
+        .change-entry.expanded:hover {
+            transform: none;
+        }
+
+        .change-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .log-entry {
-            padding: 16px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-
-        .log-date {
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
+            justify-content: space-between;
             margin-bottom: 8px;
-        }
-
-        .log-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .log-description {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 8px;
-        }
-
-        .log-tags {
-            display: flex;
-            gap: 8px;
             flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .log-tag {
-            background-color: var(--accent-secondary);
-            color: var(--accent-primary);
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+        .timestamp {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
         }
 
-        [data-theme="dark"] .log-tag {
-            background-color: var(--bg-tertiary);
-            color: var(--text-secondary);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--accent-primary);
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
+        .type-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+        .type-refactor {
+            background-color: #fbbf24;
+            color: #1a1a1a;
         }
 
-        .loading-spinner {
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--success-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+        .type-feature {
+            background-color: #10b981;
+            color: #ffffff;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .type-coming-soon {
+            background-color: #6b46c1;
+            color: #ffffff;
         }
 
-        .loader-text {
-            color: white;
+        .type-bugfix {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+
+        .type-enhancement {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .type-documentation {
+            background-color: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .change-title {
+            color: #ffffff;
+            font-size: 1.125rem;
             font-weight: 500;
-            margin-top: 10px;
+            margin-bottom: 8px;
         }
 
-        /* Notification badge */
-        .notification-badge {
-            background-color: var(--error-color);
-            color: white;
-            border-radius: 50%;
+        .change-summary {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .change-entry.expanded .change-summary {
+            display: none;
+        }
+
+        .change-details {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #404040;
+        }
+
+        .change-entry.expanded .change-details {
+            display: grid;
+        }
+
+        .developer-info {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .detail-value {
+            color: #d1d5db;
+            font-size: 0.875rem;
+        }
+
+        .files-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .file-tag {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+
+        .status-safe {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #065f46;
+            color: #a7f3d0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+        }
+
+        .status-safe::before {
+            content: '✓';
+            font-size: 0.75rem;
+        }
+
+        .code-snippet {
+            background-color: #1e1e1e;
+            border: 1px solid #404040;
+            color: #f8f8f2;
             padding: 2px 6px;
-            font-size: 10px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.8125rem;
+        }
+
+        .expand-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 0.8125rem;
+            margin-top: 8px;
+        }
+
+        .change-entry.expanded .expand-hint {
+            display: none;
+        }
+
+        .expand-arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .change-entry:hover .expand-arrow {
+            transform: translateX(2px);
+        }
+
+        .footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #333;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .footer p {
+            margin-bottom: 4px;
+        }
+
+        .version-stats {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 32px;
+        }
+
+        .version-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .version-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .version-number {
+            font-size: 1.25rem;
             font-weight: 600;
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            min-width: 16px;
+            color: #10b981;
+        }
+
+        .version-date {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background-color: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            padding: 12px 8px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #555;
+            transform: translateY(-1px);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .stat-bugs .stat-number {
+            color: #ef4444;
+        }
+
+        .stat-features .stat-number {
+            color: #10b981;
+        }
+
+        .stat-lines .stat-number {
+            color: #3b82f6;
+        }
+
+        .stat-commits .stat-number {
+            color: #f59e0b;
+        }
+
+        .stat-label {
+            color: #d1d5db;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-section {
+            margin-bottom: 16px;
+        }
+
+        .detail-section h4 {
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .detail-section p {
+            color: #d1d5db;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .impact-section {
+            border-left: 3px solid #10b981;
+            padding-left: 16px;
+        }
+
+        .files-section {
+            border-left: 3px solid #3b82f6;
+            padding-left: 16px;
+        }
+
+        .warning-section {
+            border-left: 3px solid #fbbf24;
+            padding-left: 16px;
+        }
+
+        .coming-soon-section {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #404040;
+        }
+
+        .coming-soon-header {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 20px;
             text-align: center;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            .log-header {
-                margin: 10px;
-                padding: 20px 16px;
+        /* Bottom Navigation Styles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #9ca3af;
+            transition: color 0.2s ease;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: #ffffff;
+            background-color: #2a2a2a;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item span {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Add padding to body to account for fixed bottom nav */
+        body {
+            padding-bottom: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
             }
 
-            .log-section {
-                margin: 10px;
-                padding: 16px;
+            .header h1 {
+                font-size: 1.75rem;
             }
 
-            .log-header h1 {
-                font-size: 24px;
+            .timeline {
+                padding-left: 24px;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+            .change-entry {
+                padding: 16px 0;
             }
 
-            .stat-number {
-                font-size: 20px;
+            .change-entry.expanded {
+                padding-bottom: 20px;
+            }
+
+            .change-entry::before {
+                left: -30px;
+            }
+
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .change-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .home-button,
+            .close-button {
+                position: relative;
+                display: block;
+                margin: 10px auto;
+            }
+
+            .nav-item i {
+                font-size: 18px;
+            }
+
+            .nav-item span {
+                font-size: 11px;
             }
         }
     </style>
 </head>
-<body data-theme="dark">
-    <div class="app-container">
-        <!-- App Header -->
-        <div class="app-header">
-            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project Changes Log</h1>
+            <p class="subtitle">Development History & Updates</p>
+            <div class="updated-by">
+                <div class="icon"></div>
+                <span>Updated by Attendly Team</span>
+            </div>
         </div>
-        
-        <div class="main-content project-log-page">
-            <!-- Changelog Header -->
-            <div class="log-header">
-                <h1><i class="fas fa-history"></i> Changelog</h1>
-                <p>Project updates, features, and improvements</p>
-            </div>
-             
-            <!-- Project Statistics -->
-            <div class="log-section">
-                <h3 class="section-title">
-                    <i class="fas fa-chart-line"></i>
-                    Project Statistics
-                </h3>
-                
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-number" id="totalCommits">45</div>
-                        <div class="stat-label">Total Updates</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" id="totalFeatures">15</div>
-                        <div class="stat-label">Features Added</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" id="totalBugFixes">86</div>
-                        <div class="stat-label">Bug Fixes</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" id="projectAge">45060</div>
-                        <div class="stat-label">Lines of Code</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Developed by Section -->
-            <div class="log-section">
-                <h3 class="section-title">
-                     Our Team
-                </h3>
-                <!-- <ul style="list-style: none; padding-left: 0; font-size: 15px; color: var(--text-primary); align-items: center;">
-                    <li>Rahul</li>
-                    <li>Niketh</li>
-                    <li>Viki</li>
-                </ul> -->
-                <div class="d-flex flex-column align-items-center" >
-                    <h5 style="font-size: 18px; color: var(--text-primary);">Niketh</h5>
-                    <p style="font-size: 12px; color: var(--text-secondary);">Founder & CEO</p>
-                    <h5 style="font-size: 18px; color: var(--text-primary);">Rahul</h5>
-                    <p style="font-size: 12px; color: var(--text-secondary);">Head of Technology</p>
-                    <h5 style="font-size: 18px; color: var(--text-primary);">Viki</h5>
-                    <p style="font-size: 12px; color: var(--text-secondary);">Full Stack Developer</p>
-                </div>
-            </div>
-            
-            <!-- Filters and Controls -->
-            <div class="log-section">
-                <h3 class="section-title">
-                    <i class="fas fa-filter"></i>
-                    Filters & Controls
-                </h3>
 
-                <div class="d-flex gap-2 flex-wrap mb-3">
-                    <input type="text" id="projectSearchInput" class="form-control form-control-sm" placeholder="Search project logs..."
-                           style="width: 200px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);">
-                    <select id="projectTypeFilter" class="form-select form-select-sm"
-                            style="width: 150px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);">
-                        <option value="">All Types</option>
-                        <option value="feature">New Feature</option>
-                        <option value="bugfix">Bug Fix</option>
-                        <option value="enhancement">Enhancement</option>
-                        <option value="documentation">Documentation</option>
-                        <option value="ui">UI/UX</option>
-                        <option value="security">Security</option>
-                    </select>
-                    <select id="projectUserFilter" class="form-select form-select-sm"
-                            style="width: 150px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);">
-                        <option value="">All Users</option>
-                    </select>
-                    <input type="date" id="projectDateFrom" class="form-control form-control-sm"
-                           style="width: 140px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);" title="From Date">
-                    <input type="date" id="projectDateTo" class="form-control form-control-sm"
-                           style="width: 140px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);" title="To Date">
-                    <button class="btn btn-sm btn-outline-secondary" id="clearProjectFiltersBtn"
-                            style="border-color: var(--border-color); color: var(--text-secondary);">
-                        <i class="fas fa-times me-1"></i>Clear
-                    </button>
-                    <button class="btn btn-sm btn-outline-primary" id="refreshProjectLogsBtn"
-                            style="border-color: var(--accent-primary); color: var(--accent-primary);">
-                        <i class="fas fa-sync-alt me-1"></i>Refresh
-                    </button>
-                    <button class="btn btn-sm btn-outline-info" id="toggleProjectChartsBtn" title="Toggle project analytics charts"
-                            style="border-color: var(--accent-secondary); color: var(--accent-secondary);">
-                        <i class="fas fa-chart-bar me-1"></i>Analytics
-                    </button>
-                </div>
+        <div class="version-stats">
+            <div class="version-header">
+                <div class="version-number">v0.7.80</div>
+                <div class="version-date">Released July 17, 2025</div>
             </div>
 
-            <!-- Recent Updates -->
-            <div class="log-section">
-                <h3 class="section-title">
-                    <i class="fas fa-clock"></i>
-                    Recent Updates
-                </h3>
-
-                <!-- Latest Changes (Static) -->
-                <div class="log-entry" style="margin-bottom: 20px;">
-                    <div class="log-date">December 15, 2024</div>
-                    <div class="log-title">📚 Comprehensive Documentation & System Specifications</div>
-                    <div class="log-description">
-                        Added comprehensive technical documentation page with detailed feature descriptions, technology stack overview, and system architecture. Created advanced system specifications page with interactive charts, performance metrics, and capacity monitoring. Enhanced user experience with professional documentation standards.
-                        <br><strong>Contributors:</strong> CodeCraft Team
-                    </div>
-                    <div class="log-tags">
-                        <span class="log-tag">documentation</span>
-                        <span class="log-tag">system-specs</span>
-                        <span class="log-tag">enhancement</span>
-                    </div>
+            <div class="stats-grid">
+                <div class="stat-card stat-bugs">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Bugs Fixed</div>
                 </div>
 
-                <div class="log-entry" style="margin-bottom: 20px;">
-                    <div class="log-date">December 15, 2024</div>
-                    <div class="log-title">🔄 Project Log Renamed to Changelog</div>
-                    <div class="log-description">
-                        Renamed project log to changelog for better clarity and industry standard naming. Updated navigation references and improved chronological organization of project updates and features.
-                        <br><strong>Contributors:</strong> CodeCraft Team
-                    </div>
-                    <div class="log-tags">
-                        <span class="log-tag">refactor</span>
-                        <span class="log-tag">organization</span>
-                        <span class="log-tag">improvement</span>
-                    </div>
+                <div class="stat-card stat-features">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Features Added</div>
                 </div>
 
-                <div class="log-entry" style="margin-bottom: 20px;">
-                    <div class="log-date">December 15, 2024</div>
-                    <div class="log-title">🎨 About Page CSS Improvements</div>
-                    <div class="log-description">
-                        Fixed CSS styling issues in the about section with improved dark theme consistency, proper background gradients, and enhanced responsive design. Ensured proper contrast ratios and visual hierarchy throughout the page.
-                        <br><strong>Contributors:</strong> CodeCraft Team
-                    </div>
-                    <div class="log-tags">
-                        <span class="log-tag">css</span>
-                        <span class="log-tag">bugfix</span>
-                        <span class="log-tag">ui-improvement</span>
-                    </div>
+                <div class="stat-card stat-lines">
+                    <div class="stat-number">2,847</div>
+                    <div class="stat-label">Lines of Code</div>
                 </div>
 
-                <!-- Loading Spinner -->
-                <div id="projectLogsSpinner" class="text-center" style="display: none;">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2">Loading project logs...</p>
-                </div>
-
-                <!-- Project Logs Container -->
-                <div id="projectLogsContainer">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
-
-                <!-- Project Analytics Charts (Initially Hidden) -->
-                <div id="projectAnalyticsSection" class="mt-4" style="display: none;">
-                    <div class="row g-3">
-                        <div class="col-lg-6 col-md-12">
-                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
-                                    <h5 class="mb-0" style="color: var(--text-primary);">
-                                        <i class="fas fa-chart-line me-2" style="color: var(--accent-primary);"></i>Project Activity Timeline
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div style="position: relative; height: 300px;">
-                                        <canvas id="projectTimelineChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6 col-md-12">
-                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
-                                    <h5 class="mb-0" style="color: var(--text-primary);">
-                                        <i class="fas fa-pie-chart me-2" style="color: var(--accent-primary);"></i>Project Types Distribution
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div style="position: relative; height: 300px;">
-                                        <canvas id="projectTypesChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row g-3 mt-2">
-                        <div class="col-lg-6 col-md-12">
-                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
-                                    <h5 class="mb-0" style="color: var(--text-primary);">
-                                        <i class="fas fa-users me-2" style="color: var(--accent-primary);"></i>Contributors Activity
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div style="position: relative; height: 300px;">
-                                        <canvas id="contributorsChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6 col-md-12">
-                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
-                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
-                                    <h5 class="mb-0" style="color: var(--text-primary);">
-                                        <i class="fas fa-calendar me-2" style="color: var(--accent-primary);"></i>Monthly Progress
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div style="position: relative; height: 300px;">
-                                        <canvas id="monthlyProgressChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="stat-card stat-commits">
+                    <div class="stat-number">34</div>
+                    <div class="stat-label">Commits</div>
                 </div>
             </div>
         </div>
-        
-        <!-- Bottom Navigation -->
-        <div class="bottom-nav">
-            <a href="dashboard.html" class="nav-item">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="report.html" class="nav-item">
-                <i class="fas fa-chart-bar"></i>
-                <span>Report</span>
-            </a>
-            <a href="notifications.html" class="nav-item">
-                <i class="fas fa-bell"></i>
-                <span>Notifications</span>
-                <span class="notification-badge" id="navNotificationBadge" style="display: none;">0</span>
-            </a>
-            <a href="profile.html" class="nav-item">
-                <i class="fas fa-user"></i>
-                <span>Profile</span>
-            </a>
+
+        <div class="back-button" onclick="collapseAll()">
+            <span>←</span>
+            <span>Back to Overview</span>
+        </div>
+
+        <div class="timeline">
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-15 16:30</div>
+                    <div class="type-badge type-documentation">Documentation</div>
+                </div>
+                <div class="change-title">Comprehensive Documentation & System Specifications</div>
+                <div class="change-summary">Added comprehensive technical documentation page with detailed feature
+                    descriptions, technology stack overview, and system architecture</div>
+                <div class="developer-info">Contributors: Niketh, Rahul, Viki</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section files-section">
+                        <h4>📁 Affected Files</h4>
+                        <div class="files-container">
+                            <span class="file-tag">documentation.html</span>
+                            <span class="file-tag">system-specs.html</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Created comprehensive technical documentation page with detailed feature descriptions,
+                            technology stack overview, and system architecture. Added advanced system specifications
+                            page with interactive charts, performance metrics, and capacity monitoring. Enhanced user
+                            experience with professional documentation standards.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved developer onboarding and system understanding through comprehensive documentation.
+                            Enhanced system monitoring capabilities with interactive performance metrics and capacity
+                            monitoring dashboards.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>⚙️ Technical Details</h4>
+                        <div class="detail-row">
+                            <div class="detail-label">Breaking Changes</div>
+                            <div class="detail-value">
+                                <span class="status-safe">No Breaking Changes</span>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Dependencies</div>
+                            <div class="detail-value">Chart.js for interactive visualizations</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-15 15:45</div>
+                    <div class="type-badge type-refactor">Refactor</div>
+                </div>
+                <div class="change-title">Project Log Renamed to Changelog</div>
+                <div class="change-summary">Renamed project log to changelog for better clarity and industry standard
+                    naming</div>
+                <div class="developer-info">Contributors: Viki, Niketh</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Renamed project log to changelog for better clarity and industry standard naming. Updated
+                            navigation references and improved chronological organization of project updates and
+                            features.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved clarity and follows industry standards for project change documentation. Enhanced
+                            navigation and organization of project updates.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-15 14:20</div>
+                    <div class="type-badge type-bugfix">Bug Fix</div>
+                </div>
+                <div class="change-title">About Page CSS Improvements</div>
+                <div class="change-summary">Fixed CSS styling issues in the about section with improved dark theme
+                    consistency</div>
+                <div class="developer-info">Contributors: Viki, user</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Fixed CSS styling issues in the about section with improved dark theme consistency, proper
+                            background gradients, and enhanced responsive design. Ensured proper contrast ratios and
+                            visual hierarchy throughout the page.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved visual consistency and accessibility across the about page. Enhanced user experience
+                            with better responsive design and proper contrast ratios.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-14 18:30</div>
+                    <div class="type-badge type-enhancement">Enhancement</div>
+                </div>
+                <div class="change-title">Error Log Page Functionality Restoration</div>
+                <div class="change-summary">Restored full functionality to the Error Log page including backend
+                    endpoints, UI improvements, sorting, and advanced filtering capabilities</div>
+                <div class="developer-info">Contributors: Rahul, Niketh</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Restored full functionality to the Error Log page including backend endpoints, UI
+                            improvements, sorting, and advanced filtering capabilities. Enhanced admin panel
+                            functionality for better error monitoring and debugging.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved system monitoring and debugging capabilities. Enhanced admin panel functionality for
+                            better error tracking and resolution.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-14 17:15</div>
+                    <div class="type-badge type-feature">Feature</div>
+                </div>
+                <div class="change-title">Project Log Dynamic System</div>
+                <div class="change-summary">Converted static project log page to dynamic system with Firestore
+                    integration, filtering, sorting, and real-time updates</div>
+                <div class="developer-info">Contributors: Rahul, Viki, user</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Converted static project log page to dynamic system with Firestore integration, filtering,
+                            sorting, and real-time updates. Enhanced project management capabilities with dynamic
+                            content management.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved project management with real-time updates and dynamic content. Enhanced filtering
+                            and sorting capabilities for better project tracking.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-14 16:45</div>
+                    <div class="type-badge type-feature">Feature</div>
+                </div>
+                <div class="change-title">Task Management System Implementation</div>
+                <div class="change-summary">Implemented comprehensive task management system with task creation,
+                    updating, and completion tracking</div>
+                <div class="developer-info">Contributors: Niketh, Viki, Viki</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Implemented comprehensive task management system with task creation, updating, and completion
+                            tracking. Added support for subtasks and dependencies to enhance project workflow
+                            management.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Enhanced project workflow management with comprehensive task tracking. Improved team
+                            collaboration with subtask and dependency support.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-14 15:20</div>
+                    <div class="type-badge type-bugfix">Bug Fix</div>
+                </div>
+                <div class="change-title">Login Password Visibility Toggle</div>
+                <div class="change-summary">Fixed non-functional password visibility toggle button on login and signin
+                    pages</div>
+                <div class="developer-info">Contributors: Randan</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Fixed non-functional password visibility toggle button on login and signin pages. Added
+                            proper event handlers and accessibility features for better user experience.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved user experience on authentication pages. Enhanced accessibility and usability of
+                            password input fields.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="change-entry" onclick="toggleExpand(this)">
+                <div class="change-header">
+                    <div class="timestamp">2025-07-14 14:10</div>
+                    <div class="type-badge type-bugfix">Bug Fix</div>
+                </div>
+                <div class="change-title">Profile Page Data Loading Fix</div>
+                <div class="change-summary">Resolved 'Error loading user data' message on profile page by improving
+                    error handling</div>
+                <div class="developer-info">Contributors: Viki</div>
+                <div class="expand-hint">
+                    <span>Click to view full details</span>
+                    <span class="expand-arrow">→</span>
+                </div>
+
+                <div class="change-details">
+                    <div class="detail-section">
+                        <h4>📝 Detailed Description</h4>
+                        <p>Resolved 'Error loading user data' message on profile page by improving error handling and
+                            ensuring user documents are created properly. Enhanced data loading reliability and user
+                            experience.</p>
+                    </div>
+
+                    <div class="detail-section impact-section">
+                        <h4>🎯 Impact Analysis</h4>
+                        <p>Improved profile page reliability and user experience. Enhanced error handling and data
+                            loading processes for better system stability.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="coming-soon-section">
+            <h2 class="coming-soon-header">Features Coming Soon</h2>
+            <div class="timeline">
+                <div class="change-entry" onclick="toggleExpand(this)">
+                    <div class="change-header">
+                        <div class="timestamp">Planned for Q3 2025</div>
+                        <div class="type-badge type-coming-soon">Coming Soon</div>
+                    </div>
+                    <div class="change-title">Dark Mode Toggle</div>
+                    <div class="change-summary">Allow users to switch between light and dark themes across the entire
+                        application</div>
+                    <div class="developer-info">To be developed by: Rahul</div>
+                    <div class="expand-hint">
+                        <span>Click to view full details</span>
+                        <span class="expand-arrow">→</span>
+                    </div>
+
+                    <div class="change-details">
+                        <div class="detail-section files-section">
+                            <h4>📁 Files to be Affected</h4>
+                            <div class="files-container">
+                                <span class="file-tag">style.css</span>
+                                <span class="file-tag">script.js</span>
+                                <span class="file-tag">All HTML files</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>📝 Feature Description</h4>
+                            <p>This upcoming feature will implement a system-wide dark mode toggle that allows users to
+                                switch between light and dark themes. The theme preference will be saved in local
+                                storage and applied automatically on future visits.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>🎯 Expected Benefits</h4>
+                            <p>Improved user experience, especially during night-time usage. Reduced eye strain and
+                                better battery life for OLED screens. Greater accessibility for users who prefer or
+                                require different contrast settings.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="change-entry" onclick="toggleExpand(this)">
+                    <div class="change-header">
+                        <div class="timestamp">Planned for Q3 2025</div>
+                        <div class="type-badge type-coming-soon">Coming Soon</div>
+                    </div>
+                    <div class="change-title">Offline Mode Support</div>
+                    <div class="change-summary">Enable basic application functionality even when users are offline</div>
+                    <div class="developer-info">To be developed by: Rahul</div>
+                    <div class="expand-hint">
+                        <span>Click to view full details</span>
+                        <span class="expand-arrow">→</span>
+                    </div>
+
+                    <div class="change-details">
+                        <div class="detail-section files-section">
+                            <h4>📁 Files to be Affected</h4>
+                            <div class="files-container">
+                                <span class="file-tag">script.js</span>
+                                <span class="file-tag">auth.js</span>
+                                <span class="file-tag">service-worker.js (new)</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>📝 Feature Description</h4>
+                            <p>Implementation of service workers and local data caching to allow users to view their
+                                attendance records and reports even when they're offline. Changes made offline will sync
+                                automatically when the connection is restored.</p>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>🎯 Expected Benefits</h4>
+                            <p>Improved user experience in areas with poor connectivity. Faster application startup and
+                                data loading from cache. Continuous functionality even during temporary network outages.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>This log tracks all project changes and improvements</p>
+            <p>Last updated: July 20, 2025</p>
         </div>
     </div>
-    
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p class="loader-text" id="loadingText">Loading...</p>
-    </div>
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="../components/theme.js"></script>
-    <script src="../api/auth.js"></script>
-    <script src="../components/notifications.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Firebase references
-            let auth;
-            let db;
+        function toggleExpand(element) {
+            const isExpanded = element.classList.contains('expanded');
 
-            try {
-                auth = firebase.auth();
-                db = firebase.firestore();
+            // Collapse all other entries
+            document.querySelectorAll('.change-entry').forEach(entry => {
+                entry.classList.remove('expanded');
+            });
 
-                // Check if user is authenticated
-                auth.onAuthStateChanged(function(user) {
-                    if (!user) {
-                        // Redirect to login if not authenticated
-                        window.location.href = 'login.html';
-                    } else {
-                        // Load project logs
-                        loadProjectLogs();
-                        setupEventListeners();
-                        updateProjectStats();
-                    }
-                });
+            // Toggle current entry
+            if (!isExpanded) {
+                element.classList.add('expanded');
+                showBackButton();
 
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                // Redirect to login on error
-                window.location.href = 'login.html';
+                // Smooth scroll to top of expanded entry
+                setTimeout(() => {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            } else {
+                hideBackButton();
+            }
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.change-entry').forEach(entry => {
+                entry.classList.remove('expanded');
+            });
+            hideBackButton();
+
+            // Scroll to top of timeline
+            document.querySelector('.timeline').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function showBackButton() {
+            document.querySelector('.back-button').classList.add('show');
+        }
+
+        function hideBackButton() {
+            document.querySelector('.back-button').classList.remove('show');
+        }
+
+        // Handle escape key to collapse
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                collapseAll();
             }
         });
-
-        // Function to load project logs from Firestore
-        async function loadProjectLogs(searchTerm = '') {
-            const container = document.getElementById('projectLogsContainer');
-            const spinner = document.getElementById('projectLogsSpinner');
-
-            if (!container) {
-                console.error("Project logs container not found");
-                return;
-            }
-
-            // Show spinner
-            spinner.style.display = 'block';
-            container.innerHTML = '';
-
-            try {
-                // Get filter values
-                const typeFilter = document.getElementById('projectTypeFilter')?.value || '';
-                const userFilter = document.getElementById('projectUserFilter')?.value || '';
-                const dateFrom = document.getElementById('projectDateFrom')?.value;
-                const dateTo = document.getElementById('projectDateTo')?.value;
-
-                let query = firebase.firestore().collection('projectLogs')
-                    .orderBy('timestamp', 'desc')
-                    .limit(50);
-
-                // Apply date filters if provided
-                if (dateFrom) {
-                    const fromDate = new Date(dateFrom);
-                    fromDate.setHours(0, 0, 0, 0);
-                    query = query.where('timestamp', '>=', fromDate);
-                }
-
-                if (dateTo) {
-                    const toDate = new Date(dateTo);
-                    toDate.setHours(23, 59, 59, 999);
-                    query = query.where('timestamp', '<=', toDate);
-                }
-
-                const snapshot = await query.get();
-
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="text-center text-muted"><p>No project logs found. <button class="btn btn-sm btn-primary" onclick="generateSampleProjectLogs()">Generate Sample Data</button></p></div>';
-                    spinner.style.display = 'none';
-                    return;
-                }
-
-                const projectLogs = [];
-                snapshot.forEach(doc => {
-                    const logData = doc.data();
-                    projectLogs.push({ id: doc.id, ...logData });
-                });
-
-                // Apply client-side filters
-                let filteredLogs = projectLogs;
-
-                // Filter by search term
-                if (searchTerm) {
-                    filteredLogs = filteredLogs.filter(log =>
-                        log.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        log.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        log.contributors?.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                        log.tags?.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
-                    );
-                }
-
-                // Filter by type
-                if (typeFilter) {
-                    filteredLogs = filteredLogs.filter(log =>
-                        log.tags?.some(tag => tag.toLowerCase().includes(typeFilter.toLowerCase()))
-                    );
-                }
-
-                // Filter by user
-                if (userFilter) {
-                    filteredLogs = filteredLogs.filter(log =>
-                        log.contributors?.some(c => c.toLowerCase().includes(userFilter.toLowerCase()))
-                    );
-                }
-
-                if (filteredLogs.length === 0) {
-                    container.innerHTML = '<div class="text-center text-muted"><p>No matching project logs found</p></div>';
-                    spinner.style.display = 'none';
-                    return;
-                }
-
-                // Populate container with logs
-                filteredLogs.forEach(log => {
-                    const timestamp = log.timestamp ?
-                        (log.timestamp.toDate ? log.timestamp.toDate() : new Date(log.timestamp)).toLocaleDateString() :
-                        'Unknown Date';
-
-                    const contributors = Array.isArray(log.contributors) ? log.contributors.join(', ') : (log.contributors || 'Unknown');
-                    const tags = Array.isArray(log.tags) ? log.tags : [];
-
-                    const logEntry = document.createElement('div');
-                    logEntry.className = 'log-entry';
-                    logEntry.innerHTML = `
-                        <div class="log-date">${timestamp}</div>
-                        <div class="log-title">${log.title || 'Untitled'}</div>
-                        <div class="log-description">
-                            ${log.description || 'No description available'}<br>
-                            <strong>Contributors:</strong> ${contributors}
-                        </div>
-                        <div class="log-tags">
-                            ${tags.map(tag => `<span class="log-tag">${tag}</span>`).join('')}
-                        </div>
-                    `;
-                    container.appendChild(logEntry);
-                });
-
-                spinner.style.display = 'none';
-
-                if (!searchTerm) {
-                    showToast('Project logs loaded successfully!', 'success');
-                }
-            } catch (error) {
-                console.error("Error loading project logs:", error);
-                container.innerHTML = `<div class="text-center text-danger"><p>Error loading logs: ${error.message}</p></div>`;
-                spinner.style.display = 'none';
-                showToast('Error loading project logs: ' + error.message, 'danger');
-            }
-        }
-
-        // Function to setup event listeners
-        function setupEventListeners() {
-            // Search input
-            const searchInput = document.getElementById('projectSearchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const searchTerm = e.target.value;
-                    loadProjectLogs(searchTerm);
-                });
-            }
-
-            // Filter controls
-            const typeFilter = document.getElementById('projectTypeFilter');
-            if (typeFilter) {
-                typeFilter.addEventListener('change', () => {
-                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
-                    loadProjectLogs(searchTerm);
-                });
-            }
-
-            const userFilter = document.getElementById('projectUserFilter');
-            if (userFilter) {
-                userFilter.addEventListener('change', () => {
-                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
-                    loadProjectLogs(searchTerm);
-                });
-            }
-
-            const dateFrom = document.getElementById('projectDateFrom');
-            if (dateFrom) {
-                dateFrom.addEventListener('change', () => {
-                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
-                    loadProjectLogs(searchTerm);
-                });
-            }
-
-            const dateTo = document.getElementById('projectDateTo');
-            if (dateTo) {
-                dateTo.addEventListener('change', () => {
-                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
-                    loadProjectLogs(searchTerm);
-                });
-            }
-
-            // Clear filters button
-            const clearFiltersBtn = document.getElementById('clearProjectFiltersBtn');
-            if (clearFiltersBtn) {
-                clearFiltersBtn.addEventListener('click', () => {
-                    document.getElementById('projectSearchInput').value = '';
-                    document.getElementById('projectTypeFilter').value = '';
-                    document.getElementById('projectUserFilter').value = '';
-                    document.getElementById('projectDateFrom').value = '';
-                    document.getElementById('projectDateTo').value = '';
-                    loadProjectLogs();
-                });
-            }
-
-            // Refresh button
-            const refreshBtn = document.getElementById('refreshProjectLogsBtn');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', () => {
-                    const searchTerm = document.getElementById('projectSearchInput')?.value || '';
-                    loadProjectLogs(searchTerm);
-                });
-            }
-
-            // Toggle analytics button
-            const toggleChartsBtn = document.getElementById('toggleProjectChartsBtn');
-            if (toggleChartsBtn) {
-                toggleChartsBtn.addEventListener('click', toggleProjectAnalytics);
-            }
-        }
-
-        // Function to update project statistics
-        async function updateProjectStats() {
-            try {
-                const snapshot = await firebase.firestore().collection('projectLogs').get();
-                const logs = [];
-                snapshot.forEach(doc => logs.push(doc.data()));
-
-                // Calculate statistics
-                const totalLogs = logs.length;
-                const features = logs.filter(log => log.tags?.some(tag => tag.toLowerCase().includes('feature'))).length;
-                const bugFixes = logs.filter(log => log.tags?.some(tag => tag.toLowerCase().includes('bug'))).length;
-
-                // Calculate project age (days since first log)
-                const timestamps = logs.map(log => log.timestamp ?
-                    (log.timestamp.toDate ? log.timestamp.toDate() : new Date(log.timestamp)) :
-                    new Date()).filter(date => date);
-                const oldestDate = timestamps.length > 0 ? new Date(Math.min(...timestamps)) : new Date();
-                const projectAge = Math.ceil((new Date() - oldestDate) / (1000 * 60 * 60 * 24));
-
-                // Update UI
-                document.getElementById('totalCommits').textContent = totalLogs;
-                document.getElementById('totalFeatures').textContent = features;
-                document.getElementById('totalBugFixes').textContent = bugFixes;
-                document.getElementById('projectAge').textContent = projectAge;
-
-            } catch (error) {
-                console.error("Error updating project stats:", error);
-            }
-        }
-
-        // Function to populate user filter dropdown
-        async function populateUserFilter() {
-            try {
-                const snapshot = await firebase.firestore().collection('projectLogs').get();
-                const users = new Set();
-
-                snapshot.forEach(doc => {
-                    const log = doc.data();
-                    if (log.contributors) {
-                        if (Array.isArray(log.contributors)) {
-                            log.contributors.forEach(user => users.add(user));
-                        } else {
-                            users.add(log.contributors);
-                        }
-                    }
-                });
-
-                const userFilter = document.getElementById('projectUserFilter');
-                if (userFilter) {
-                    // Clear existing options except "All Users"
-                    while (userFilter.children.length > 1) {
-                        userFilter.removeChild(userFilter.lastChild);
-                    }
-
-                    // Add user options
-                    Array.from(users).sort().forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user;
-                        option.textContent = user;
-                        userFilter.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error("Error populating user filter:", error);
-            }
-        }
-
-        // Function to generate sample project logs
-        async function generateSampleProjectLogs() {
-            try {
-                const sampleLogs = [
-                    {
-                        title: "Task Management System Implementation",
-                        description: "Implemented comprehensive task management system with task creation, updating, and completion tracking. Added support for subtasks and dependencies.",
-                        contributors: ["Development Team"],
-                        tags: ["New Feature", "Enhancement", "Task Management"],
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Error Log Page Functionality Restoration",
-                        description: "Restored full functionality to the Error Log page including backend endpoints, UI improvements, sorting, and advanced filtering capabilities.",
-                        contributors: ["Rahul", "Niketh"],
-                        tags: ["Bug Fix", "Enhancement", "Admin Panel"],
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Profile Page Data Loading Fix",
-                        description: "Resolved 'Error loading user data' message on profile page by improving error handling and ensuring user documents are created properly.",
-                        contributors: ["Viki"],
-                        tags: ["Bug Fix", "Profile", "Data Loading"],
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Login Password Visibility Toggle",
-                        description: "Fixed non-functional password visibility toggle button on login and signin pages. Added proper event handlers and accessibility features.",
-                        contributors: ["Randan"],
-                        tags: ["Bug Fix", "UI/UX", "Authentication"],
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    },
-                    {
-                        title: "Project Log Dynamic System",
-                        description: "Converted static project log page to dynamic system with Firestore integration, filtering, sorting, and real-time updates.",
-                        contributors: ["Development Team"],
-                        tags: ["New Feature", "Enhancement", "Project Management"],
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    }
-                ];
-
-                const batch = firebase.firestore().batch();
-                sampleLogs.forEach(log => {
-                    const docRef = firebase.firestore().collection('projectLogs').doc();
-                    batch.set(docRef, log);
-                });
-
-                await batch.commit();
-
-                if (typeof showToast === 'function') {
-                    showToast('Sample project logs generated successfully!', 'success');
-                } else {
-                    alert('Sample project logs generated successfully!');
-                }
-
-                // Refresh the display
-                setTimeout(() => {
-                    loadProjectLogs();
-                    updateProjectStats();
-                    populateUserFilter();
-                }, 1000);
-
-            } catch (error) {
-                console.error('Error generating sample logs:', error);
-                if (typeof showToast === 'function') {
-                    showToast('Failed to generate sample logs: ' + error.message, 'danger');
-                } else {
-                    alert('Failed to generate sample logs: ' + error.message);
-                }
-            }
-        }
-
-        // Project Analytics Chart Variables
-        let projectTimelineChartInstance = null;
-        let projectTypesChartInstance = null;
-        let contributorsChartInstance = null;
-        let monthlyProgressChartInstance = null;
-
-        // Function to toggle project analytics section
-        function toggleProjectAnalytics() {
-            const section = document.getElementById('projectAnalyticsSection');
-            const btn = document.getElementById('toggleProjectChartsBtn');
-
-            if (section.style.display === 'none') {
-                section.style.display = 'block';
-                btn.innerHTML = '<i class="fas fa-chart-bar me-1"></i>Hide Analytics';
-                createProjectAnalyticsCharts();
-            } else {
-                section.style.display = 'none';
-                btn.innerHTML = '<i class="fas fa-chart-bar me-1"></i>Analytics';
-            }
-        }
-
-        // Function to create all project analytics charts
-        async function createProjectAnalyticsCharts() {
-            try {
-                await Promise.all([
-                    createProjectTimelineChart(),
-                    createProjectTypesChart(),
-                    createContributorsChart(),
-                    createMonthlyProgressChart()
-                ]);
-            } catch (error) {
-                console.error('Error creating project analytics charts:', error);
-            }
-        }
-
-        // Function to create Project Timeline Chart
-        async function createProjectTimelineChart() {
-            const ctx = document.getElementById('projectTimelineChart');
-            if (!ctx) {
-                console.warn('Project timeline chart canvas not found');
-                return;
-            }
-
-            try {
-                // Check if Chart.js is loaded
-                if (typeof Chart === 'undefined') {
-                    console.error('Chart.js library not loaded');
-                    return;
-                }
-
-                const snapshot = await firebase.firestore().collection('projectLogs')
-                    .orderBy('timestamp', 'desc')
-                    .limit(50)
-                    .get();
-
-                const last30Days = {};
-
-                // Initialize last 30 days
-                for (let i = 29; i >= 0; i--) {
-                    const date = new Date();
-                    date.setDate(date.getDate() - i);
-                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    last30Days[dateStr] = 0;
-                }
-
-                snapshot.forEach(doc => {
-                    const project = doc.data();
-                    const timestamp = project.timestamp ? project.timestamp.toDate() : new Date();
-                    const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-                    if (last30Days.hasOwnProperty(dateStr)) {
-                        last30Days[dateStr]++;
-                    }
-                });
-
-                if (projectTimelineChartInstance) {
-                    projectTimelineChartInstance.destroy();
-                }
-
-                projectTimelineChartInstance = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: Object.keys(last30Days),
-                        datasets: [{
-                            label: 'Project Updates',
-                            data: Object.values(last30Days),
-                            borderColor: '#34C759',
-                            backgroundColor: 'rgba(52, 199, 89, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#34C759',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: { display: false },
-                                ticks: {
-                                    color: '#86868B',
-                                    maxTicksLimit: 10
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(60, 60, 67, 0.29)' },
-                                ticks: { color: '#86868B' }
-                            }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Error creating project timeline chart:', error);
-            }
-        }
-
-        // Function to create Project Types Chart
-        async function createProjectTypesChart() {
-            const ctx = document.getElementById('projectTypesChart');
-            if (!ctx) {
-                console.warn('Project types chart canvas not found');
-                return;
-            }
-
-            try {
-                // Check if Chart.js is loaded
-                if (typeof Chart === 'undefined') {
-                    console.error('Chart.js library not loaded');
-                    return;
-                }
-                const snapshot = await firebase.firestore().collection('projectLogs')
-                    .orderBy('timestamp', 'desc')
-                    .limit(100)
-                    .get();
-
-                const projectTypes = {};
-
-                snapshot.forEach(doc => {
-                    const project = doc.data();
-                    if (project.tags && Array.isArray(project.tags)) {
-                        project.tags.forEach(tag => {
-                            projectTypes[tag] = (projectTypes[tag] || 0) + 1;
-                        });
-                    }
-                });
-
-                if (projectTypesChartInstance) {
-                    projectTypesChartInstance.destroy();
-                }
-
-                projectTypesChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(projectTypes),
-                        datasets: [{
-                            data: Object.values(projectTypes),
-                            backgroundColor: [
-                                '#007AFF',
-                                '#34C759',
-                                '#FF9500',
-                                '#FF3B30',
-                                '#5AC8FA',
-                                '#AF52DE',
-                                '#FF2D92',
-                                '#FFCC00'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#FFFFFF'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true,
-                                    color: '#1D1D1F'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                cornerRadius: 8
-                            }
-                        },
-                        cutout: '60%'
-                    }
-                });
-            } catch (error) {
-                console.error('Error creating project types chart:', error);
-            }
-        }
-
-        // Function to create Contributors Chart
-        async function createContributorsChart() {
-            const ctx = document.getElementById('contributorsChart');
-            if (!ctx) {
-                console.warn('Contributors chart canvas not found');
-                return;
-            }
-
-            try {
-                // Check if Chart.js is loaded
-                if (typeof Chart === 'undefined') {
-                    console.error('Chart.js library not loaded');
-                    return;
-                }
-                const snapshot = await firebase.firestore().collection('projectLogs')
-                    .orderBy('timestamp', 'desc')
-                    .limit(100)
-                    .get();
-
-                const contributors = {};
-
-                snapshot.forEach(doc => {
-                    const project = doc.data();
-                    if (project.contributors) {
-                        if (Array.isArray(project.contributors)) {
-                            project.contributors.forEach(contributor => {
-                                contributors[contributor] = (contributors[contributor] || 0) + 1;
-                            });
-                        } else {
-                            contributors[project.contributors] = (contributors[project.contributors] || 0) + 1;
-                        }
-                    }
-                });
-
-                // Get top 10 contributors
-                const sortedContributors = Object.entries(contributors)
-                    .sort(([,a], [,b]) => b - a)
-                    .slice(0, 10);
-
-                if (contributorsChartInstance) {
-                    contributorsChartInstance.destroy();
-                }
-
-                contributorsChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: sortedContributors.map(([contributor]) => contributor),
-                        datasets: [{
-                            label: 'Contributions',
-                            data: sortedContributors.map(([, count]) => count),
-                            backgroundColor: '#5AC8FA',
-                            borderRadius: 6,
-                            maxBarThickness: 40
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        indexAxis: 'y',
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(60, 60, 67, 0.29)' },
-                                ticks: { color: '#86868B' }
-                            },
-                            y: {
-                                grid: { display: false },
-                                ticks: { color: '#86868B' }
-                            }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Error creating contributors chart:', error);
-            }
-        }
-
-        // Function to create Monthly Progress Chart
-        async function createMonthlyProgressChart() {
-            const ctx = document.getElementById('monthlyProgressChart');
-            if (!ctx) {
-                console.warn('Monthly progress chart canvas not found');
-                return;
-            }
-
-            try {
-                // Check if Chart.js is loaded
-                if (typeof Chart === 'undefined') {
-                    console.error('Chart.js library not loaded');
-                    return;
-                }
-                const snapshot = await firebase.firestore().collection('projectLogs')
-                    .orderBy('timestamp', 'desc')
-                    .limit(200)
-                    .get();
-
-                const monthlyData = {};
-
-                // Initialize last 6 months
-                for (let i = 5; i >= 0; i--) {
-                    const date = new Date();
-                    date.setMonth(date.getMonth() - i);
-                    const monthStr = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                    monthlyData[monthStr] = { features: 0, bugfixes: 0, enhancements: 0 };
-                }
-
-                snapshot.forEach(doc => {
-                    const project = doc.data();
-                    const timestamp = project.timestamp ? project.timestamp.toDate() : new Date();
-                    const monthStr = timestamp.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-
-                    if (monthlyData[monthStr] && project.tags && Array.isArray(project.tags)) {
-                        project.tags.forEach(tag => {
-                            const lowerTag = tag.toLowerCase();
-                            if (lowerTag.includes('feature') || lowerTag.includes('new')) {
-                                monthlyData[monthStr].features++;
-                            } else if (lowerTag.includes('bug') || lowerTag.includes('fix')) {
-                                monthlyData[monthStr].bugfixes++;
-                            } else if (lowerTag.includes('enhancement') || lowerTag.includes('improvement')) {
-                                monthlyData[monthStr].enhancements++;
-                            }
-                        });
-                    }
-                });
-
-                if (monthlyProgressChartInstance) {
-                    monthlyProgressChartInstance.destroy();
-                }
-
-                monthlyProgressChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(monthlyData),
-                        datasets: [{
-                            label: 'Features',
-                            data: Object.values(monthlyData).map(d => d.features),
-                            backgroundColor: '#34C759',
-                            borderRadius: 4
-                        }, {
-                            label: 'Bug Fixes',
-                            data: Object.values(monthlyData).map(d => d.bugfixes),
-                            backgroundColor: '#FF3B30',
-                            borderRadius: 4
-                        }, {
-                            label: 'Enhancements',
-                            data: Object.values(monthlyData).map(d => d.enhancements),
-                            backgroundColor: '#007AFF',
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true,
-                                    color: '#1D1D1F'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#fff',
-                                bodyColor: '#fff',
-                                cornerRadius: 8
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: '#86868B' }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(60, 60, 67, 0.29)' },
-                                ticks: { color: '#86868B' }
-                            }
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Error creating monthly progress chart:', error);
-            }
-        }
-
-        // Function to show toast messages (fallback if not available)
-        function showToast(message, type = 'info') {
-            console.log(`Toast (${type}): ${message}`);
-        }
     </script>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="report.html" class="nav-item">
+            <i class="fas fa-chart-bar"></i>
+            <span>Report</span>
+        </a>
+        <a href="notifications.html" class="nav-item">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+            <span class="notification-badge" id="navNotificationBadge" style="display: none;">0</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
 </body>
+
 </html>

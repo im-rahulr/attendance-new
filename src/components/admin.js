@@ -170,6 +170,9 @@ async function loadAdminDashboard() {
     // Initialize contact submissions event listeners
     initializeContactSubmissionsEventListeners();
 
+    // Initialize user logs event listeners
+    initializeUserLogsEventListeners();
+
     // Add tab click event listener for contact submissions
     const contactSubmissionsTab = document.getElementById('contact-submissions-tab');
     if (contactSubmissionsTab) {
@@ -237,8 +240,28 @@ function signOutUser() {
     // Show loading if available
     showLoading("Logging out...");
 
+    // Log logout attempt
+    if (window.logUserActivity) {
+        window.logUserActivity('Admin logout initiated', {
+            logoutMethod: 'admin_panel',
+            page: window.location.pathname,
+            timestamp: new Date().toISOString()
+        });
+    }
+
     auth.signOut().then(() => {
         console.log('User signed out successfully from admin panel.');
+
+        // Log successful logout
+        if (window.logUserActivity) {
+            window.logUserActivity('Admin logout successful', {
+                logoutMethod: 'admin_panel',
+                page: window.location.pathname,
+                timestamp: new Date().toISOString(),
+                logoutSuccess: true
+            });
+        }
+
         // Clear any cached data
         if (typeof localStorage !== 'undefined') {
             localStorage.clear();
@@ -249,6 +272,19 @@ function signOutUser() {
         // Redirection is now handled by the global auth state listener in auth.js
     }).catch((error) => {
         console.error('Sign out error:', error);
+
+        // Log failed logout
+        if (window.logUserActivity) {
+            window.logUserActivity('Admin logout failed', {
+                logoutMethod: 'admin_panel',
+                page: window.location.pathname,
+                errorCode: error.code,
+                errorMessage: error.message,
+                timestamp: new Date().toISOString(),
+                logoutSuccess: false
+            });
+        }
+
         showErrorPopup("Sign Out Failed", `An error occurred while signing out: ${error.message}`);
         showLoading(false);
     });
@@ -503,9 +539,565 @@ async function deleteSubject(subjectId) {
 }
 
 async function loadUserLogs() {
-    // Implementation for loading user logs
-    console.log("Loading user logs...");
-    // This function would typically load user activity logs from a database
+    // Use the enhanced version with debugging
+    return await loadUserLogsWithDebug();
+}
+
+// Helper function to display user logs in the table
+function displayUserLogs(logs) {
+    const tableBody = document.querySelector('#userLogsTable tbody');
+    if (!tableBody) return;
+
+    if (logs.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No logs match the current filters</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = '';
+
+    logs.forEach(log => {
+        const row = document.createElement('tr');
+
+        // Format timestamp
+        let timestamp = 'Unknown';
+        if (log.timestamp) {
+            timestamp = log.timestamp.toDate().toLocaleString();
+        } else if (log['@timestamp']) {
+            timestamp = new Date(log['@timestamp']).toLocaleString();
+        }
+
+        // Format user info
+        const userName = log.userName || 'Unknown User';
+        const userEmail = log.userEmail || 'Unknown Email';
+
+        // Format activity
+        const activity = log.activity || log.message || 'Unknown Activity';
+
+        // Format page
+        const page = log.page || log.url || 'Unknown Page';
+
+        // Format device info
+        const deviceInfo = log.deviceType || log.browser || 'Unknown Device';
+
+        // Format session
+        const sessionId = log.sessionId ? log.sessionId.substring(0, 8) + '...' : 'N/A';
+
+        row.innerHTML = `
+            <td>
+                <small class="text-muted">${timestamp}</small>
+            </td>
+            <td>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">${userName}</span>
+                    <small class="text-muted">${userEmail}</small>
+                </div>
+            </td>
+            <td>
+                <span class="badge ${getActivityBadgeClass(activity)}">${activity}</span>
+            </td>
+            <td>
+                <small>${page}</small>
+            </td>
+            <td>
+                <small>${deviceInfo}</small>
+            </td>
+            <td>
+                <small class="font-monospace">${sessionId}</small>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-info" onclick="showLogDetails('${log.id}', ${JSON.stringify(log).replace(/"/g, '&quot;')})">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+}
+
+// Helper function to get badge class for activity type
+function getActivityBadgeClass(activity) {
+    const activityLower = activity.toLowerCase();
+
+    if (activityLower.includes('login') || activityLower.includes('authenticated')) {
+        return 'bg-success';
+    } else if (activityLower.includes('logout') || activityLower.includes('signed out')) {
+        return 'bg-warning';
+    } else if (activityLower.includes('error') || activityLower.includes('failed')) {
+        return 'bg-danger';
+    } else if (activityLower.includes('page') || activityLower.includes('view')) {
+        return 'bg-info';
+    } else if (activityLower.includes('button') || activityLower.includes('click')) {
+        return 'bg-primary';
+    } else if (activityLower.includes('form') || activityLower.includes('submit')) {
+        return 'bg-secondary';
+    } else {
+        return 'bg-light text-dark';
+    }
+}
+
+// Helper function to update log statistics
+function updateLogStats(count) {
+    const statsElement = document.getElementById('logStatsText');
+    if (statsElement) {
+        statsElement.textContent = `Showing ${count} logs`;
+    }
+}
+
+// Function to show detailed log information
+function showLogDetails(logId, logData) {
+    try {
+        // Parse the log data if it's a string
+        const log = typeof logData === 'string' ? JSON.parse(logData.replace(/&quot;/g, '"')) : logData;
+
+        // Create modal content
+        const modalTitle = document.querySelector('#activityDetailsModal .modal-title');
+        const modalBody = document.querySelector('#activityDetailsModal .modal-body');
+
+        if (modalTitle) {
+            modalTitle.innerHTML = '<i class="fas fa-info-circle me-2"></i>Activity Log Details';
+        }
+
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Activity:</strong></td><td>${log.activity || log.message || 'N/A'}</td></tr>
+                            <tr><td><strong>User:</strong></td><td>${log.userName || 'Unknown'}</td></tr>
+                            <tr><td><strong>Email:</strong></td><td>${log.userEmail || 'Unknown'}</td></tr>
+                            <tr><td><strong>Page:</strong></td><td>${log.page || 'Unknown'}</td></tr>
+                            <tr><td><strong>URL:</strong></td><td>${log.url || 'Unknown'}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Technical Details</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Session ID:</strong></td><td>${log.sessionId || 'N/A'}</td></tr>
+                            <tr><td><strong>User Agent:</strong></td><td><small>${log.userAgent || 'Unknown'}</small></td></tr>
+                            <tr><td><strong>Device:</strong></td><td>${log.deviceType || 'Unknown'}</td></tr>
+                            <tr><td><strong>Browser:</strong></td><td>${log.browser || 'Unknown'}</td></tr>
+                            <tr><td><strong>OS:</strong></td><td>${log.operatingSystem || 'Unknown'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                ${log.additionalData ? `
+                <div class="mt-3">
+                    <h6>Additional Data</h6>
+                    <pre class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">${JSON.stringify(log.additionalData, null, 2)}</pre>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('activityDetailsModal'));
+        modal.show();
+
+    } catch (error) {
+        console.error('Error showing log details:', error);
+        showToast('Error displaying log details', 'danger');
+    }
+}
+
+// Initialize event listeners for user logs functionality
+function initializeUserLogsEventListeners() {
+    console.log("Initializing user logs event listeners...");
+
+    // Refresh logs button
+    const refreshBtn = document.getElementById('refreshLogsBtn');
+    if (refreshBtn && !refreshBtn.dataset.listenerAdded) {
+        refreshBtn.addEventListener('click', loadUserLogs);
+        refreshBtn.dataset.listenerAdded = 'true';
+    }
+
+    // Search logs button
+    const searchBtn = document.getElementById('searchLogsBtn');
+    if (searchBtn && !searchBtn.dataset.listenerAdded) {
+        searchBtn.addEventListener('click', loadUserLogs);
+        searchBtn.dataset.listenerAdded = 'true';
+    }
+
+    // Search input (Enter key)
+    const searchInput = document.getElementById('logSearchInput');
+    if (searchInput && !searchInput.dataset.listenerAdded) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadUserLogs();
+            }
+        });
+        searchInput.dataset.listenerAdded = 'true';
+    }
+
+    // Filter select changes
+    const filterSelect = document.getElementById('logFilterSelect');
+    if (filterSelect && !filterSelect.dataset.listenerAdded) {
+        filterSelect.addEventListener('change', loadUserLogs);
+        filterSelect.dataset.listenerAdded = 'true';
+    }
+
+    // Limit select changes
+    const limitSelect = document.getElementById('logLimitSelect');
+    if (limitSelect && !limitSelect.dataset.listenerAdded) {
+        limitSelect.addEventListener('change', loadUserLogs);
+        limitSelect.dataset.listenerAdded = 'true';
+    }
+
+    // Clear filters button
+    const clearFiltersBtn = document.getElementById('clearLogFiltersBtn');
+    if (clearFiltersBtn && !clearFiltersBtn.dataset.listenerAdded) {
+        clearFiltersBtn.addEventListener('click', function() {
+            // Clear all filter inputs
+            if (searchInput) searchInput.value = '';
+            if (filterSelect) filterSelect.value = 'all';
+            if (limitSelect) limitSelect.value = '100';
+
+            const dateFrom = document.getElementById('logDateFrom');
+            const dateTo = document.getElementById('logDateTo');
+            const userFilter = document.getElementById('logUserFilter');
+
+            if (dateFrom) dateFrom.value = '';
+            if (dateTo) dateTo.value = '';
+            if (userFilter) userFilter.value = '';
+
+            // Reload logs
+            loadUserLogs();
+        });
+        clearFiltersBtn.dataset.listenerAdded = 'true';
+    }
+
+    // Export logs button
+    const exportBtn = document.getElementById('exportLogsBtn');
+    if (exportBtn && !exportBtn.dataset.listenerAdded) {
+        exportBtn.addEventListener('click', exportUserLogs);
+        exportBtn.dataset.listenerAdded = 'true';
+    }
+
+    // Clear logs button
+    const clearLogsBtn = document.getElementById('clearLogsBtn');
+    if (clearLogsBtn && !clearLogsBtn.dataset.listenerAdded) {
+        clearLogsBtn.addEventListener('click', clearUserLogs);
+        clearLogsBtn.dataset.listenerAdded = 'true';
+    }
+
+    // Date filter changes
+    const dateFrom = document.getElementById('logDateFrom');
+    const dateTo = document.getElementById('logDateTo');
+    const userFilter = document.getElementById('logUserFilter');
+
+    if (dateFrom && !dateFrom.dataset.listenerAdded) {
+        dateFrom.addEventListener('change', loadUserLogs);
+        dateFrom.dataset.listenerAdded = 'true';
+    }
+
+    if (dateTo && !dateTo.dataset.listenerAdded) {
+        dateTo.addEventListener('change', loadUserLogs);
+        dateTo.dataset.listenerAdded = 'true';
+    }
+
+    if (userFilter && !userFilter.dataset.listenerAdded) {
+        userFilter.addEventListener('input', debounce(loadUserLogs, 500));
+        userFilter.dataset.listenerAdded = 'true';
+    }
+}
+
+// Export user logs to CSV
+async function exportUserLogs() {
+    try {
+        showToast('Generating logs export...', 'info');
+
+        // Get all logs (without limit for export)
+        const snapshot = await db.collection('userLogs').orderBy('timestamp', 'desc').get();
+
+        if (snapshot.empty) {
+            showToast('No logs to export', 'warning');
+            return;
+        }
+
+        // Prepare CSV content
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "User Activity Logs Export\n";
+        csvContent += `Generated on: ${new Date().toLocaleString()}\n\n`;
+        csvContent += "Timestamp,User Name,User Email,Activity,Page,Device,Session ID,Additional Data\n";
+
+        snapshot.forEach(doc => {
+            const log = doc.data();
+            const timestamp = log.timestamp ? log.timestamp.toDate().toLocaleString() : 'Unknown';
+            const userName = (log.userName || 'Unknown').replace(/"/g, '""');
+            const userEmail = (log.userEmail || 'Unknown').replace(/"/g, '""');
+            const activity = (log.activity || log.message || 'Unknown').replace(/"/g, '""');
+            const page = (log.page || 'Unknown').replace(/"/g, '""');
+            const device = (log.deviceType || log.browser || 'Unknown').replace(/"/g, '""');
+            const sessionId = (log.sessionId || 'N/A').replace(/"/g, '""');
+            const additionalData = log.additionalData ? JSON.stringify(log.additionalData).replace(/"/g, '""') : '';
+
+            csvContent += `"${timestamp}","${userName}","${userEmail}","${activity}","${page}","${device}","${sessionId}","${additionalData}"\n`;
+        });
+
+        // Download the file
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `user_activity_logs_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('Logs exported successfully', 'success');
+
+    } catch (error) {
+        console.error('Error exporting logs:', error);
+        showToast('Failed to export logs: ' + error.message, 'danger');
+    }
+}
+
+// Clear user logs (admin only)
+async function clearUserLogs() {
+    const confirmed = confirm('⚠️ WARNING: This will permanently delete ALL user activity logs.\n\nThis action cannot be undone. Are you sure you want to continue?');
+
+    if (!confirmed) return;
+
+    try {
+        showToast('Clearing user logs...', 'info');
+
+        // Get all logs
+        const snapshot = await db.collection('userLogs').get();
+
+        if (snapshot.empty) {
+            showToast('No logs to clear', 'info');
+            return;
+        }
+
+        // Delete in batches
+        const batchSize = 500;
+        const batches = [];
+        let currentBatch = db.batch();
+        let operationCount = 0;
+
+        snapshot.forEach(doc => {
+            currentBatch.delete(doc.ref);
+            operationCount++;
+
+            if (operationCount === batchSize) {
+                batches.push(currentBatch);
+                currentBatch = db.batch();
+                operationCount = 0;
+            }
+        });
+
+        if (operationCount > 0) {
+            batches.push(currentBatch);
+        }
+
+        // Execute all batches
+        await Promise.all(batches.map(batch => batch.commit()));
+
+        showToast(`Successfully cleared ${snapshot.size} user logs`, 'success');
+
+        // Reload the logs table
+        loadUserLogs();
+
+    } catch (error) {
+        console.error('Error clearing logs:', error);
+        showToast('Failed to clear logs: ' + error.message, 'danger');
+    }
+}
+
+// Debounce function for search input
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Debug function to test user logs functionality
+async function debugUserLogs() {
+    console.log('🔍 DEBUG: Testing user logs functionality...');
+
+    try {
+        // Check if user is authenticated
+        const currentUser = auth.currentUser;
+        console.log('🔍 DEBUG: Current user:', currentUser ? currentUser.email : 'Not authenticated');
+
+        if (!currentUser) {
+            console.error('❌ DEBUG: No authenticated user');
+            return;
+        }
+
+        // Check if user is admin
+        const adminEmails = ['admin@admin.com', 'admin@example.com', 'administrator@attendance.com'];
+        const isAdmin = adminEmails.includes(currentUser.email);
+        console.log('🔍 DEBUG: Is admin user:', isAdmin, 'Email:', currentUser.email);
+
+        if (!isAdmin) {
+            console.error('❌ DEBUG: User is not admin');
+            return;
+        }
+
+        // Check database connection
+        console.log('🔍 DEBUG: Testing database connection...');
+        const testQuery = await db.collection('userLogs').limit(1).get();
+        console.log('✅ DEBUG: Database connection successful');
+        console.log('🔍 DEBUG: Test query result:', testQuery.size, 'documents');
+
+        // Try to get all user logs
+        console.log('🔍 DEBUG: Fetching all user logs...');
+        const allLogsQuery = await db.collection('userLogs').orderBy('timestamp', 'desc').limit(10).get();
+        console.log('✅ DEBUG: User logs query successful');
+        console.log('🔍 DEBUG: Found', allLogsQuery.size, 'user logs');
+
+        // Log details of first few logs
+        allLogsQuery.forEach((doc, index) => {
+            if (index < 3) {
+                const logData = doc.data();
+                console.log(`🔍 DEBUG: Log ${index + 1}:`, {
+                    id: doc.id,
+                    activity: logData.activity || logData.message,
+                    user: logData.userName || logData.userEmail,
+                    timestamp: logData.timestamp ? logData.timestamp.toDate() : 'No timestamp'
+                });
+            }
+        });
+
+        // Test creating a test log
+        console.log('🔍 DEBUG: Creating test log...');
+        await db.collection('userLogs').add({
+            activity: 'Admin panel debug test',
+            userId: currentUser.uid,
+            userName: currentUser.displayName || 'Admin User',
+            userEmail: currentUser.email,
+            page: '/admin.html',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            additionalData: {
+                testType: 'admin_debug',
+                debugTime: new Date().toISOString()
+            }
+        });
+        console.log('✅ DEBUG: Test log created successfully');
+
+        // Try to load logs using the actual function
+        console.log('🔍 DEBUG: Testing loadUserLogs function...');
+        await loadUserLogs();
+        console.log('✅ DEBUG: loadUserLogs function completed');
+
+    } catch (error) {
+        console.error('❌ DEBUG: Error in debugUserLogs:', error);
+        console.error('❌ DEBUG: Error details:', {
+            code: error.code,
+            message: error.message,
+            stack: error.stack
+        });
+    }
+}
+
+// Enhanced loadUserLogs with better error handling and debugging
+async function loadUserLogsWithDebug() {
+    console.log("🔍 Loading user logs with debug information...");
+
+    try {
+        // Check authentication first
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('No authenticated user');
+        }
+
+        console.log('✅ User authenticated:', currentUser.email);
+
+        // Check admin status
+        const adminEmails = ['admin@admin.com', 'admin@example.com', 'administrator@attendance.com'];
+        const isAdmin = adminEmails.includes(currentUser.email);
+
+        if (!isAdmin) {
+            throw new Error(`User ${currentUser.email} is not an admin`);
+        }
+
+        console.log('✅ Admin status confirmed');
+
+        // Show loading spinner
+        const spinner = document.getElementById('logsSpinner');
+        const tableBody = document.querySelector('#userLogsTable tbody');
+
+        if (spinner) {
+            spinner.style.display = 'flex';
+        }
+
+        if (tableBody) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Loading logs...</td></tr>';
+        }
+
+        console.log('🔍 Querying userLogs collection...');
+
+        // Build Firestore query with error handling
+        let query = db.collection('userLogs').orderBy('timestamp', 'desc').limit(100);
+
+        // Execute query
+        const snapshot = await query.get();
+
+        console.log('✅ Query executed successfully');
+        console.log('📊 Found', snapshot.size, 'logs');
+
+        if (snapshot.empty) {
+            console.log('⚠️ No logs found in database');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No user logs found in database</td></tr>';
+            }
+            updateLogStats(0);
+            return;
+        }
+
+        // Process logs
+        let logs = [];
+        snapshot.forEach(doc => {
+            const logData = doc.data();
+            logData.id = doc.id;
+            logs.push(logData);
+        });
+
+        console.log('✅ Processed', logs.length, 'logs');
+
+        // Display logs in table
+        displayUserLogs(logs);
+        updateLogStats(logs.length);
+
+        console.log('✅ Logs displayed successfully');
+
+    } catch (error) {
+        console.error("❌ Error loading user logs:", error);
+
+        const tableBody = document.querySelector('#userLogsTable tbody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger">
+                        <div class="alert alert-danger">
+                            <h6>Error loading logs</h6>
+                            <p><strong>Error:</strong> ${error.message}</p>
+                            <p><strong>Code:</strong> ${error.code || 'Unknown'}</p>
+                            <button class="btn btn-sm btn-outline-primary" onclick="debugUserLogs()">
+                                <i class="fas fa-bug me-1"></i>Run Debug Test
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        showToast('Failed to load user logs: ' + error.message, 'danger');
+    } finally {
+        // Hide loading spinner
+        const spinner = document.getElementById('logsSpinner');
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
+    }
 }
 
 async function loadSystemHealth() {

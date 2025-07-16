@@ -29,9 +29,12 @@ service cloud.firestore {
       allow read, update, delete: if isAuthenticated() && (request.auth.uid == userId || isAdmin(request.auth.token.email));
     }
 
-    // User logs collection - only admin access
+    // User logs collection - users can write their own logs, admins can read all
     match /userLogs/{logId} {
-      allow read, write: if request.auth != null && isAdmin(request.auth.token.email);
+      allow read: if request.auth != null && isAdmin(request.auth.token.email);
+      allow create: if request.auth != null &&
+        (resource == null || request.auth.uid == resource.data.userId);
+      allow update, delete: if request.auth != null && isAdmin(request.auth.token.email);
     }
 
     // Deleted records collection - only admin access
