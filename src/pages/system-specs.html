@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Specifications - lowrybunks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../styles/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* System Specs specific styles */
+        .specs-page {
+            background: #0D1117;
+            color: #F0F6FC;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .specs-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #161B22;
+            border-radius: 12px;
+            border: 1px solid #30363D;
+            overflow: hidden;
+        }
+
+        .specs-header {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .specs-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+        }
+
+        .specs-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .specs-nav {
+            background: #21262D;
+            padding: 20px 30px;
+            border-bottom: 1px solid #30363D;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            background: #161B22;
+            color: #F0F6FC;
+            border: 1px solid #30363D;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: #58A6FF;
+            color: #0D1117;
+            border-color: #58A6FF;
+        }
+
+        .specs-content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #0D1117;
+            border-radius: 8px;
+            border: 1px solid #30363D;
+        }
+
+        .section h2 {
+            color: #58A6FF;
+            font-size: 1.8rem;
+            margin: 0 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #30363D;
+        }
+
+        .section h3 {
+            color: #F0F6FC;
+            font-size: 1.3rem;
+            margin: 20px 0 15px 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: #161B22;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #30363D;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: #58A6FF;
+        }
+
+        .metric-icon {
+            font-size: 2.5rem;
+            color: #58A6FF;
+            margin-bottom: 15px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #F0F6FC;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #8B949E;
+            font-size: 0.9rem;
+        }
+
+        .metric-description {
+            color: #8B949E;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+
+        .chart-container {
+            background: #161B22;
+            border: 1px solid #30363D;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-title {
+            color: #F0F6FC;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #161B22;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #30363D;
+        }
+
+        .specs-table th {
+            background: #21262D;
+            color: #F0F6FC;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #30363D;
+        }
+
+        .specs-table td {
+            padding: 12px 15px;
+            color: #F0F6FC;
+            border-bottom: 1px solid #30363D;
+        }
+
+        .specs-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .specs-table tr:hover {
+            background: #21262D;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-healthy {
+            background: #4CAF50;
+        }
+
+        .status-warning {
+            background: #FF9800;
+        }
+
+        .status-critical {
+            background: #F44336;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #30363D;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #58A6FF);
+            transition: width 0.3s ease;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #21262D;
+            color: #F0F6FC;
+            border: 1px solid #30363D;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: #30363D;
+            color: #58A6FF;
+        }
+
+        .alert-box {
+            background: #161B22;
+            border: 1px solid #30363D;
+            border-left: 4px solid #58A6FF;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .alert-box.warning {
+            border-left-color: #FF9800;
+        }
+
+        .alert-box.error {
+            border-left-color: #F44336;
+        }
+
+        .alert-box.success {
+            border-left-color: #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .specs-page {
+                padding: 10px;
+            }
+
+            .specs-header {
+                padding: 30px 20px;
+            }
+
+            .specs-header h1 {
+                font-size: 2rem;
+            }
+
+            .specs-content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .nav-tab {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="specs-page">
+        <div class="specs-container">
+            <!-- Header -->
+            <div class="specs-header">
+                <h1><i class="fas fa-server"></i> System Specifications</h1>
+                <p>Comprehensive technical specifications and performance metrics</p>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="specs-nav">
+                <div class="nav-tabs">
+                    <div class="nav-tab active" data-tab="overview">Overview</div>
+                    <div class="nav-tab" data-tab="database">Database</div>
+                    <div class="nav-tab" data-tab="performance">Performance</div>
+                    <div class="nav-tab" data-tab="capacity">Capacity</div>
+                    <div class="nav-tab" data-tab="security">Security</div>
+                    <div class="nav-tab" data-tab="monitoring">Monitoring</div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="specs-content">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-content active">
+                    <div class="section">
+                        <h2><i class="fas fa-info-circle"></i> System Overview</h2>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-users"></i></div>
+                                <div class="metric-value">1,000+</div>
+                                <div class="metric-label">User Capacity</div>
+                                <div class="metric-description">Maximum registered users supported</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                                <div class="metric-value">99.9%</div>
+                                <div class="metric-label">Uptime SLA</div>
+                                <div class="metric-description">Service availability guarantee</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-database"></i></div>
+                                <div class="metric-value">10GB</div>
+                                <div class="metric-label">Storage Limit</div>
+                                <div class="metric-description">Firebase Firestore storage capacity</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="metric-value">&lt;2s</div>
+                                <div class="metric-label">Response Time</div>
+                                <div class="metric-description">Average API response time</div>
+                            </div>
+                        </div>
+
+                        <div class="alert-box success">
+                            <strong><i class="fas fa-check-circle"></i> System Status:</strong> All systems operational. Last updated: <span id="lastUpdated"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Tab -->
+                <div id="database" class="tab-content">
+                    <div class="section">
+                        <h2><i class="fas fa-database"></i> Database Specifications</h2>
+
+                        <div class="chart-container">
+                            <div class="chart-title">Database Usage Distribution</div>
+                            <canvas id="databaseChart"></canvas>
+                        </div>
+
+                        <table class="specs-table">
+                            <thead>
+                                <tr>
+                                    <th>Collection</th>
+                                    <th>Document Count</th>
+                                    <th>Storage Size</th>
+                                    <th>Read/Write Ops</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>users</td>
+                                    <td>850</td>
+                                    <td>2.3 MB</td>
+                                    <td>15,000 / 3,500</td>
+                                    <td><span class="status-indicator status-healthy"></span>Healthy</td>
+                                </tr>
+                                <tr>
+                                    <td>subjects</td>
+                                    <td>45</td>
+                                    <td>0.8 MB</td>
+                                    <td>8,200 / 450</td>
+                                    <td><span class="status-indicator status-healthy"></span>Healthy</td>
+                                </tr>
+                                <tr>
+                                    <td>notifications</td>
+                                    <td>1,250</td>
+                                    <td>1.2 MB</td>
+                                    <td>5,600 / 1,200</td>
+                                    <td><span class="status-indicator status-healthy"></span>Healthy</td>
+                                </tr>
+                                <tr>
+                                    <td>projectLogs</td>
+                                    <td>180</td>
+                                    <td>0.5 MB</td>
+                                    <td>2,100 / 180</td>
+                                    <td><span class="status-indicator status-healthy"></span>Healthy</td>
+                                </tr>
+                                <tr>
+                                    <td>emailTemplates</td>
+                                    <td>5</td>
+                                    <td>0.1 MB</td>
+                                    <td>450 / 25</td>
+                                    <td><span class="status-indicator status-healthy"></span>Healthy</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-hdd"></i></div>
+                                <div class="metric-value">4.9 MB</div>
+                                <div class="metric-label">Total Storage Used</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 4.9%"></div>
+                                </div>
+                                <div class="metric-description">4.9% of 100MB limit</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-exchange-alt"></i></div>
+                                <div class="metric-value">31,350</div>
+                                <div class="metric-label">Daily Read Operations</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 62.7%"></div>
+                                </div>
+                                <div class="metric-description">62.7% of 50K daily limit</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-edit"></i></div>
+                                <div class="metric-value">5,355</div>
+                                <div class="metric-label">Daily Write Operations</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 26.8%"></div>
+                                </div>
+                                <div class="metric-description">26.8% of 20K daily limit</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-network-wired"></i></div>
+                                <div class="metric-value">2,330</div>
+                                <div class="metric-label">Active Connections</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 23.3%"></div>
+                                </div>
+                                <div class="metric-description">23.3% of 10K limit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Tab -->
+                <div id="performance" class="tab-content">
+                    <div class="section">
+                        <h2><i class="fas fa-tachometer-alt"></i> Performance Metrics</h2>
+
+                        <div class="chart-container">
+                            <div class="chart-title">Response Time Trends (Last 24 Hours)</div>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-stopwatch"></i></div>
+                                <div class="metric-value">1.2s</div>
+                                <div class="metric-label">Avg Response Time</div>
+                                <div class="metric-description">Average API response time</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-rocket"></i></div>
+                                <div class="metric-value">0.8s</div>
+                                <div class="metric-label">Page Load Time</div>
+                                <div class="metric-description">Average page load time</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-sync"></i></div>
+                                <div class="metric-value">150ms</div>
+                                <div class="metric-label">Real-time Sync</div>
+                                <div class="metric-description">Firebase real-time updates</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-memory"></i></div>
+                                <div class="metric-value">45MB</div>
+                                <div class="metric-label">Memory Usage</div>
+                                <div class="metric-description">Average client memory usage</div>
+                            </div>
+                        </div>
+
+                        <table class="specs-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Current</th>
+                                    <th>Target</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>First Contentful Paint</td>
+                                    <td>0.9s</td>
+                                    <td>&lt; 1.5s</td>
+                                    <td><span class="status-indicator status-healthy"></span>Good</td>
+                                </tr>
+                                <tr>
+                                    <td>Largest Contentful Paint</td>
+                                    <td>1.8s</td>
+                                    <td>&lt; 2.5s</td>
+                                    <td><span class="status-indicator status-healthy"></span>Good</td>
+                                </tr>
+                                <tr>
+                                    <td>Cumulative Layout Shift</td>
+                                    <td>0.05</td>
+                                    <td>&lt; 0.1</td>
+                                    <td><span class="status-indicator status-healthy"></span>Good</td>
+                                </tr>
+                                <tr>
+                                    <td>Time to Interactive</td>
+                                    <td>2.1s</td>
+                                    <td>&lt; 3.0s</td>
+                                    <td><span class="status-indicator status-healthy"></span>Good</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Capacity Tab -->
+                <div id="capacity" class="tab-content">
+                    <div class="section">
+                        <h2><i class="fas fa-chart-bar"></i> Capacity & Limits</h2>
+
+                        <div class="chart-container">
+                            <div class="chart-title">Resource Utilization</div>
+                            <canvas id="capacityChart"></canvas>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-users"></i></div>
+                                <div class="metric-value">850 / 1000</div>
+                                <div class="metric-label">User Accounts</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                                <div class="metric-description">85% capacity utilized</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-database"></i></div>
+                                <div class="metric-value">4.9 / 100 MB</div>
+                                <div class="metric-label">Storage Usage</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 4.9%"></div>
+                                </div>
+                                <div class="metric-description">4.9% of storage limit</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="metric-value">31K / 50K</div>
+                                <div class="metric-label">Daily Reads</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 62%"></div>
+                                </div>
+                                <div class="metric-description">62% of daily read limit</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-edit"></i></div>
+                                <div class="metric-value">5.4K / 20K</div>
+                                <div class="metric-label">Daily Writes</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 27%"></div>
+                                </div>
+                                <div class="metric-description">27% of daily write limit</div>
+                            </div>
+                        </div>
+
+                        <div class="alert-box warning">
+                            <strong><i class="fas fa-exclamation-triangle"></i> Capacity Warning:</strong> User accounts at 85% capacity. Consider upgrading plan or implementing user cleanup policies.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security" class="tab-content">
+                    <div class="section">
+                        <h2><i class="fas fa-shield-alt"></i> Security Configuration</h2>
+
+                        <table class="specs-table">
+                            <thead>
+                                <tr>
+                                    <th>Security Feature</th>
+                                    <th>Status</th>
+                                    <th>Configuration</th>
+                                    <th>Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Firebase Authentication</td>
+                                    <td><span class="status-indicator status-healthy"></span>Active</td>
+                                    <td>Email/Password</td>
+                                    <td>2024-12-01</td>
+                                </tr>
+                                <tr>
+                                    <td>Firestore Security Rules</td>
+                                    <td><span class="status-indicator status-healthy"></span>Active</td>
+                                    <td>Role-based Access</td>
+                                    <td>2024-12-01</td>
+                                </tr>
+                                <tr>
+                                    <td>HTTPS Encryption</td>
+                                    <td><span class="status-indicator status-healthy"></span>Active</td>
+                                    <td>TLS 1.3</td>
+                                    <td>Auto-renewed</td>
+                                </tr>
+                                <tr>
+                                    <td>XSS Protection</td>
+                                    <td><span class="status-indicator status-healthy"></span>Active</td>
+                                    <td>Input Sanitization</td>
+                                    <td>2024-12-01</td>
+                                </tr>
+                                <tr>
+                                    <td>Rate Limiting</td>
+                                    <td><span class="status-indicator status-healthy"></span>Active</td>
+                                    <td>100 req/min</td>
+                                    <td>2024-12-01</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-lock"></i></div>
+                                <div class="metric-value">100%</div>
+                                <div class="metric-label">Encrypted Traffic</div>
+                                <div class="metric-description">All data in transit encrypted</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-user-shield"></i></div>
+                                <div class="metric-value">3</div>
+                                <div class="metric-label">Admin Users</div>
+                                <div class="metric-description">Authorized administrators</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-key"></i></div>
+                                <div class="metric-value">0</div>
+                                <div class="metric-label">Security Incidents</div>
+                                <div class="metric-description">Last 30 days</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                                <div class="metric-value">24h</div>
+                                <div class="metric-label">Session Timeout</div>
+                                <div class="metric-description">Automatic logout period</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monitoring Tab -->
+                <div id="monitoring" class="tab-content">
+                    <div class="section">
+                        <h2><i class="fas fa-chart-line"></i> System Monitoring</h2>
+
+                        <div class="chart-container">
+                            <div class="chart-title">System Health Over Time</div>
+                            <canvas id="monitoringChart"></canvas>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-heartbeat"></i></div>
+                                <div class="metric-value">99.9%</div>
+                                <div class="metric-label">Uptime (30 days)</div>
+                                <div class="metric-description">Service availability</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="metric-value">2</div>
+                                <div class="metric-label">Alerts (24h)</div>
+                                <div class="metric-description">System alerts triggered</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-bug"></i></div>
+                                <div class="metric-value">0</div>
+                                <div class="metric-label">Critical Errors</div>
+                                <div class="metric-description">Last 7 days</div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-chart-area"></i></div>
+                                <div class="metric-value">95%</div>
+                                <div class="metric-label">Performance Score</div>
+                                <div class="metric-description">Overall system performance</div>
+                            </div>
+                        </div>
+
+                        <div class="alert-box">
+                            <strong><i class="fas fa-info-circle"></i> Monitoring Info:</strong> System monitoring is active 24/7. Alerts are sent to administrators for any issues requiring attention.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                // Show corresponding content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+
+                // Initialize charts when tabs are shown
+                setTimeout(() => {
+                    if (tabId === 'database') {
+                        initDatabaseChart();
+                    } else if (tabId === 'performance') {
+                        initPerformanceChart();
+                    } else if (tabId === 'capacity') {
+                        initCapacityChart();
+                    } else if (tabId === 'monitoring') {
+                        initMonitoringChart();
+                    }
+                }, 100);
+            });
+        });
+
+        // Chart initialization functions
+        let databaseChart, performanceChart, capacityChart, monitoringChart;
+
+        function initDatabaseChart() {
+            const ctx = document.getElementById('databaseChart');
+            if (!ctx || databaseChart) return;
+
+            databaseChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Users', 'Subjects', 'Notifications', 'Project Logs', 'Email Templates'],
+                    datasets: [{
+                        data: [2.3, 0.8, 1.2, 0.5, 0.1],
+                        backgroundColor: ['#58A6FF', '#4CAF50', '#FF9800', '#9C27B0', '#F44336'],
+                        borderColor: '#30363D',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#F0F6FC' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initPerformanceChart() {
+            const ctx = document.getElementById('performanceChart');
+            if (!ctx || performanceChart) return;
+
+            const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+            const responseTimes = [1.2, 1.1, 0.9, 0.8, 0.9, 1.0, 1.3, 1.5, 1.8, 2.1, 1.9, 1.7, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 1.2, 1.4, 1.6, 1.5, 1.3, 1.2];
+
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Response Time (seconds)',
+                        data: responseTimes,
+                        borderColor: '#58A6FF',
+                        backgroundColor: 'rgba(88, 166, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#F0F6FC' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#8B949E' },
+                            grid: { color: '#30363D' }
+                        },
+                        y: {
+                            ticks: { color: '#8B949E' },
+                            grid: { color: '#30363D' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initCapacityChart() {
+            const ctx = document.getElementById('capacityChart');
+            if (!ctx || capacityChart) return;
+
+            capacityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Users', 'Storage', 'Daily Reads', 'Daily Writes'],
+                    datasets: [{
+                        label: 'Usage %',
+                        data: [85, 4.9, 62, 27],
+                        backgroundColor: ['#58A6FF', '#4CAF50', '#FF9800', '#9C27B0'],
+                        borderColor: '#30363D',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#F0F6FC' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#8B949E' },
+                            grid: { color: '#30363D' }
+                        },
+                        y: {
+                            ticks: { color: '#8B949E' },
+                            grid: { color: '#30363D' },
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function initMonitoringChart() {
+            const ctx = document.getElementById('monitoringChart');
+            if (!ctx || monitoringChart) return;
+
+            const days = Array.from({length: 30}, (_, i) => `Day ${i + 1}`);
+            const uptime = Array.from({length: 30}, () => 99.5 + Math.random() * 0.5);
+
+            monitoringChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Uptime %',
+                        data: uptime,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#F0F6FC' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#8B949E' },
+                            grid: { color: '#30363D' }
+                        },
+                        y: {
+                            ticks: { color: '#8B949E' },
+                            grid: { color: '#30363D' },
+                            min: 99,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update last updated time
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>

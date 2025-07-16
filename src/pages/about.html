@@ -17,12 +17,18 @@
         }
 
         .about-header {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
             border-radius: 20px;
             margin: 20px;
             padding: 30px 20px;
             text-align: center;
             color: white;
             box-shadow: 0 8px 32px var(--shadow-medium);
+        }
+
+        [data-theme="dark"] .about-header {
+            background: linear-gradient(135deg, #161B22, #21262D);
+            border: 1px solid #30363D;
         }
 
 
@@ -130,7 +136,7 @@
             margin-bottom: 12px;
             border-radius: 8px;
             background-color: white;
-            padding: px;
+            padding: 5px;
         }
 
         .institution-name {
@@ -149,11 +155,18 @@
         }
 
         .codecraft-brand {
+            background: linear-gradient(135deg, #4CAF50, #45A049);
             text-align: center;
             margin: 20px;
             padding: 20px;
             border-radius: 16px;
             color: white;
+            box-shadow: 0 4px 16px var(--shadow-light);
+        }
+
+        [data-theme="dark"] .codecraft-brand {
+            background: linear-gradient(135deg, #21262D, #30363D);
+            border: 1px solid #30363D;
         }
 
 
