@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="../styles/admin-enhanced.css">
 
     <!-- Immediate Error Suppression -->
     <script>
@@ -100,28 +101,28 @@
     </script>
     <style>
         :root {
-            /* Dark Theme Variables */
-            --primary: #0A84FF;
-            --primary-light: #64D2FF;
-            --secondary: #30D158;
-            --background: #0D1117;
-            --card-bg: #161B22;
-            --border-radius: 12px;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
-            --text-main: #F0F6FC;
-            --text-muted: #7D8590;
-            --text-secondary: #C9D1D9;
-            --accent: #FF9F0A;
-            --success: #238636;
-            --warning: #D29922;
-            --danger: #DA3633;
-            --info: #1F6FEB;
-            --border-color: #30363D;
-            --separator: rgba(48, 54, 61, 0.8);
-            --input-bg: #0D1117;
-            --input-border: #30363D;
-            --hover-bg: #21262D;
-            --active-bg: #262C36;
+            /* Enhanced Professional Color System */
+            --primary: var(--primary-solid);
+            --primary-light: var(--primary-light);
+            --secondary: var(--success-solid);
+            --background: var(--bg-gradient-primary);
+            --card-bg: var(--bg-gradient-card);
+            --border-radius: var(--radius-lg);
+            --shadow: var(--shadow-md);
+            --text-main: var(--neutral-900);
+            --text-muted: var(--neutral-600);
+            --text-secondary: var(--neutral-700);
+            --accent: var(--accent-orange);
+            --success: var(--success-solid);
+            --warning: var(--warning-solid);
+            --danger: var(--error-solid);
+            --info: var(--info-solid);
+            --border-color: var(--neutral-300);
+            --separator: var(--neutral-200);
+            --input-bg: var(--neutral-50);
+            --input-border: var(--neutral-300);
+            --hover-bg: var(--neutral-100);
+            --active-bg: var(--neutral-200);
 
             /* Typography */
             --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -130,12 +131,12 @@
             --font-weight-semibold: 600;
             --font-weight-bold: 700;
 
-            /* Spacing */
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
-            --spacing-xl: 32px;
+            /* Spacing - Using enhanced system */
+            --spacing-xs: var(--space-xs);
+            --spacing-sm: var(--space-sm);
+            --spacing-md: var(--space-md);
+            --spacing-lg: var(--space-lg);
+            --spacing-xl: var(--space-xl);
         }
 
 
@@ -284,7 +285,7 @@
         }
 
         body {
-            background: var(--background);
+            background: var(--bg-gradient-primary);
             font-family: var(--font-family);
             color: var(--text-main);
             font-size: 16px;
@@ -446,44 +447,108 @@
         .table-striped > tbody > tr:nth-of-type(odd) > th {
             background-color: rgba(255, 255, 255, 0.02);
         }
+        /* Enhanced Button Integration */
         .btn-primary, .btn-info, .btn-success, .btn-warning, .btn-danger {
-            border-radius: var(--border-radius);
-            font-weight: var(--font-weight-medium);
-            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            padding: var(--space-sm) var(--space-lg);
             border: none;
-            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all var(--duration-normal) var(--easing-smooth);
             font-family: var(--font-family);
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
         }
+        
+        /* Enhanced Primary Button */
         .btn-primary {
-            background: var(--primary);
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-md), 0 0 0 1px var(--primary-alpha-20);
         }
         .btn-primary:hover {
-            background: var(--primary-light);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+            background: var(--primary-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            color: white;
         }
+        
+        /* Enhanced Info Button */
         .btn-info {
-            background: var(--secondary);
-            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+            background: var(--info-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
         }
         .btn-info:hover {
-            background: #28a745;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.4);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 20px var(--info-alpha-30);
+            color: white;
         }
+        
+        /* Enhanced Success Button */
         .btn-success {
-            background: var(--success);
-            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
         }
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 20px var(--success-alpha-30);
+            color: white;
+        }
+        
+        /* Enhanced Warning Button */
         .btn-warning {
-            background: var(--warning);
-            box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
+            background: var(--warning-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
         }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 20px var(--warning-alpha-30);
+            color: white;
+        }
+        
+        /* Enhanced Danger Button */
         .btn-danger {
-            background: var(--danger);
-            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+            background: var(--error-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
         }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), 0 0 20px var(--error-alpha-30);
+            color: white;
+        }
+        
+        /* Shimmer Effect for All Buttons */
+        .btn-primary::before, .btn-info::before, .btn-success::before, 
+        .btn-warning::before, .btn-danger::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left var(--duration-slow) var(--easing-smooth);
+            z-index: 1;
+        }
+        
+        .btn-primary:hover::before, .btn-info:hover::before, .btn-success:hover::before,
+        .btn-warning:hover::before, .btn-danger:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary > *, .btn-info > *, .btn-success > *,
+        .btn-warning > *, .btn-danger > * {
+            position: relative;
+            z-index: 2;
+      
         .progress {
             background: var(--hover-bg);
             border-radius: 8px;
@@ -757,7 +822,7 @@
     <div class="admin-header">
         <div class="container-fluid admin-container">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0"><i class="fas fa-user-shield me-2"></i>Attendly Admin Panel</h2>
+                <h2 class="mb-0"><i class="fas fa-user-shield me-2"></i>Attendly</h2>
                 <div class="d-flex align-items-center gap-2">
                     <div id="systemHealthStatus" class="me-2">
                         <span class="badge bg-secondary">
@@ -8471,27 +8536,50 @@
                 datasets: [{
                     label: 'Attendance %',
                     data: usersWithData.map(u => u.attendancePercent),
-                    backgroundColor: 'rgba(74, 21, 75, 0.8)',
+                    backgroundColor: 'var(--primary-gradient)',
+                    borderColor: 'var(--primary-solid)',
+                    borderWidth: 1,
                     borderRadius: 8,
-                    maxBarThickness: 48
+                    maxBarThickness: 48,
+                    hoverBackgroundColor: 'var(--primary-gradient-hover)',
+                    hoverBorderColor: 'var(--primary-light)'
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
                     legend: { display: false },
-                    tooltip: { enabled: true }
+                    tooltip: { 
+                        enabled: true,
+                        backgroundColor: 'var(--card-bg)',
+                        titleColor: 'var(--text-main)',
+                        bodyColor: 'var(--text-main)',
+                        borderColor: 'var(--border-color)',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#7b7b93', font: { weight: 600 } }
+                        ticks: { 
+                            color: 'var(--text-muted)', 
+                            font: { weight: 600 } 
+                        }
                     },
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        grid: { color: '#f3e6f7' },
-                        ticks: { color: '#7b7b93', font: { weight: 600 }, stepSize: 20 }
+                        grid: { 
+                            color: 'var(--separator)',
+                            drawBorder: false
+                        },
+                        ticks: { 
+                            color: 'var(--text-muted)', 
+                            font: { weight: 600 }, 
+                            stepSize: 20 
+                        }
                     }
                 }
             }
@@ -8534,14 +8622,18 @@
                     datasets: [{
                         label: 'Active Users',
                         data: activityData,
-                        borderColor: 'var(--primary)',
-                        backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                        borderColor: 'var(--primary-solid)',
+                        backgroundColor: 'var(--primary-alpha-10)',
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: 'var(--primary)',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: 'var(--primary-solid)',
+                        pointBorderColor: 'var(--card-bg)',
                         pointBorderWidth: 2,
-                        pointRadius: 6
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'var(--primary-light)',
+                        pointHoverBorderColor: 'var(--card-bg)',
+                        borderWidth: 3
                     }]
                 },
                 options: {
@@ -8550,21 +8642,34 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            cornerRadius: 8
+                            backgroundColor: 'var(--card-bg)',
+                            titleColor: 'var(--text-main)',
+                            bodyColor: 'var(--text-main)',
+                            borderColor: 'var(--border-color)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            padding: 12
                         }
                     },
                     scales: {
                         x: {
                             grid: { display: false },
-                            ticks: { color: 'var(--text-muted)' }
+                            ticks: { 
+                                color: 'var(--text-muted)',
+                                font: { weight: 500 }
+                            }
                         },
                         y: {
                             beginAtZero: true,
-                            grid: { color: 'var(--separator)' },
-                            ticks: { color: 'var(--text-muted)' }
+                            grid: { 
+                                color: 'var(--separator)',
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                color: 'var(--text-muted)',
+                                font: { weight: 500 }
+                            }
                         }
                     }
                 }
@@ -8739,14 +8844,17 @@
                     datasets: [{
                         label: 'Project Updates',
                         data: Object.values(last7Days),
-                        borderColor: 'var(--secondary)',
-                        backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                        borderColor: 'var(--success-solid)',
+                        backgroundColor: 'var(--success-alpha-10)',
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: 'var(--secondary)',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: 'var(--success-solid)',
+                        pointBorderColor: 'var(--card-bg)',
                         pointBorderWidth: 2,
-                        pointRadius: 6
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'var(--success-light)',
+                        borderWidth: 3
                     }]
                 },
                 options: {
@@ -8788,10 +8896,11 @@
                     datasets: [{
                         label: 'Project Updates',
                         data: [1, 2, 1, 3, 2, 1, 2],
-                        borderColor: 'var(--secondary)',
-                        backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                        borderColor: 'var(--success-solid)',
+                        backgroundColor: 'var(--success-alpha-10)',
                         tension: 0.4,
-                        fill: true
+                        fill: true,
+                        borderWidth: 3
                     }]
                 },
                 options: {
@@ -10925,14 +11034,17 @@ Are you absolutely sure you want to proceed?`;
                     datasets: [{
                         label: 'Errors',
                         data: Object.values(last7Days),
-                        borderColor: 'var(--danger)',
-                        backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                        borderColor: 'var(--error-solid)',
+                        backgroundColor: 'var(--error-alpha-10)',
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: 'var(--danger)',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: 'var(--error-solid)',
+                        pointBorderColor: 'var(--card-bg)',
                         pointBorderWidth: 2,
-                        pointRadius: 6
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'var(--error-light)',
+                        borderWidth: 3
                     }]
                 },
                 options: {
@@ -12465,9 +12577,11 @@ Are you absolutely sure you want to proceed?`;
                     labels: ['Present', 'Absent'],
                     datasets: [{
                         data: [attendanceStats.presentCount, attendanceStats.absentCount],
-                        backgroundColor: ['#28a745', '#dc3545'],
+                        backgroundColor: ['var(--success-solid)', 'var(--error-solid)'],
                         borderWidth: 2,
-                        borderColor: '#fff'
+                        borderColor: 'var(--card-bg)',
+                        hoverBackgroundColor: ['var(--success-light)', 'var(--error-light)'],
+                        hoverBorderColor: 'var(--card-bg)'
                     }]
                 },
                 options: {
@@ -12681,9 +12795,11 @@ Are you absolutely sure you want to proceed?`;
                     labels: ['High (≥80%)', 'Medium (60-79%)', 'Low (<60%)'],
                     datasets: [{
                         data: [stats.highAttendance, stats.mediumAttendance, stats.lowAttendance],
-                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        backgroundColor: ['var(--success-solid)', 'var(--warning-solid)', 'var(--error-solid)'],
                         borderWidth: 2,
-                        borderColor: '#fff'
+                        borderColor: 'var(--card-bg)',
+                        hoverBackgroundColor: ['var(--success-light)', 'var(--warning-light)', 'var(--error-light)'],
+                        hoverBorderColor: 'var(--card-bg)'
                     }]
                 },
                 options: {
@@ -12723,10 +12839,16 @@ Are you absolutely sure you want to proceed?`;
                     datasets: [{
                         label: 'Attendance %',
                         data: attendanceData,
-                        borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderColor: 'var(--info-solid)',
+                        backgroundColor: 'var(--info-alpha-10)',
                         tension: 0.4,
-                        fill: true
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: 'var(--info-solid)',
+                        pointBorderColor: 'var(--card-bg)',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
                     }]
                 },
                 options: {
@@ -12810,8 +12932,10 @@ Are you absolutely sure you want to proceed?`;
                     datasets: [{
                         label: 'Average Attendance %',
                         data: attendanceData,
-                        backgroundColor: '#17a2b8',
-                        borderWidth: 1
+                        backgroundColor: 'var(--info-solid)',
+                        borderColor: 'var(--info-light)',
+                        borderWidth: 1,
+                        hoverBackgroundColor: 'var(--info-light)'
                     }]
                 },
                 options: {

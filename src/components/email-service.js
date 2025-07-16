@@ -252,18 +252,46 @@ class EmailService {
                 throw new Error(`Email validation failed: ${validationResult.errors.join(', ')}`);
             }
 
-            // Call the real email backend API
-            const emailServerUrl = 'http://localhost:3002/send-email';
+            // Try PHP email backend first (compatible with Netlify)
+            let response, result;
 
-            const response = await fetch(emailServerUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(emailData)
-            });
+            try {
+                console.log('🔄 Trying PHP email backend...');
+                response = await fetch('../api/send-email.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(emailData)
+                });
 
-            const result = await response.json();
+                if (response.ok) {
+                    result = await response.json();
+                    console.log('✅ PHP backend successful');
+                } else {
+                    throw new Error(`PHP backend failed: ${response.status}`);
+                }
+            } catch (phpError) {
+                console.warn('⚠️ PHP backend failed, trying Node.js fallback:', phpError.message);
+
+                // Fallback to Node.js server (for local development)
+                try {
+                    const emailServerUrl = 'http://localhost:3002/send-email';
+                    response = await fetch(emailServerUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(emailData)
+                    });
+
+                    result = await response.json();
+                    console.log('✅ Node.js fallback successful');
+                } catch (nodeError) {
+                    console.error('❌ Both PHP and Node.js backends failed');
+                    throw new Error(`Email backends unavailable. PHP: ${phpError.message}, Node.js: ${nodeError.message}`);
+                }
+            }
 
             // Log the delivery attempt
             await this.logEmailDelivery(emailData, result);

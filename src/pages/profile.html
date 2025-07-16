@@ -209,8 +209,8 @@
             border-color: #d32f2f !important;
         }
 
-        /* Project Log Button Styling */
-        .project-log-button {
+        /* Changelog Button Styling */
+        .changelog-button {
             background-color: #6c5ce7 !important;
             color: white !important;
             border: 1px solid #6c5ce7 !important;
@@ -220,12 +220,12 @@
             gap: 8px !important;
         }
 
-        .project-log-button:hover {
+        .changelog-button:hover {
             background-color: #5a4fcf !important;
             border-color: #5a4fcf !important;
         }
 
-        .project-log-button i {
+        .changelog-button i {
             font-size: 14px;
         }
 
@@ -339,36 +339,62 @@
         }
 
         .profile-about {
-            margin: 20px;
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 16px var(--shadow-light);
-            border: 1px solid var(--border-color);
+            margin: 32px auto 0 auto;
+            max-width: 480px;
+            padding: 0 0 32px 0;
             text-align: center;
-            padding-bottom: 100px;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            background: none;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+            transition: none;
+        }
+
+        [data-theme="dark"] .profile-about {
+            background: none;
+            border: none;
+            box-shadow: none;
         }
 
         .profile-about .section-title {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             color: var(--text-primary);
-            font-size: 18px;
+            font-size: 1.2rem;
             font-weight: 600;
+            border: none;
+            padding-bottom: 0;
+            display: block;
+        }
+
+        [data-theme="dark"] .profile-about .section-title {
+            color: #F0F6FC;
+            border: none;
         }
 
         .footer-desc {
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             font-size: 15px;
-            line-height: 1.4;
+            line-height: 1.5;
+            font-weight: 400;
         }
+
+        [data-theme="dark"] .footer-desc {
+             color: #F0F6FC;
+         }
 
         .footer-copyright {
             color: var(--text-muted);
             font-size: 13px;
             margin-bottom: 0;
             line-height: 1.3;
+            font-weight: 400;
+            background: none;
+            border: none;
+        }
+
+        [data-theme="dark"] .footer-copyright {
+            color: #8B949E;
         }
 
         .footer-link {
@@ -378,20 +404,57 @@
             transition: color 0.2s ease;
         }
 
+        [data-theme="dark"] .footer-link {
+            color: #58A6FF;
+        }
+
         .footer-link:hover {
             color: var(--accent-secondary);
             text-decoration: underline;
         }
 
+        [data-theme="dark"] .footer-link:hover {
+            color: #79C0FF;
+            text-decoration: underline;
+        }
+
         .about-links {
-            margin: 12px 0;
+            margin: 12px 0 8px 0;
             text-align: center;
+            padding: 0;
+            border: none;
+        }
+
+        [data-theme="dark"] .about-links {
+            border: none;
         }
 
         .about-links .footer-link {
             font-size: 14px;
             display: inline-flex;
             align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .about-links .footer-link:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+            text-decoration: none;
+        }
+
+        [data-theme="dark"] .about-links .footer-link:hover {
+            background-color: rgba(88, 166, 255, 0.15);
+        }
+
+        .about-links .mx-2 {
+            color: var(--text-muted);
+            margin: 0 8px;
+            font-weight: 300;
+        }
+
+        [data-theme="dark"] .about-links .mx-2 {
+            color: #30363D;
         }
 
         /* Institutional Footer Styles */
@@ -544,6 +607,82 @@
         .profile-section.minimized .section-title {
             margin-bottom: 0;
         }
+
+        .partner-logos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .partner-badge {
+            background: linear-gradient(135deg, var(--bg-tertiary, #f0f0f0), var(--bg-secondary, #e0e0e0));
+            color: var(--text-primary, #334267);
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px var(--shadow-light, rgba(0,0,0,0.06));
+            border: 1px solid var(--border-color, #ddd);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+
+        .partner-badge:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 4px 16px var(--shadow-medium, rgba(0,0,0,0.12));
+        }
+
+        [data-theme="dark"] .partner-badge {
+            background: linear-gradient(135deg, #222, #333);
+            color: #F0F6FC;
+            border: 1px solid #30363D;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+        .partner-logos.simple-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0 0 0;
+        }
+        .partner-pill {
+            background: var(--bg-tertiary, #f5f5f7);
+            color: var(--text-primary, #222);
+            border-radius: 999px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid var(--border-color, #e0e0e0);
+            box-shadow: none;
+            letter-spacing: 0.01em;
+            transition: background 0.2s, color 0.2s;
+        }
+        [data-theme="dark"] .partner-pill {
+            background: #181a1b;
+            color: #F0F6FC;
+            border: 1px solid #30363D;
+        }
+        @media (max-width: 480px) {
+            .partner-logos.simple-badges {
+                gap: 6px;
+            }
+            .partner-pill {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+        .partners-label {
+            font-size: 0.98rem;
+            color: var(--text-muted, #888);
+            font-weight: 500;
+            margin-bottom: 8px;
+            margin-top: 18px;
+            letter-spacing: 0.01em;
+            text-align: center;
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -631,9 +770,9 @@
             <!-- Account Actions Section -->
             <div class="profile-section">
                 <h3 class="section-title">Account Actions</h3>
-                <button id="projectLogBtn" class="action-button project-log-button">
+                <button id="projectLogBtn" class="action-button changelog-button">
                     <i class="fas fa-code-branch"></i>
-                    View Project Log
+                    View Changelog
                 </button>
                 <button id="resetPasswordBtn" class="action-button">Reset Password</button>
                 <button id="logoutBtn" class="action-button logout-button">Logout</button>
@@ -643,16 +782,29 @@
             <h3 class="section-title">About LowryBunks</h3>
             <p class="footer-desc">Made with 💖 by passionate developers</p>
             <div class="about-links">
-                <a href="about.html" class="footer-link">
-                    <i class="fas fa-info-circle me-1"></i>Learn More About Us
-                </a>
+                <a href="about.html" class="footer-link">About Us</a>
                 <span class="mx-2">•</span>
-                <a href="contact.html" class="footer-link">
-                    <i class="fas fa-envelope me-1"></i>Contact Us
-                </a>
+                <a href="contact.html" class="footer-link">Contact Us</a>
             </div>
+            <div class="partners">
+                <div class="partners-label">Our Partners</div>
+                <div class="partner-logos simple-badges">
+                    <span class="partner-pill">LAC</span>
+                    <span class="partner-pill">Garden City University</span>
+                    <span class="partner-pill">Jain University</span>
+                    <span class="partner-pill">Google Developer Student Club</span>
+                </div>
+            </div>
+            <br>
             <p class="footer-copyright">© 2025 <a href="#" class="footer-link">CodeCraft</a>. All rights reserved.</p>
+            <p class="footer-copyright">Licensed under the MIT License</p>
+            <a href="license.html" class="footer-link" style="display:block;margin-top:4px;">License</a>
         </div>
+        <br>
+        <div class="ending" style="padding: 0 0 25px 0;">
+            <p> </p>
+        </div>
+        
                <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="dashboard.html" class="nav-item">
@@ -1003,17 +1155,17 @@
                     });
             });
 
-            // Project Log Button
+            // Changelog Button
             const projectLogButton = document.getElementById('projectLogBtn');
             if (projectLogButton) {
                 projectLogButton.addEventListener('click', function(e) {
                     e.preventDefault();
                     try {
-                        // Navigate to project log page
-                        window.location.href = 'projectlog.html';
+                        // Navigate to changelog page
+                        window.location.href = 'changelog.html';
                     } catch (error) {
-                        console.error('Error navigating to project log:', error);
-                        showError('Unable to open project log. Please try again.');
+                        console.error('Error navigating to changelog:', error);
+                        showError('Unable to open changelog. Please try again.');
                     }
                 });
             }

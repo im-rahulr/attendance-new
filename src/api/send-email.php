@@ -28,47 +28,46 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Check if PHPMailer is available
-if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+$phpmailer_available = false;
+if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+    $phpmailer_available = true;
+} else {
     // Try to include PHPMailer manually if composer autoload fails
     $phpmailer_paths = [
         __DIR__ . '/vendor/autoload.php',
         __DIR__ . '/../../vendor/autoload.php',
         __DIR__ . '/../../../vendor/autoload.php'
     ];
-    
-    $autoload_found = false;
+
     foreach ($phpmailer_paths as $path) {
         if (file_exists($path)) {
             require_once $path;
-            $autoload_found = true;
-            break;
+            if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+                $phpmailer_available = true;
+                break;
+            }
         }
-    }
-    
-    if (!$autoload_found) {
-        echo json_encode([
-            'success' => false, 
-            'error' => 'PHPMailer not found. Please install via composer: composer require phpmailer/phpmailer'
-        ]);
-        exit();
     }
 }
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+// Only include PHPMailer classes if available
+if ($phpmailer_available) {
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\SMTP;
+    use PHPMailer\PHPMailer\Exception;
+}
 
-// Email configuration
+// Email configuration - Use environment variables if available
 $EMAIL_CONFIG = [
-    'smtp_host' => 'smtp.gmail.com',
-    'smtp_port' => 587,
+    'smtp_host' => $_ENV['SMTP_HOST'] ?? 'smtp.gmail.com',
+    'smtp_port' => $_ENV['SMTP_PORT'] ?? 587,
     'smtp_secure' => PHPMailer::ENCRYPTION_STARTTLS,
     'smtp_auth' => true,
-    'username' => 'website.po45@gmail.com',
-    'password' => 'usil vuzn wbep nili', // App password
-    'from_email' => 'website.po45@gmail.com',
-    'from_name' => 'lowrybunks Team',
-    'admin_email' => 'rahulhitwo@gmail.com' // Admin notification email
+    'username' => $_ENV['EMAIL_USER'] ?? 'website.po45@gmail.com',
+    'password' => $_ENV['EMAIL_PASS'] ?? 'usil vuzn wbep nili', // App password
+    'from_email' => $_ENV['EMAIL_USER'] ?? 'website.po45@gmail.com',
+    'from_name' => $_ENV['FROM_NAME'] ?? 'lowrybunks Team',
+    'admin_email' => $_ENV['ADMIN_EMAIL'] ?? 'rahulhitwo@gmail.com' // Admin notification email
 ];
 
 /**
@@ -96,9 +95,62 @@ function validateEmailData($data) {
 }
 
 /**
+ * Send email using PHP's built-in mail function (fallback)
+ */
+function sendEmailFallback($emailData, $config) {
+    try {
+        $to = $emailData['to_email'];
+        $subject = $emailData['subject'];
+        $message = $emailData['html_content'];
+
+        // Set headers for HTML email
+        $headers = [
+            'MIME-Version: 1.0',
+            'Content-type: text/html; charset=UTF-8',
+            'From: ' . ($emailData['from_name'] ?? $config['from_name']) . ' <' . $config['from_email'] . '>',
+            'Reply-To: ' . $config['from_email'],
+            'X-Mailer: PHP/' . phpversion()
+        ];
+
+        $result = mail($to, $subject, $message, implode("\r\n", $headers));
+
+        if ($result) {
+            return [
+                'success' => true,
+                'message' => 'Email sent successfully (PHP mail)',
+                'messageId' => 'php_mail_' . time() . '_' . uniqid(),
+                'deliveredAt' => date('c'),
+                'deliveryStatus' => 'delivered',
+                'provider' => 'PHP Mail'
+            ];
+        } else {
+            return [
+                'success' => false,
+                'error' => 'PHP mail function failed',
+                'deliveryStatus' => 'failed'
+            ];
+        }
+
+    } catch (Exception $e) {
+        return [
+            'success' => false,
+            'error' => 'PHP mail error: ' . $e->getMessage(),
+            'deliveryStatus' => 'error'
+        ];
+    }
+}
+
+/**
  * Send email using PHPMailer
  */
 function sendEmail($emailData, $config) {
+    global $phpmailer_available;
+
+    // Use fallback if PHPMailer is not available
+    if (!$phpmailer_available) {
+        return sendEmailFallback($emailData, $config);
+    }
+
     $mail = new PHPMailer(true);
     
     try {

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Email Test - Attendly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0A84FF;
+            --background: #0D1117;
+            --card-bg: #161B22;
+            --text-main: #F0F6FC;
+            --text-muted: #7D8590;
+            --border-color: #30363D;
+            --success: #238636;
+            --danger: #DA3633;
+            --warning: #D29922;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .test-result.success {
+            background: rgba(35, 134, 54, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .test-result.error {
+            background: rgba(218, 54, 51, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .test-result.warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        .form-control, .form-select {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: var(--card-bg);
+            border-color: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 0 0 0.2rem rgba(10, 132, 255, 0.25);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-envelope-open-text me-2"></i>
+                            Welcome Email System Test
+                        </h3>
+                        <p class="mb-0 text-muted">Test the welcome email functionality</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Test Form -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="testEmail" class="form-label">Test Email Address</label>
+                                <input type="email" class="form-control" id="testEmail" value="test@example.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="testUserName" class="form-label">Test User Name</label>
+                                <input type="text" class="form-control" id="testUserName" value="Test User">
+                            </div>
+                        </div>
+
+                        <!-- Test Buttons -->
+                        <div class="mb-4">
+                            <button class="btn btn-primary me-2" onclick="testEmailService()">
+                                <i class="fas fa-cog me-1"></i>Test Email Service
+                            </button>
+                            <button class="btn btn-outline-primary me-2" onclick="testWelcomeEmail()">
+                                <i class="fas fa-envelope me-1"></i>Test Welcome Email
+                            </button>
+                            <button class="btn btn-outline-primary me-2" onclick="testPHPBackend()">
+                                <i class="fas fa-server me-1"></i>Test PHP Backend
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="clearResults()">
+                                <i class="fas fa-trash me-1"></i>Clear Results
+                            </button>
+                        </div>
+
+                        <!-- Test Results -->
+                        <div id="testResults">
+                            <h5>Test Results</h5>
+                            <div id="resultsContainer">
+                                <p class="text-muted">Click a test button to start testing...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="../config/firebase-config.js"></script>
+
+    <!-- Email Service -->
+    <script src="../components/email-service.js"></script>
+
+    <script>
+        let testResults = [];
+
+        function addTestResult(category, type, message, details = '') {
+            const result = {
+                category,
+                type,
+                message,
+                details,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            testResults.push(result);
+            displayResults();
+        }
+
+        function displayResults() {
+            const container = document.getElementById('resultsContainer');
+            if (testResults.length === 0) {
+                container.innerHTML = '<p class="text-muted">No test results yet...</p>';
+                return;
+            }
+
+            container.innerHTML = testResults.map(result => `
+                <div class="test-result ${result.type}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${result.category}</strong>
+                            <p class="mb-1">${result.message}</p>
+                            ${result.details ? `<small class="text-muted">${result.details}</small>` : ''}
+                        </div>
+                        <small class="text-muted">${result.timestamp}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearResults() {
+            testResults = [];
+            displayResults();
+        }
+
+        async function testEmailService() {
+            try {
+                addTestResult('Email Service', 'info', 'Testing email service initialization...');
+
+                if (!window.emailService) {
+                    addTestResult('Email Service', 'error', 'Email service not available');
+                    return;
+                }
+
+                await window.emailService.init();
+                addTestResult('Email Service', 'success', 'Email service initialized successfully');
+
+                // Test template loading
+                const template = window.emailService.getEmailTemplate('welcome');
+                if (template && template.subject && template.body) {
+                    addTestResult('Templates', 'success', 'Welcome email template loaded', 
+                                `Subject: ${template.subject.substring(0, 50)}...`);
+                } else {
+                    addTestResult('Templates', 'error', 'Welcome email template not found');
+                }
+
+            } catch (error) {
+                addTestResult('Email Service', 'error', `Initialization failed: ${error.message}`);
+            }
+        }
+
+        async function testWelcomeEmail() {
+            try {
+                if (!window.emailService) {
+                    addTestResult('Welcome Email', 'error', 'Email service not available');
+                    return;
+                }
+
+                const testEmail = document.getElementById('testEmail').value;
+                const testUserName = document.getElementById('testUserName').value;
+                const testUserId = 'test-user-' + Date.now();
+
+                addTestResult('Welcome Email', 'info', `Sending welcome email to ${testEmail}...`);
+
+                const result = await window.emailService.sendWelcomeEmail(testEmail, testUserName, testUserId);
+
+                if (result.success) {
+                    addTestResult('Welcome Email', 'success', 
+                                `Welcome email sent successfully to ${testEmail}`,
+                                `Message ID: ${result.messageId || 'N/A'}`);
+                } else {
+                    addTestResult('Welcome Email', 'error', 
+                                `Welcome email failed: ${result.error}`,
+                                `Delivery Status: ${result.deliveryStatus || 'Unknown'}`);
+                }
+
+            } catch (error) {
+                addTestResult('Welcome Email', 'error', `Welcome email test failed: ${error.message}`);
+            }
+        }
+
+        async function testPHPBackend() {
+            try {
+                addTestResult('PHP Backend', 'info', 'Testing PHP email backend...');
+
+                const testEmailData = {
+                    to_email: document.getElementById('testEmail').value,
+                    to_name: document.getElementById('testUserName').value,
+                    subject: 'Test Email from Attendly',
+                    html_content: '<h1>Test Email</h1><p>This is a test email from the PHP backend.</p>',
+                    from_name: 'Attendly Team'
+                };
+
+                const response = await fetch('../api/send-email.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testEmailData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addTestResult('PHP Backend', 'success', 
+                                'PHP backend test successful',
+                                `Message ID: ${result.messageId || 'N/A'}`);
+                } else {
+                    addTestResult('PHP Backend', 'error', 
+                                `PHP backend test failed: ${result.error}`,
+                                `Response: ${JSON.stringify(result)}`);
+                }
+
+            } catch (error) {
+                addTestResult('PHP Backend', 'error', `PHP backend test failed: ${error.message}`);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            addTestResult('System', 'info', 'Welcome email test page loaded');
+            
+            // Auto-test email service initialization
+            setTimeout(testEmailService, 1000);
+        });
+    </script>
+</body>
+</html>

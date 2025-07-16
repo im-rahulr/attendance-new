@@ -381,7 +381,18 @@
                     Send us a Message
                 </h3>
 
-                <form id="contactForm" class="contact-form">
+                <form id="contactForm" class="contact-form" action="https://api.web3forms.com/submit" method="POST">
+                    <!-- Web3Forms Access Key - Replace YOUR_ACCESS_KEY_HERE with your actual Web3Forms access key -->
+                    <input type="hidden" name="access_key" value="cae30f52-a8c3-4e54-9060-b0b43a4219d6">
+
+                    <!-- Web3Forms Configuration -->
+                    <input type="hidden" name="subject" value="New Contact Form Submission from Attendly">
+                    <input type="hidden" name="from_name" value="Attendly Contact Form">
+
+                    <!-- Disable Web3Forms default email notifications -->
+                    <input type="hidden" name="email_template" value="table">
+                    <input type="hidden" name="autoresponse" value="false">
+
                     <div class="form-group">
                         <label for="contactName" class="form-label">
                             <i class="fas fa-user"></i>
@@ -403,7 +414,7 @@
                             <i class="fas fa-tag"></i>
                             Subject *
                         </label>
-                        <select id="contactSubject" name="subject" class="form-input" required>
+                        <select id="contactSubject" name="inquiry_type" class="form-input" required>
                             <option value="">Select a subject</option>
                             <option value="technical-support">Technical Support</option>
                             <option value="feature-request">Feature Request</option>
@@ -424,6 +435,9 @@
                             <span id="messageCount">0</span>/1000 characters
                         </div>
                     </div>
+
+                    <!-- Honeypot field for spam protection -->
+                    <input type="checkbox" name="botcheck" id="" style="display: none;">
 
                     <div class="form-actions">
                         <button type="submit" class="submit-button" id="submitContactForm">
@@ -669,7 +683,7 @@
 
                 const name = formData.get('name')?.trim();
                 const email = formData.get('email')?.trim();
-                const subject = formData.get('subject')?.trim();
+                const subject = formData.get('inquiry_type')?.trim();
                 const message = formData.get('message')?.trim();
 
                 // Name validation
@@ -745,25 +759,26 @@
                 throw new Error(`All email methods failed. Last error: ${lastError?.message}`);
             }
 
-            // Method 1: Node.js email service
-            async function sendViaNodeJS(contactData) {
+            // Method 1: Netlify Functions email service
+            async function sendViaNetlifyFunction(contactData) {
                 const emailData = {
                     to_email: contactData.email,
                     to_name: contactData.name,
                     subject: 'Contact Form Confirmation - lowrybunks',
                     html_content: generateEmailHTML(contactData),
+                    message: generateEmailText(contactData),
                     from_name: 'lowrybunks Team',
-                    from_email: 'website.po45@gmail.com'
+                    notify_admin: true
                 };
 
-                const response = await fetch('/api/send-email', {
+                const response = await fetch('/.netlify/functions/send-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(emailData)
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`Netlify Function failed: HTTP ${response.status}`);
                 }
 
                 return await response.json();
@@ -866,7 +881,7 @@
                 };
 
                 try {
-                    const response = await fetch('/api/send-email', {
+                    const response = await fetch('/.netlify/functions/send-email', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(adminEmailData)
@@ -924,44 +939,60 @@
                         const contactData = {
                             name: formData.get('name').trim(),
                             email: formData.get('email').trim(),
-                            subject: formData.get('subject').trim(),
+                            subject: formData.get('inquiry_type').trim(),
                             message: formData.get('message').trim(),
-                            timestamp: database ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+                            timestamp: (database && typeof database.collection === 'function' && firebase && firebase.firestore)
+                                ? firebase.firestore.FieldValue.serverTimestamp()
+                                : new Date().toISOString(),
                             status: 'unread',
                             resolved: false,
                             userAgent: navigator.userAgent,
                             ipAddress: 'client-side',
-                            submissionId: null // Will be set after Firestore save
+                            submissionId: null, // Will be set after Firestore save
+                            source: 'web3forms' // Mark as Web3Forms submission
                         };
 
                         console.log("Attempting to save contact data:", contactData);
 
-                        // Save to Firestore if database is available
-                        if (database) {
-                            console.log("Saving to Firebase...");
-                            const docRef = await database.collection('contactSubmissions').add(contactData);
-                            console.log("Document saved with ID:", docRef.id);
+                        // Save to Firestore if database is available (for admin panel)
+                        if (database && typeof database.collection === 'function') {
+                            try {
+                                console.log("Saving to Firebase...");
+                                const docRef = await database.collection('contactSubmissions').add(contactData);
+                                console.log("Document saved with ID:", docRef.id);
 
-                            // Update with document ID
-                            await docRef.update({ submissionId: docRef.id });
-                            console.log("Document ID updated successfully");
+                                // Update with document ID
+                                await docRef.update({ submissionId: docRef.id });
+                                console.log("Document ID updated successfully");
+                            } catch (firebaseError) {
+                                console.error("Firebase save failed:", firebaseError);
+                                // Continue with form submission even if Firebase fails
+                            }
                         } else {
                             console.warn("Firebase not available, skipping database save");
-                            // You could implement alternative storage here (localStorage, etc.)
                         }
 
-                        // Send confirmation email
-                        try {
-                            await sendConfirmationEmail(contactData);
-                            showFormMessage('Thank you for your message! A confirmation email has been sent to your email address. We\'ll get back to you soon.', 'success');
-                        } catch (emailError) {
-                            console.error('Email confirmation failed:', emailError);
-                            showFormMessage('Your message has been submitted successfully, but we couldn\'t send a confirmation email. We\'ll still get back to you soon.', 'success');
-                        }
+                        // Submit to Web3Forms (this will handle the actual form submission)
+                        console.log("Submitting to Web3Forms...");
+                        const web3FormsResponse = await fetch('https://api.web3forms.com/submit', {
+                            method: 'POST',
+                            body: formData
+                        });
 
-                        // Reset form
-                        form.reset();
-                        if (messageCount) messageCount.textContent = '0';
+                        const web3FormsResult = await web3FormsResponse.json();
+
+                        if (web3FormsResult.success) {
+                            console.log("Web3Forms submission successful");
+
+                            // Show success message (NO EMAIL NOTIFICATIONS as requested)
+                            showFormMessage('Thank you for your message! We have received your inquiry and will get back to you soon.', 'success');
+
+                            // Reset form
+                            form.reset();
+                            if (messageCount) messageCount.textContent = '0';
+                        } else {
+                            throw new Error(web3FormsResult.message || 'Web3Forms submission failed');
+                        }
 
                     } catch (error) {
                         console.error('Error submitting contact form:', error);

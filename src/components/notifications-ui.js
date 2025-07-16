@@ -6,21 +6,7 @@ let db;
 let currentUser = null;
 let currentFilter = 'all'; // 'all' or 'unread'
 
-// Show loading overlay
-function showLoading() {
-    const overlay = document.querySelector('.loading-overlay');
-    if (overlay) {
-        overlay.style.display = 'flex';
-    }
-}
-
-// Hide loading overlay
-function hideLoading() {
-    const overlay = document.querySelector('.loading-overlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-}
+// Loading functions are now handled in the main notifications.html file
 
 // Format date
 function formatDate(timestamp) {
