@@ -67,7 +67,8 @@ $EMAIL_CONFIG = [
     'username' => 'website.po45@gmail.com',
     'password' => 'usil vuzn wbep nili', // App password
     'from_email' => 'website.po45@gmail.com',
-    'from_name' => 'Attendly Team'
+    'from_name' => 'lowrybunks Team',
+    'admin_email' => 'rahulhitwo@gmail.com' // Admin notification email
 ];
 
 /**

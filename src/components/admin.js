@@ -162,9 +162,25 @@ async function loadAdminDashboard() {
     loadSubjects();
     loadUserLogs();
     loadSystemHealth();
-    
+    loadContactSubmissions();
+
     // Set up event listeners for user table rows
     setupUserTableEventListeners();
+
+    // Initialize contact submissions event listeners
+    initializeContactSubmissionsEventListeners();
+
+    // Add tab click event listener for contact submissions
+    const contactSubmissionsTab = document.getElementById('contact-submissions-tab');
+    if (contactSubmissionsTab) {
+        contactSubmissionsTab.addEventListener('click', function() {
+            console.log('Contact submissions tab clicked, reloading data...');
+            setTimeout(() => {
+                loadContactSubmissions();
+            }, 100); // Small delay to ensure tab content is visible
+        });
+    }
+
     // ... add other loading functions as needed from the old script
 }
 
@@ -431,14 +447,54 @@ async function deleteSubject(subjectId) {
         console.error("No subject ID provided for deletion");
         return;
     }
-    
+
     if (!confirm('Are you sure you want to delete this subject? This cannot be undone.')) {
         return;
     }
-    
+
     try {
+        // First, get the subject data to know which subject name to remove from user data
+        const subjectDoc = await db.collection("subjects").doc(subjectId).get();
+        if (!subjectDoc.exists) {
+            showToast('Subject not found', 'warning');
+            return;
+        }
+
+        const subjectData = subjectDoc.data();
+        const subjectName = subjectData.name;
+
+        // Store in deletedRecords collection for backup
+        await db.collection('deletedRecords').add({
+            type: 'subject',
+            data: subjectData,
+            deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            deletedBy: currentUser ? currentUser.email : 'unknown'
+        });
+
+        // Delete the subject from subjects collection
         await db.collection("subjects").doc(subjectId).delete();
-        showToast('Subject deleted successfully', 'success');
+
+        // Clean up user attendance data - remove this subject from all users
+        const usersSnapshot = await db.collection('users').get();
+        const batch = db.batch();
+
+        usersSnapshot.forEach(userDoc => {
+            const userData = userDoc.data();
+            if (userData.attendanceData && userData.attendanceData.subjects && userData.attendanceData.subjects[subjectName]) {
+                // Remove the subject from user's attendance data
+                const updatedAttendanceData = { ...userData.attendanceData };
+                delete updatedAttendanceData.subjects[subjectName];
+
+                batch.update(userDoc.ref, {
+                    attendanceData: updatedAttendanceData
+                });
+            }
+        });
+
+        // Commit all user data updates
+        await batch.commit();
+
+        showToast('Subject deleted successfully and cleaned from all user data', 'success');
         loadSubjects();
     } catch (error) {
         console.error("Error deleting subject:", error);
@@ -757,4 +813,574 @@ async function confirmDeleteUser() {
         console.error('Error deleting user:', error);
         showToast(`Error deleting user: ${error.message}`, 'danger');
     }
+}
+
+// --- Contact Submissions Management ---
+
+let contactSubmissions = [];
+let filteredContactSubmissions = [];
+let currentContactPage = 1;
+const contactSubmissionsPerPage = 10;
+
+async function loadContactSubmissions() {
+    try {
+        console.log('Loading contact submissions...');
+
+        // Check if Firebase is initialized
+        if (!db) {
+            console.error('Firebase database not initialized');
+            showToast('Firebase not initialized', 'danger');
+            return;
+        }
+
+        // Show loading state
+        const tableBody = document.getElementById('contactSubmissionsTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading contact submissions...</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        const contactSubmissionsSnapshot = await db.collection('contactSubmissions')
+            .orderBy('timestamp', 'desc')
+            .get();
+
+        contactSubmissions = [];
+        contactSubmissionsSnapshot.forEach(doc => {
+            const data = doc.data();
+            contactSubmissions.push({
+                id: doc.id,
+                ...data,
+                timestamp: data.timestamp ? data.timestamp.toDate() : new Date()
+            });
+        });
+
+        console.log(`Loaded ${contactSubmissions.length} contact submissions`);
+
+        // Update statistics
+        updateContactSubmissionsStats();
+
+        // Apply current filters
+        applyContactFilters();
+
+        // Show success message if no submissions found
+        if (contactSubmissions.length === 0) {
+            console.log('No contact submissions found in database');
+            if (tableBody) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>No contact submissions found</p>
+                            <small>Contact form submissions will appear here once users submit the contact form.</small>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+    } catch (error) {
+        console.error('Error loading contact submissions:', error);
+
+        // Show detailed error in table
+        const tableBody = document.getElementById('contactSubmissionsTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p>Error loading contact submissions</p>
+                        <small>${error.message}</small>
+                    </td>
+                </tr>
+            `;
+        }
+
+        showToast(`Error loading contact submissions: ${error.message}`, 'danger');
+    }
+}
+
+function updateContactSubmissionsStats() {
+    const total = contactSubmissions.length;
+    const unread = contactSubmissions.filter(s => s.status === 'unread').length;
+    const pending = contactSubmissions.filter(s => s.status === 'pending').length;
+    const resolved = contactSubmissions.filter(s => s.resolved === true || s.status === 'resolved').length;
+
+    document.getElementById('totalSubmissions').textContent = total;
+    document.getElementById('unreadSubmissions').textContent = unread;
+    document.getElementById('pendingSubmissions').textContent = pending;
+    document.getElementById('resolvedSubmissions').textContent = resolved;
+}
+
+function applyContactFilters() {
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
+    const subjectFilter = document.getElementById('subjectFilter')?.value || '';
+    const searchTerm = document.getElementById('contactSearch')?.value.toLowerCase() || '';
+
+    filteredContactSubmissions = contactSubmissions.filter(submission => {
+        // Status filter
+        if (statusFilter && submission.status !== statusFilter) {
+            return false;
+        }
+
+        // Subject filter
+        if (subjectFilter && submission.subject !== subjectFilter) {
+            return false;
+        }
+
+        // Search filter
+        if (searchTerm) {
+            const searchableText = `${submission.name} ${submission.email} ${submission.message}`.toLowerCase();
+            if (!searchableText.includes(searchTerm)) {
+                return false;
+            }
+        }
+
+        return true;
+    });
+
+    currentContactPage = 1;
+    renderContactSubmissionsTable();
+    renderContactPagination();
+}
+
+function renderContactSubmissionsTable() {
+    const tbody = document.getElementById('contactSubmissionsTableBody');
+    if (!tbody) return;
+
+    if (filteredContactSubmissions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p>No contact submissions found</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const startIndex = (currentContactPage - 1) * contactSubmissionsPerPage;
+    const endIndex = startIndex + contactSubmissionsPerPage;
+    const pageSubmissions = filteredContactSubmissions.slice(startIndex, endIndex);
+
+    tbody.innerHTML = pageSubmissions.map(submission => {
+        const statusBadge = getStatusBadge(submission.status);
+        const messagePreview = submission.message.length > 50
+            ? submission.message.substring(0, 50) + '...'
+            : submission.message;
+
+        return `
+            <tr>
+                <td>${statusBadge}</td>
+                <td>${submission.name}</td>
+                <td>${submission.email}</td>
+                <td><span class="badge bg-secondary">${formatSubject(submission.subject)}</span></td>
+                <td>${messagePreview}</td>
+                <td>${submission.timestamp.toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewContactSubmission('${submission.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="respondToContactSubmission('${submission.id}')">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'unread': '<span class="badge bg-warning">Unread</span>',
+        'read': '<span class="badge bg-info">Read</span>',
+        'pending': '<span class="badge bg-primary">Pending</span>',
+        'resolved': '<span class="badge bg-success">Resolved</span>'
+    };
+    return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+}
+
+function formatSubject(subject) {
+    const subjects = {
+        'technical-support': 'Technical Support',
+        'feature-request': 'Feature Request',
+        'bug-report': 'Bug Report',
+        'partnership': 'Partnership',
+        'general': 'General Inquiry',
+        'other': 'Other'
+    };
+    return subjects[subject] || subject;
+}
+
+function renderContactPagination() {
+    const pagination = document.getElementById('contactSubmissionsPagination');
+    if (!pagination) return;
+
+    const totalPages = Math.ceil(filteredContactSubmissions.length / contactSubmissionsPerPage);
+
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+
+    let paginationHTML = '';
+
+    // Previous button
+    paginationHTML += `
+        <li class="page-item ${currentContactPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changeContactPage(${currentContactPage - 1})">Previous</a>
+        </li>
+    `;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        paginationHTML += `
+            <li class="page-item ${i === currentContactPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changeContactPage(${i})">${i}</a>
+            </li>
+        `;
+    }
+
+    // Next button
+    paginationHTML += `
+        <li class="page-item ${currentContactPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changeContactPage(${currentContactPage + 1})">Next</a>
+        </li>
+    `;
+
+    pagination.innerHTML = paginationHTML;
+}
+
+function changeContactPage(page) {
+    const totalPages = Math.ceil(filteredContactSubmissions.length / contactSubmissionsPerPage);
+    if (page < 1 || page > totalPages) return;
+
+    currentContactPage = page;
+    renderContactSubmissionsTable();
+    renderContactPagination();
+}
+
+async function viewContactSubmission(submissionId) {
+    try {
+        const submission = contactSubmissions.find(s => s.id === submissionId);
+        if (!submission) {
+            showToast('Contact submission not found', 'danger');
+            return;
+        }
+
+        // Populate modal with submission details
+        document.getElementById('modalContactName').textContent = submission.name;
+        document.getElementById('modalContactEmail').textContent = submission.email;
+        document.getElementById('modalContactSubject').textContent = formatSubject(submission.subject);
+        document.getElementById('modalContactDate').textContent = submission.timestamp.toLocaleString();
+        document.getElementById('modalContactMessage').textContent = submission.message;
+        document.getElementById('modalContactId').textContent = submission.id;
+        document.getElementById('modalContactUserAgent').textContent = submission.userAgent || 'Not available';
+        document.getElementById('modalContactIP').textContent = submission.ipAddress || 'Not available';
+        document.getElementById('modalContactUpdated').textContent = submission.lastUpdated ?
+            submission.lastUpdated.toLocaleString() : 'Never';
+        document.getElementById('modalContactStatus').value = submission.status || 'unread';
+
+        // Mark as read if it's unread
+        if (submission.status === 'unread') {
+            await updateContactSubmissionStatus(submissionId, 'read');
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('contactSubmissionModal'));
+        modal.show();
+
+        // Store current submission ID for saving changes
+        document.getElementById('contactSubmissionModal').dataset.submissionId = submissionId;
+
+    } catch (error) {
+        console.error('Error viewing contact submission:', error);
+        showToast('Error loading contact submission details', 'danger');
+    }
+}
+
+async function updateContactSubmissionStatus(submissionId, newStatus) {
+    try {
+        await db.collection('contactSubmissions').doc(submissionId).update({
+            status: newStatus,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Update local data
+        const submission = contactSubmissions.find(s => s.id === submissionId);
+        if (submission) {
+            submission.status = newStatus;
+            submission.lastUpdated = new Date();
+        }
+
+        // Refresh display
+        updateContactSubmissionsStats();
+        applyContactFilters();
+
+    } catch (error) {
+        console.error('Error updating contact submission status:', error);
+        throw error;
+    }
+}
+
+async function respondToContactSubmission(submissionId) {
+    try {
+        const submission = contactSubmissions.find(s => s.id === submissionId);
+        if (!submission) {
+            showToast('Contact submission not found', 'danger');
+            return;
+        }
+
+        // Populate response modal
+        document.getElementById('responseToEmail').textContent = `${submission.name} <${submission.email}>`;
+        document.getElementById('responseSubject').value = `Re: ${formatSubject(submission.subject)}`;
+        document.getElementById('responseMessage').value = '';
+
+        // Show response modal
+        const modal = new bootstrap.Modal(document.getElementById('contactResponseModal'));
+        modal.show();
+
+        // Store submission ID for sending response
+        document.getElementById('contactResponseModal').dataset.submissionId = submissionId;
+
+    } catch (error) {
+        console.error('Error preparing contact response:', error);
+        showToast('Error preparing response', 'danger');
+    }
+}
+
+async function sendContactResponse() {
+    try {
+        const modal = document.getElementById('contactResponseModal');
+        const submissionId = modal.dataset.submissionId;
+        const submission = contactSubmissions.find(s => s.id === submissionId);
+
+        if (!submission) {
+            showToast('Contact submission not found', 'danger');
+            return;
+        }
+
+        const subject = document.getElementById('responseSubject').value.trim();
+        const message = document.getElementById('responseMessage').value.trim();
+        const markResolved = document.getElementById('markResolvedAfterResponse').checked;
+
+        if (!subject || !message) {
+            showToast('Please fill in both subject and message', 'warning');
+            return;
+        }
+
+        // Disable send button
+        const sendButton = document.getElementById('sendContactResponse');
+        const originalText = sendButton.innerHTML;
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
+
+        // Prepare email data
+        const emailData = {
+            to_email: submission.email,
+            to_name: submission.name,
+            subject: subject,
+            html_content: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+                    <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: #333; margin: 0; font-size: 24px;">lowrybunks</h1>
+                            <p style="color: #666; margin: 5px 0 0 0;">Attendance Management System</p>
+                        </div>
+
+                        <h2 style="color: #333; margin-bottom: 20px;">Response to Your Inquiry</h2>
+
+                        <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
+                            Dear ${submission.name},
+                        </p>
+
+                        <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
+                            Thank you for contacting us. Here's our response to your inquiry:
+                        </p>
+
+                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 0; white-space: pre-wrap;">${message}</p>
+                        </div>
+
+                        <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
+                            If you have any further questions, please don't hesitate to contact us again.
+                        </p>
+
+                        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <p style="color: #888; font-size: 14px; margin: 0;">
+                                Best regards,<br>
+                                The lowrybunks Team
+                            </p>
+                            <p style="color: #888; font-size: 14px; margin: 10px 0 0 0;">
+                                © 2025 CodeCraft. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            from_name: 'lowrybunks Team',
+            from_email: 'website.po45@gmail.com'
+        };
+
+        // Send email
+        const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(emailData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send response email');
+        }
+
+        // Update submission status
+        const newStatus = markResolved ? 'resolved' : 'pending';
+        await updateContactSubmissionStatus(submissionId, newStatus);
+
+        // Log the response
+        await db.collection('contactSubmissions').doc(submissionId).update({
+            responses: firebase.firestore.FieldValue.arrayUnion({
+                subject: subject,
+                message: message,
+                sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                sentBy: currentUser.email
+            })
+        });
+
+        // Close modal and show success
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        modalInstance.hide();
+
+        showToast('Response sent successfully', 'success');
+
+    } catch (error) {
+        console.error('Error sending contact response:', error);
+        showToast('Error sending response: ' + error.message, 'danger');
+    } finally {
+        // Re-enable send button
+        const sendButton = document.getElementById('sendContactResponse');
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Send Response';
+    }
+}
+
+// Initialize contact submissions event listeners
+function initializeContactSubmissionsEventListeners() {
+    // Filter event listeners
+    const statusFilter = document.getElementById('statusFilter');
+    const subjectFilter = document.getElementById('subjectFilter');
+    const contactSearch = document.getElementById('contactSearch');
+    const clearFilters = document.getElementById('clearContactFilters');
+    const refreshButton = document.getElementById('refreshContactSubmissions');
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', applyContactFilters);
+    }
+
+    if (subjectFilter) {
+        subjectFilter.addEventListener('change', applyContactFilters);
+    }
+
+    if (contactSearch) {
+        contactSearch.addEventListener('input', debounce(applyContactFilters, 300));
+    }
+
+    if (clearFilters) {
+        clearFilters.addEventListener('click', () => {
+            if (statusFilter) statusFilter.value = '';
+            if (subjectFilter) subjectFilter.value = '';
+            if (contactSearch) contactSearch.value = '';
+            applyContactFilters();
+        });
+    }
+
+    if (refreshButton) {
+        refreshButton.addEventListener('click', loadContactSubmissions);
+    }
+
+    // Modal event listeners
+    const saveChangesButton = document.getElementById('saveContactChanges');
+    const sendResponseButton = document.getElementById('sendContactResponse');
+    const markResolvedButton = document.getElementById('markAsResolved');
+    const respondButton = document.getElementById('respondToContact');
+
+    if (saveChangesButton) {
+        saveChangesButton.addEventListener('click', async () => {
+            try {
+                const modal = document.getElementById('contactSubmissionModal');
+                const submissionId = modal.dataset.submissionId;
+                const newStatus = document.getElementById('modalContactStatus').value;
+
+                await updateContactSubmissionStatus(submissionId, newStatus);
+
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                modalInstance.hide();
+
+                showToast('Contact submission updated successfully', 'success');
+            } catch (error) {
+                console.error('Error saving contact changes:', error);
+                showToast('Error saving changes', 'danger');
+            }
+        });
+    }
+
+    if (sendResponseButton) {
+        sendResponseButton.addEventListener('click', sendContactResponse);
+    }
+
+    if (markResolvedButton) {
+        markResolvedButton.addEventListener('click', async () => {
+            try {
+                const modal = document.getElementById('contactSubmissionModal');
+                const submissionId = modal.dataset.submissionId;
+
+                await updateContactSubmissionStatus(submissionId, 'resolved');
+
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                modalInstance.hide();
+
+                showToast('Contact submission marked as resolved', 'success');
+            } catch (error) {
+                console.error('Error marking as resolved:', error);
+                showToast('Error marking as resolved', 'danger');
+            }
+        });
+    }
+
+    if (respondButton) {
+        respondButton.addEventListener('click', () => {
+            const modal = document.getElementById('contactSubmissionModal');
+            const submissionId = modal.dataset.submissionId;
+
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            modalInstance.hide();
+
+            setTimeout(() => {
+                respondToContactSubmission(submissionId);
+            }, 300);
+        });
+    }
+}
+
+// Debounce function for search input
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }

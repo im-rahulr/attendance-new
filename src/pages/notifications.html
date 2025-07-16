@@ -351,8 +351,10 @@
 
                             // Wait for notification manager to be ready
                             function waitForNotificationManager() {
-                                if (window.notificationManager) {
+                                if (window.notificationManager && window.notificationManager.currentUser) {
                                     console.log("Notification manager ready, adding listener");
+
+                                    // Add listener for real-time updates
                                     window.notificationManager.addListener(function(notifications, unreadCount) {
                                         console.log("Notification listener called with", notifications.length, "notifications");
                                         window.notifications = notifications;
@@ -360,23 +362,28 @@
                                         updateNotificationCounts();
                                     });
 
-                                    // Also manually trigger initial load
+                                    // Initial load with better error handling
                                     setTimeout(() => {
-                                        const notifications = window.notificationManager.getNotifications();
-                                        console.log("Manual initial load:", notifications.length, "notifications");
-                                        window.notifications = notifications;
-                                        renderNotifications();
-                                        updateNotificationCounts();
+                                        try {
+                                            const notifications = window.notificationManager.getNotifications();
+                                            console.log("Manual initial load:", notifications.length, "notifications");
+                                            window.notifications = notifications;
+                                            renderNotifications();
+                                            updateNotificationCounts();
 
-                                        // If still no notifications, try direct loading
-                                        if (notifications.length === 0) {
-                                            console.log("No notifications from manager, trying direct load");
-                                            loadNotifications();
+                                            // If still no notifications, try direct loading as fallback
+                                            if (notifications.length === 0) {
+                                                console.log("No notifications from manager, trying direct load as fallback");
+                                                loadNotifications();
+                                            }
+                                        } catch (error) {
+                                            console.error("Error in initial notification load:", error);
+                                            loadNotifications(); // Fallback to direct loading
                                         }
-                                    }, 2000);
+                                    }, 1500);
                                 } else {
                                     console.log("Notification manager not ready, retrying...");
-                                    setTimeout(waitForNotificationManager, 500);
+                                    setTimeout(waitForNotificationManager, 300);
                                 }
                             }
                             waitForNotificationManager();
@@ -481,63 +488,99 @@
         
         function renderNotifications() {
             const notificationsList = document.getElementById('notificationsList');
-
-            // Get notifications from notification manager
-            const allNotifications = window.notificationManager ? window.notificationManager.getNotifications() : [];
-
-            // Filter out notifications older than 24 hours
-            const now = new Date();
-            const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-
-            const recentNotifications = allNotifications.filter(notification => {
-                if (!notification.timestamp) return true; // Keep notifications without timestamp
-                const notificationTime = notification.timestamp.toDate();
-                return notificationTime > twentyFourHoursAgo;
-            });
-
-            if (recentNotifications.length === 0) {
-                notificationsList.innerHTML = `
-                    <div class="no-notifications">
-                        <i class="fas fa-bell-slash"></i>
-                        <h4>No notifications</h4>
-                        <p>You'll see messages from administrators here</p>
-                    </div>
-                `;
+            if (!notificationsList) {
+                console.error('Notifications list element not found');
                 return;
             }
 
-            notificationsList.innerHTML = '';
-
-            recentNotifications.forEach(notification => {
-                const notificationCard = document.createElement('div');
-                notificationCard.className = `notification-card ${!notification.read ? 'unread' : 'read'}`;
-
-                const timestamp = notification.timestamp ? new Date(notification.timestamp.toDate()).toLocaleString() : 'Unknown time';
-
-                const authorDisplay = notification.authorName || notification.senderName || 'Administrator';
-                const adminBadge = notification.isAdmin ? '<span class="admin-badge"><i class="fas fa-shield-alt"></i> Admin</span>' : '';
-
-                // Sanitize content to prevent XSS
-                const safeTitle = (notification.title || 'Notification').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const safeMessage = (notification.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const safeAuthor = authorDisplay.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-                notificationCard.innerHTML = `
-                    <div class="notification-title">${safeTitle}</div>
-                    <div class="notification-message">${safeMessage}</div>
-                    <div class="notification-header-info">
-                        <div class="notification-from">From: ${safeAuthor} ${adminBadge}</div>
-                        <span class="notification-time">${timestamp}</span>
-                    </div>
-                `;
-
-                // Auto-mark as read when viewed
-                if (!notification.read) {
-                    markAsRead(notification.id);
+            try {
+                // Get notifications from notification manager or fallback to window.notifications
+                let allNotifications = [];
+                if (window.notificationManager) {
+                    allNotifications = window.notificationManager.getNotifications() || [];
+                } else if (window.notifications) {
+                    allNotifications = window.notifications || [];
                 }
 
-                notificationsList.appendChild(notificationCard);
-            });
+                console.log("Rendering notifications:", allNotifications.length, "total notifications");
+
+                // Show all notifications (not just recent ones) for better user experience
+                const validNotifications = allNotifications.filter(notification => {
+                    return notification && (notification.title || notification.message);
+                });
+
+                if (validNotifications.length === 0) {
+                    notificationsList.innerHTML = `
+                        <div class="no-notifications">
+                            <i class="fas fa-bell-slash"></i>
+                            <h4>No notifications</h4>
+                            <p>You'll see messages from administrators here</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                notificationsList.innerHTML = '';
+
+                validNotifications.forEach((notification, index) => {
+                    try {
+                        const notificationCard = document.createElement('div');
+                        notificationCard.className = `notification-card ${!notification.read ? 'unread' : 'read'}`;
+
+                        // Better timestamp handling
+                        let timestamp = 'Unknown time';
+                        if (notification.timestamp) {
+                            try {
+                                if (typeof notification.timestamp.toDate === 'function') {
+                                    timestamp = notification.timestamp.toDate().toLocaleString();
+                                } else if (notification.timestamp instanceof Date) {
+                                    timestamp = notification.timestamp.toLocaleString();
+                                } else {
+                                    timestamp = new Date(notification.timestamp).toLocaleString();
+                                }
+                            } catch (e) {
+                                console.warn('Error parsing timestamp for notification', notification.id, e);
+                            }
+                        }
+
+                        const authorDisplay = notification.authorName || notification.senderName || 'Administrator';
+                        const adminBadge = notification.isAdmin ? '<span class="admin-badge"><i class="fas fa-shield-alt"></i> Admin</span>' : '';
+
+                        // Sanitize content to prevent XSS
+                        const safeTitle = (notification.title || 'Notification').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const safeMessage = (notification.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const safeAuthor = authorDisplay.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                        notificationCard.innerHTML = `
+                            <div class="notification-title">${safeTitle}</div>
+                            <div class="notification-message">${safeMessage}</div>
+                            <div class="notification-header-info">
+                                <div class="notification-from">From: ${safeAuthor} ${adminBadge}</div>
+                                <span class="notification-time">${timestamp}</span>
+                            </div>
+                        `;
+
+                        // Auto-mark as read when viewed (with delay to avoid rapid firing)
+                        if (!notification.read && notification.id) {
+                            setTimeout(() => markAsRead(notification.id), 1000 + (index * 100));
+                        }
+
+                        notificationsList.appendChild(notificationCard);
+                    } catch (error) {
+                        console.error('Error rendering individual notification:', error, notification);
+                    }
+                });
+
+                console.log("Successfully rendered", validNotifications.length, "notifications");
+            } catch (error) {
+                console.error('Error in renderNotifications:', error);
+                notificationsList.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error displaying notifications. Please refresh the page.
+                    </div>
+                `;
+            }
         }
 
         function updateNotificationCounts() {

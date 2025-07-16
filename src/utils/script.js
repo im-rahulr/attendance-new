@@ -1362,22 +1362,24 @@ function updateSummaryCards(userData) {
 // Function to delete a subject
 function deleteSubject(subjectId) {
     showLoading("Deleting subject...");
-    
+
     if (!firebase || !firebase.firestore) {
         console.error("Firebase not initialized");
         hideLoading();
         showToast("Firebase not initialized. Please refresh the page.");
         return;
     }
-    
+
     const db = firebase.firestore();
-    
-    // Get subject data before deleting (for backup)
+    let subjectName = null;
+
+    // Get subject data before deleting (for backup and cleanup)
     db.collection('subjects').doc(subjectId).get()
         .then((doc) => {
             if (doc.exists) {
                 const subjectData = doc.data();
-                
+                subjectName = subjectData.name;
+
                 // Store in deletedRecords collection
                 return db.collection('deletedRecords').add({
                     type: 'subject',
@@ -1393,9 +1395,33 @@ function deleteSubject(subjectId) {
             }
         })
         .then(() => {
+            // Clean up user attendance data if we have the subject name
+            if (subjectName) {
+                return db.collection('users').get().then(usersSnapshot => {
+                    const batch = db.batch();
+
+                    usersSnapshot.forEach(userDoc => {
+                        const userData = userDoc.data();
+                        if (userData.attendanceData && userData.attendanceData.subjects && userData.attendanceData.subjects[subjectName]) {
+                            // Remove the subject from user's attendance data
+                            const updatedAttendanceData = { ...userData.attendanceData };
+                            delete updatedAttendanceData.subjects[subjectName];
+
+                            batch.update(userDoc.ref, {
+                                attendanceData: updatedAttendanceData
+                            });
+                        }
+                    });
+
+                    // Commit all user data updates
+                    return batch.commit();
+                });
+            }
+        })
+        .then(() => {
             hideLoading();
-            showToast("Subject deleted successfully");
-            
+            showToast("Subject deleted successfully and cleaned from all user data");
+
             // Reload subjects
             loadSubjects();
         })

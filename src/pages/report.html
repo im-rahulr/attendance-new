@@ -515,14 +515,14 @@
                 const userRef = db.collection('users').doc(userId);
                 
                 userRef.onSnapshot(
-                    function(doc) {
+                    async function(doc) {
                         console.log("Real-time update received:", doc.exists);
                         if (doc.exists) {
                             const userData = doc.data();
                             if (userData && userData.attendanceData) {
                                 console.log("Got real-time attendance data update");
                                 const data = userData.attendanceData;
-                                displayReport(data);
+                                await displayReport(data);
                             } else {
                                 console.log("User exists but no attendance data found");
                                 showNoDataMessage();
@@ -547,7 +547,7 @@
             let subjectsChart = null;
 
             // Display attendance report with pie charts
-            function displayReport(data) {
+            async function displayReport(data) {
                 console.log("Displaying report with data:", data);
                 try {
                     // Debug the data structure
@@ -563,15 +563,18 @@
                         return;
                     }
 
+                    // Filter the data to only include existing subjects
+                    const filteredData = await filterAttendanceDataByExistingSubjects(data);
+
                     // Calculate and display total attendance pie chart
-                    const totalStats = calculateTotalStats(data.subjects);
+                    const totalStats = calculateTotalStats(filteredData.subjects);
                     createTotalAttendanceChart(totalStats);
 
                     // Display individual subject cards
-                    createSubjectCards(data.subjects);
+                    createSubjectCards(filteredData.subjects);
 
                     // Display combined subjects chart
-                    createCombinedSubjectsChart(data.subjects);
+                    createCombinedSubjectsChart(filteredData.subjects);
 
                     // Show toast notification for updates
                     showToast("Report updated with latest data");
@@ -994,6 +997,39 @@
                 });
             }
 
+            // Helper function to filter attendance data to only include existing subjects
+            async function filterAttendanceDataByExistingSubjects(attendanceData) {
+                try {
+                    // Get current subjects from the subjects collection
+                    const subjectsSnapshot = await firebase.firestore().collection('subjects').get();
+                    const existingSubjects = new Set();
+
+                    subjectsSnapshot.forEach(doc => {
+                        const subjectData = doc.data();
+                        if (subjectData.name) {
+                            existingSubjects.add(subjectData.name);
+                        }
+                    });
+
+                    // Filter attendance data to only include existing subjects
+                    const filteredAttendanceData = { ...attendanceData };
+                    if (filteredAttendanceData.subjects) {
+                        const filteredSubjects = {};
+                        Object.keys(filteredAttendanceData.subjects).forEach(subjectName => {
+                            if (existingSubjects.has(subjectName)) {
+                                filteredSubjects[subjectName] = filteredAttendanceData.subjects[subjectName];
+                            }
+                        });
+                        filteredAttendanceData.subjects = filteredSubjects;
+                    }
+
+                    return filteredAttendanceData;
+                } catch (error) {
+                    console.error('Error filtering attendance data:', error);
+                    return attendanceData; // Return original data if filtering fails
+                }
+            }
+
             // Function to create all advanced analytics charts
             function createAdvancedAnalyticsCharts() {
                 // Get current user's attendance data
@@ -1001,14 +1037,17 @@
                 if (!user) return;
 
                 const userRef = firebase.firestore().collection('users').doc(user.uid);
-                userRef.get().then(doc => {
+                userRef.get().then(async doc => {
                     if (doc.exists) {
                         const userData = doc.data();
                         if (userData && userData.attendanceData) {
-                            createAttendanceTrendsChart(userData.attendanceData);
-                            createSubjectComparisonChart(userData.attendanceData);
-                            createWeeklyPatternChart(userData.attendanceData);
-                            createGoalsProgressChart(userData.attendanceData);
+                            // Filter attendance data to only include existing subjects
+                            const filteredAttendanceData = await filterAttendanceDataByExistingSubjects(userData.attendanceData);
+
+                            createAttendanceTrendsChart(filteredAttendanceData);
+                            createSubjectComparisonChart(filteredAttendanceData);
+                            createWeeklyPatternChart(filteredAttendanceData);
+                            createGoalsProgressChart(filteredAttendanceData);
                         }
                     }
                 }).catch(error => {

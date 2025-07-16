@@ -11,7 +11,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../styles/style.css">
     <style>
         /* Project Log specific styles */
         .project-log-page {
@@ -244,7 +244,7 @@
                 
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-number" id="totalCommits">45</div>
+                        <div class="stat-number" id="totalCommits">55</div>
                         <div class="stat-label">Total Updates</div>
                     </div>
                     <div class="stat-item">
@@ -252,12 +252,12 @@
                         <div class="stat-label">Features Added</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number" id="totalBugFixes">8</div>
+                        <div class="stat-number" id="totalBugFixes">188</div>
                         <div class="stat-label">Bug Fixes</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number" id="projectAge">31</div>
-                        <div class="stat-label">Days Active</div>
+                        <div class="stat-number" id="projectAge">35,878</div>
+                        <div class="stat-label">Lines of Code</div>
                     </div>
                 </div>
             </div>
@@ -265,15 +265,21 @@
             <!-- Developed by Section -->
             <div class="log-section">
                 <h3 class="section-title">
-                    <i class="fas fa-users"></i>
-                    Developed by
+                     Our Team
                 </h3>
-                <ul style="list-style: none; padding-left: 0; font-size: 15px; color: var(--text-primary);">
+                <!-- <ul style="list-style: none; padding-left: 0; font-size: 15px; color: var(--text-primary); align-items: center;">
                     <li>Rahul</li>
                     <li>Niketh</li>
                     <li>Viki</li>
-                    <li>Randan</li>
-                </ul>
+                </ul> -->
+                <div class="d-flex flex-column align-items-center" >
+                    <h5 style="font-size: 18px; color: var(--text-primary);">Niketh</h5>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Founder & CEO</p>
+                    <h5 style="font-size: 18px; color: var(--text-primary);">Rahul</h5>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Head of Technology</p>
+                    <h5 style="font-size: 18px; color: var(--text-primary);">Viki</h5>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Full Stack Developer</p>
+                </div>
             </div>
             
             <!-- Filters and Controls -->
@@ -284,8 +290,10 @@
                 </h3>
 
                 <div class="d-flex gap-2 flex-wrap mb-3">
-                    <input type="text" id="projectSearchInput" class="form-control form-control-sm" placeholder="Search project logs..." style="width: 200px;">
-                    <select id="projectTypeFilter" class="form-select form-select-sm" style="width: 150px;">
+                    <input type="text" id="projectSearchInput" class="form-control form-control-sm" placeholder="Search project logs..."
+                           style="width: 200px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                    <select id="projectTypeFilter" class="form-select form-select-sm"
+                            style="width: 150px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);">
                         <option value="">All Types</option>
                         <option value="feature">New Feature</option>
                         <option value="bugfix">Bug Fix</option>
@@ -294,18 +302,24 @@
                         <option value="ui">UI/UX</option>
                         <option value="security">Security</option>
                     </select>
-                    <select id="projectUserFilter" class="form-select form-select-sm" style="width: 150px;">
+                    <select id="projectUserFilter" class="form-select form-select-sm"
+                            style="width: 150px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);">
                         <option value="">All Users</option>
                     </select>
-                    <input type="date" id="projectDateFrom" class="form-control form-control-sm" style="width: 140px;" title="From Date">
-                    <input type="date" id="projectDateTo" class="form-control form-control-sm" style="width: 140px;" title="To Date">
-                    <button class="btn btn-sm btn-outline-secondary" id="clearProjectFiltersBtn">
+                    <input type="date" id="projectDateFrom" class="form-control form-control-sm"
+                           style="width: 140px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);" title="From Date">
+                    <input type="date" id="projectDateTo" class="form-control form-control-sm"
+                           style="width: 140px; background-color: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary);" title="To Date">
+                    <button class="btn btn-sm btn-outline-secondary" id="clearProjectFiltersBtn"
+                            style="border-color: var(--border-color); color: var(--text-secondary);">
                         <i class="fas fa-times me-1"></i>Clear
                     </button>
-                    <button class="btn btn-sm btn-outline-primary" id="refreshProjectLogsBtn">
+                    <button class="btn btn-sm btn-outline-primary" id="refreshProjectLogsBtn"
+                            style="border-color: var(--accent-primary); color: var(--accent-primary);">
                         <i class="fas fa-sync-alt me-1"></i>Refresh
                     </button>
-                    <button class="btn btn-sm btn-outline-info" id="toggleProjectChartsBtn" title="Toggle project analytics charts">
+                    <button class="btn btn-sm btn-outline-info" id="toggleProjectChartsBtn" title="Toggle project analytics charts"
+                            style="border-color: var(--accent-secondary); color: var(--accent-secondary);">
                         <i class="fas fa-chart-bar me-1"></i>Analytics
                     </button>
                 </div>
@@ -333,54 +347,62 @@
 
                 <!-- Project Analytics Charts (Initially Hidden) -->
                 <div id="projectAnalyticsSection" class="mt-4" style="display: none;">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-chart-line me-2"></i>Project Activity Timeline
+                    <div class="row g-3">
+                        <div class="col-lg-6 col-md-12">
+                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0" style="color: var(--text-primary);">
+                                        <i class="fas fa-chart-line me-2" style="color: var(--accent-primary);"></i>Project Activity Timeline
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="projectTimelineChart" height="300"></canvas>
+                                    <div style="position: relative; height: 300px;">
+                                        <canvas id="projectTimelineChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-pie-chart me-2"></i>Project Types Distribution
+                        <div class="col-lg-6 col-md-12">
+                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0" style="color: var(--text-primary);">
+                                        <i class="fas fa-pie-chart me-2" style="color: var(--accent-primary);"></i>Project Types Distribution
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="projectTypesChart" height="300"></canvas>
+                                    <div style="position: relative; height: 300px;">
+                                        <canvas id="projectTypesChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-users me-2"></i>Contributors Activity
+                    <div class="row g-3 mt-2">
+                        <div class="col-lg-6 col-md-12">
+                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0" style="color: var(--text-primary);">
+                                        <i class="fas fa-users me-2" style="color: var(--accent-primary);"></i>Contributors Activity
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="contributorsChart" height="300"></canvas>
+                                    <div style="position: relative; height: 300px;">
+                                        <canvas id="contributorsChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-calendar me-2"></i>Monthly Progress
+                        <div class="col-lg-6 col-md-12">
+                            <div class="card h-100" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+                                <div class="card-header" style="background-color: var(--bg-tertiary); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0" style="color: var(--text-primary);">
+                                        <i class="fas fa-calendar me-2" style="color: var(--accent-primary);"></i>Monthly Progress
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="monthlyProgressChart" height="300"></canvas>
+                                    <div style="position: relative; height: 300px;">
+                                        <canvas id="monthlyProgressChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -421,6 +443,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -831,9 +856,18 @@
         // Function to create Project Timeline Chart
         async function createProjectTimelineChart() {
             const ctx = document.getElementById('projectTimelineChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('Project timeline chart canvas not found');
+                return;
+            }
 
             try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js library not loaded');
+                    return;
+                }
+
                 const snapshot = await firebase.firestore().collection('projectLogs')
                     .orderBy('timestamp', 'desc')
                     .limit(50)
@@ -920,9 +954,17 @@
         // Function to create Project Types Chart
         async function createProjectTypesChart() {
             const ctx = document.getElementById('projectTypesChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('Project types chart canvas not found');
+                return;
+            }
 
             try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js library not loaded');
+                    return;
+                }
                 const snapshot = await firebase.firestore().collection('projectLogs')
                     .orderBy('timestamp', 'desc')
                     .limit(100)
@@ -993,9 +1035,17 @@
         // Function to create Contributors Chart
         async function createContributorsChart() {
             const ctx = document.getElementById('contributorsChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('Contributors chart canvas not found');
+                return;
+            }
 
             try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js library not loaded');
+                    return;
+                }
                 const snapshot = await firebase.firestore().collection('projectLogs')
                     .orderBy('timestamp', 'desc')
                     .limit(100)
@@ -1071,9 +1121,17 @@
         // Function to create Monthly Progress Chart
         async function createMonthlyProgressChart() {
             const ctx = document.getElementById('monthlyProgressChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('Monthly progress chart canvas not found');
+                return;
+            }
 
             try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js library not loaded');
+                    return;
+                }
                 const snapshot = await firebase.firestore().collection('projectLogs')
                     .orderBy('timestamp', 'desc')
                     .limit(200)

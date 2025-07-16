@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick System Verification - lowrybunks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        .verification-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .test-card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .test-title {
+            color: var(--accent-primary);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .test-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            margin-left: auto;
+        }
+
+        .status-pending { background-color: #6b7280; }
+        .status-running { background-color: #3b82f6; }
+        .status-success { background-color: #10b981; }
+        .status-error { background-color: #ef4444; }
+
+        .test-details {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .test-result {
+            background-color: var(--bg-primary);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .run-all-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .run-all-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .run-all-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="verification-container">
+        <h1 style="text-align: center; color: var(--accent-primary); margin-bottom: 30px;">
+            <i class="fas fa-check-circle me-2"></i>Quick System Verification
+        </h1>
+
+        <button class="run-all-btn" id="runAllTests">
+            <i class="fas fa-play me-2"></i>Run All Verification Tests
+        </button>
+
+        <div class="summary-card" id="summaryCard" style="display: none;">
+            <div class="summary-title" id="summaryTitle">System Status</div>
+            <div class="summary-stats">
+                <div class="stat">
+                    <div class="stat-number" id="passedCount">0</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="failedCount">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Cards -->
+        <div class="test-card">
+            <div class="test-header">
+                <h3 class="test-title">Firebase Connection</h3>
+                <div class="test-status status-pending" id="firebase-status">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="test-details">
+                Verifies Firebase SDK is loaded and database connection is working
+            </div>
+            <div class="test-result" id="firebase-result"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-header">
+                <h3 class="test-title">Contact Form Functionality</h3>
+                <div class="test-status status-pending" id="form-status">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="test-details">
+                Tests form validation and submission to Firebase database
+            </div>
+            <div class="test-result" id="form-result"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-header">
+                <h3 class="test-title">Email Service</h3>
+                <div class="test-status status-pending" id="email-status">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="test-details">
+                Verifies email confirmation and admin notification delivery
+            </div>
+            <div class="test-result" id="email-result"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-header">
+                <h3 class="test-title">Data Storage & Retrieval</h3>
+                <div class="test-status status-pending" id="storage-status">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="test-details">
+                Tests Firebase data storage and admin panel data loading
+            </div>
+            <div class="test-result" id="storage-result"></div>
+        </div>
+
+        <div class="test-card">
+            <div class="test-header">
+                <h3 class="test-title">Admin Panel Integration</h3>
+                <div class="test-status status-pending" id="admin-status">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="test-details">
+                Verifies admin panel can load and display contact submissions
+            </div>
+            <div class="test-result" id="admin-result"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4gC04HoBGzttBrNtVYu0-xWCzI9qYc0",
+            authDomain: "attendance-a9a19.firebaseapp.com",
+            databaseURL: "https://attendance-a9a19-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "attendance-a9a19",
+            storageBucket: "attendance-a9a19.appspot.com",
+            messagingSenderId: "1055787262218",
+            appId: "1:1055787262218:web:c0c9c33d771456888d5af3",
+            measurementId: "G-3XPB4VLFYH"
+        };
+
+        let firebase_app, auth, db;
+        let testResults = { passed: 0, failed: 0, total: 0 };
+
+        // Initialize Firebase
+        try {
+            if (!firebase.apps.length) {
+                firebase_app = firebase.initializeApp(firebaseConfig);
+            } else {
+                firebase_app = firebase.app();
+            }
+            auth = firebase.auth();
+            db = firebase.firestore();
+        } catch (error) {
+            console.error('Firebase initialization failed:', error);
+        }
+
+        function updateTestStatus(testId, status, message = '') {
+            const statusElement = document.getElementById(`${testId}-status`);
+            const resultElement = document.getElementById(`${testId}-result`);
+            
+            statusElement.className = `test-status status-${status}`;
+            
+            const icons = {
+                'pending': 'fas fa-clock',
+                'running': 'fas fa-spinner fa-spin',
+                'success': 'fas fa-check',
+                'error': 'fas fa-times'
+            };
+            
+            statusElement.innerHTML = `<i class="${icons[status]}"></i>`;
+            
+            if (message) {
+                resultElement.textContent = message;
+                resultElement.style.display = 'block';
+            }
+            
+            if (status === 'success') testResults.passed++;
+            else if (status === 'error') testResults.failed++;
+            
+            testResults.total++;
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const summaryCard = document.getElementById('summaryCard');
+            const summaryTitle = document.getElementById('summaryTitle');
+            const passedCount = document.getElementById('passedCount');
+            const failedCount = document.getElementById('failedCount');
+            const totalCount = document.getElementById('totalCount');
+            
+            summaryCard.style.display = 'block';
+            passedCount.textContent = testResults.passed;
+            failedCount.textContent = testResults.failed;
+            totalCount.textContent = testResults.total;
+            
+            if (testResults.failed === 0 && testResults.total > 0) {
+                summaryTitle.textContent = '✅ All Systems Operational';
+                summaryCard.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            } else if (testResults.failed > 0) {
+                summaryTitle.textContent = '⚠️ Issues Detected';
+                summaryCard.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            }
+        }
+
+        async function testFirebaseConnection() {
+            updateTestStatus('firebase', 'running', 'Testing Firebase connection...');
+            
+            try {
+                if (!db) {
+                    throw new Error('Firebase not initialized');
+                }
+                
+                await db.collection('test').doc('verification-test').get();
+                updateTestStatus('firebase', 'success', 'Firebase connection successful\nFirestore database accessible');
+            } catch (error) {
+                updateTestStatus('firebase', 'error', `Firebase connection failed:\n${error.message}`);
+            }
+        }
+
+        async function testContactForm() {
+            updateTestStatus('form', 'running', 'Testing contact form submission...');
+            
+            try {
+                const testData = {
+                    name: 'Verification Test',
+                    email: 'rahulhitwo@gmail.com',
+                    subject: 'technical-support',
+                    message: 'This is an automated verification test message.',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'unread',
+                    resolved: false,
+                    userAgent: 'Verification Test',
+                    ipAddress: 'verification-test'
+                };
+                
+                const docRef = await db.collection('contactSubmissions').add(testData);
+                await docRef.update({ submissionId: docRef.id });
+                
+                updateTestStatus('form', 'success', `Contact form test successful\nDocument ID: ${docRef.id}\nData stored in Firebase`);
+                
+                // Clean up test data after 30 seconds
+                setTimeout(async () => {
+                    try {
+                        await docRef.delete();
+                        console.log('Test data cleaned up');
+                    } catch (cleanupError) {
+                        console.warn('Failed to clean up test data:', cleanupError);
+                    }
+                }, 30000);
+                
+            } catch (error) {
+                updateTestStatus('form', 'error', `Contact form test failed:\n${error.message}`);
+            }
+        }
+
+        async function testEmailService() {
+            updateTestStatus('email', 'running', 'Testing email service...');
+            
+            const emailEndpoints = [
+                { url: '/api/send-email', name: 'Node.js Service' },
+                { url: '../api/send-email.php', name: 'PHP Service' }
+            ];
+            
+            let emailWorking = false;
+            let results = [];
+            
+            for (const endpoint of emailEndpoints) {
+                try {
+                    const response = await fetch(endpoint.url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to_email: 'rahulhitwo@gmail.com',
+                            to_name: 'Verification Test',
+                            subject: 'Email Service Verification Test',
+                            html_content: '<p>This is a verification test email.</p>',
+                            from_name: 'lowrybunks Team',
+                            from_email: 'website.po45@gmail.com'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        results.push(`✅ ${endpoint.name}: Working`);
+                        emailWorking = true;
+                    } else {
+                        results.push(`❌ ${endpoint.name}: HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${endpoint.name}: ${error.message}`);
+                }
+            }
+            
+            if (emailWorking) {
+                updateTestStatus('email', 'success', `Email service test results:\n${results.join('\n')}\n\nCheck rahulhitwo@gmail.com for test email`);
+            } else {
+                updateTestStatus('email', 'error', `All email services failed:\n${results.join('\n')}`);
+            }
+        }
+
+        async function testDataStorage() {
+            updateTestStatus('storage', 'running', 'Testing data storage and retrieval...');
+            
+            try {
+                const snapshot = await db.collection('contactSubmissions').limit(5).get();
+                
+                const results = [
+                    `Found ${snapshot.size} contact submissions`,
+                    'Data structure verification:'
+                ];
+                
+                if (snapshot.size > 0) {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        results.push(`- ${data.name || 'Unknown'} (${data.email || 'No email'})`);
+                    });
+                    updateTestStatus('storage', 'success', results.join('\n'));
+                } else {
+                    updateTestStatus('storage', 'error', 'No contact submissions found in database\nSubmit a test form first');
+                }
+            } catch (error) {
+                updateTestStatus('storage', 'error', `Data storage test failed:\n${error.message}`);
+            }
+        }
+
+        async function testAdminPanel() {
+            updateTestStatus('admin', 'running', 'Testing admin panel integration...');
+            
+            try {
+                // Check if admin functions are available
+                if (typeof loadContactSubmissions === 'function') {
+                    await loadContactSubmissions();
+                    updateTestStatus('admin', 'success', 'Admin panel functions available\nContact submissions loading successful\nOpen admin.html to view submissions');
+                } else {
+                    updateTestStatus('admin', 'error', 'Admin panel functions not available\nThis test should be run from admin.html\nOr admin.js is not loaded');
+                }
+            } catch (error) {
+                updateTestStatus('admin', 'error', `Admin panel test failed:\n${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            const runButton = document.getElementById('runAllTests');
+            runButton.disabled = true;
+            runButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Running Tests...';
+            
+            testResults = { passed: 0, failed: 0, total: 0 };
+            
+            try {
+                await testFirebaseConnection();
+                await testContactForm();
+                await testEmailService();
+                await testDataStorage();
+                await testAdminPanel();
+                
+                console.log('All verification tests completed');
+            } catch (error) {
+                console.error('Test execution error:', error);
+            } finally {
+                runButton.disabled = false;
+                runButton.innerHTML = '<i class="fas fa-redo me-2"></i>Run Tests Again';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('runAllTests').addEventListener('click', runAllTests);
+
+        // Auto-run tests after page load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -343,24 +343,55 @@
             background-color: var(--bg-secondary);
             border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 4px 16px var(--shadow-light);            text-align: center;
+            box-shadow: 0 4px 16px var(--shadow-light);
+            border: 1px solid var(--border-color);
+            text-align: center;
             padding-bottom: 100px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .profile-about .section-title {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
         }
 
         .footer-desc {
             color: var(--text-secondary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             font-size: 15px;
+            line-height: 1.4;
         }
 
         .footer-copyright {
-            color: var(--text-tertiary, #aaa);
+            color: var(--text-muted);
             font-size: 13px;
             margin-bottom: 0;
+            line-height: 1.3;
+        }
+
+        .footer-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        .about-links {
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .about-links .footer-link {
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
         }
 
         /* Institutional Footer Styles */
@@ -450,6 +481,69 @@
                 font-size: 12px;
             }
         }
+
+        /* Collapsible Personal Information Styles */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 5px 0;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .section-header:hover {
+            background-color: var(--bg-tertiary);
+            padding: 5px 10px;
+        }
+
+        .expand-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .expand-toggle:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .expand-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        .expand-toggle.expanded:hover {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        .profile-section.minimized .section-title {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -480,34 +574,41 @@
 
             <!-- Personal Information Section -->
             <div class="profile-section">
-                <h3 class="section-title">Personal Information</h3>
+                <div class="section-header" id="personalInfoHeader">
+                    <h3 class="section-title">Personal Information</h3>
+                    <button class="expand-toggle" id="personalInfoToggle" aria-label="Toggle personal information">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
 
-                <div class="profile-field">
-                    <span class="field-label">Name</span>
-                    <div class="edit-field">
-                        <input type="text" id="displayNameInput"maxlength="20" autocomplete="name" style="width: 10%;">
-                        <button id="updateNameBtn" class="update-btn">Update</button>
+                <div class="collapsible-content" id="personalInfoContent">
+                    <div class="profile-field">
+                        <span class="field-label">Name</span>
+                        <div class="edit-field">
+                            <input type="text" id="displayNameInput"maxlength="20" autocomplete="name" style="width: 10%;">
+                            <button id="updateNameBtn" class="update-btn">Update</button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="profile-field">
-                    <span class="field-label">Email</span>
-                    <span class="field-value" id="emailValue">loading@example.com</span>
-                </div>
+                    <div class="profile-field">
+                        <span class="field-label">Email</span>
+                        <span class="field-value" id="emailValue">loading@example.com</span>
+                    </div>
 
-                <div class="profile-field">
-                    <span class="field-label">College</span>
-                    <span class="field-value">LAC</span>
-                </div>
+                    <div class="profile-field">
+                        <span class="field-label">College</span>
+                        <span class="field-value">LAC</span>
+                    </div>
 
-                <div class="profile-field">
-                    <span class="field-label">Role</span>
-                    <span class="field-value" id="userRole">Loading...</span>
-                </div>
+                    <div class="profile-field">
+                        <span class="field-label">Role</span>
+                        <span class="field-value" id="userRole">Loading...</span>
+                    </div>
 
-                <div class="profile-field">
-                    <span class="field-label">Joined On</span>
-                    <span class="field-value" id="joinedDate">Loading...</span>
+                    <div class="profile-field">
+                        <span class="field-label">Joined On</span>
+                        <span class="field-value" id="joinedDate">Loading...</span>
+                    </div>
                 </div>
             </div>
 
@@ -540,9 +641,18 @@
         </div>
         <div class="profile-about">
             <h3 class="section-title">About LowryBunks</h3>
-            <p class="footer-desc">Made my 💖</p>
-            <p style="color: white;" class="footer-copyright">© 2025 <a href="">CodeCraft</a>. All rights reserved.</p>
-        </div> 
+            <p class="footer-desc">Made with 💖 by passionate developers</p>
+            <div class="about-links">
+                <a href="about.html" class="footer-link">
+                    <i class="fas fa-info-circle me-1"></i>Learn More About Us
+                </a>
+                <span class="mx-2">•</span>
+                <a href="contact.html" class="footer-link">
+                    <i class="fas fa-envelope me-1"></i>Contact Us
+                </a>
+            </div>
+            <p class="footer-copyright">© 2025 <a href="#" class="footer-link">CodeCraft</a>. All rights reserved.</p>
+        </div>
                <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a href="dashboard.html" class="nav-item">
@@ -951,7 +1061,7 @@
             toggle.addEventListener('click', function() {
                 const targetId = this.getAttribute('data-target');
                 const passwordInput = document.getElementById(targetId);
-                
+
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
                     this.textContent = '🔒';
@@ -961,6 +1071,63 @@
                 }
             });
         });
+
+        // Initialize collapsible personal information section
+        function initializeCollapsiblePersonalInfo() {
+            const header = document.getElementById('personalInfoHeader');
+            const toggle = document.getElementById('personalInfoToggle');
+            const content = document.getElementById('personalInfoContent');
+
+            if (!header || !toggle || !content) {
+                console.warn('Collapsible personal info elements not found');
+                return;
+            }
+
+            // Set initial state (collapsed by default)
+            let isExpanded = false;
+            content.classList.remove('expanded');
+            toggle.classList.remove('expanded');
+
+            // Add click event listener
+            header.addEventListener('click', function() {
+                isExpanded = !isExpanded;
+
+                if (isExpanded) {
+                    content.classList.add('expanded');
+                    toggle.classList.add('expanded');
+                } else {
+                    content.classList.remove('expanded');
+                    toggle.classList.remove('expanded');
+                }
+            });
+
+            // Add keyboard accessibility
+            header.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+
+            // Make header focusable for accessibility
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('role', 'button');
+            header.setAttribute('aria-expanded', 'false');
+            header.setAttribute('aria-controls', 'personalInfoContent');
+
+            // Update aria-expanded when toggled
+            const originalClick = header.onclick;
+            header.addEventListener('click', function() {
+                header.setAttribute('aria-expanded', isExpanded.toString());
+            });
+        }
+
+        // Initialize collapsible functionality when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeCollapsiblePersonalInfo);
+        } else {
+            initializeCollapsiblePersonalInfo();
+        }
     </script>
 </body>
 </html>

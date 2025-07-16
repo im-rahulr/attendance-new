@@ -36,7 +36,9 @@ const EMAIL_CONFIG = {
     auth: {
         user: 'website.po45@gmail.com',
         pass: 'usil vuzn wbep nili' // App password for Gmail
-    }
+    },
+    // Admin notification email
+    adminEmail: 'rahulhitwo@gmail.com'
 };
 
 // Create transporter
