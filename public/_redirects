@@ -3,6 +3,7 @@
 # Handle SPA routing for main pages - allow both with and without .html
 /dashboard     /dashboard.html     200
 /report        /report.html        200
+/calculator    /calculator.html    200
 /profile       /profile.html       200
 
 # If accessing root, redirect to login

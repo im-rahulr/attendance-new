@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Calculator - lowrybunks</title>
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        .calculator-card {
+            background: black;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            /* Remove border and box-shadow for flat look */
+            border: none;
+            box-shadow: none;
+        }
+        
+        .subject-card {
+            background: black;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            /* border: 1px solid #30363D; */
+            transition: all 0.3s ease;
+        }
+        
+        .subject-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .subject-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .attendance-percentage {
+            font-size: 24px;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+        }
+        
+        .percentage-excellent { background: #22c55e; }
+        .percentage-good { background: #3b82f6; }
+        .percentage-warning { background: #f59e0b; }
+        .percentage-danger { background: #ef4444; }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #8B949E;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-add {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-add:hover {
+            background: #16a34a;
+            transform: scale(1.1);
+        }
+        
+        .btn-remove {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-remove:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+        
+        .scenario-display {
+            background: black;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 0 16px;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .scenario-label {
+            font-size: 12px;
+            color: #8B949E;
+            margin-bottom: 4px;
+        }
+        
+        .scenario-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .reset-btn {
+                    background: black;
+            color: white;
+            border: 1px solid #30363D;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background: black;
+            transform: translateY(-1px);
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+        
+        .summary-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            padding-bottom: 50px;
+        }
+        
+        .summary-stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .summary-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .summary-stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(12, 10, 10, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #8B949E;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 70px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item span:not(.notification-badge) {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .white-important {
+            color: #fff !important;
+            font-weight: 600;
+            background: rgba(0,0,0,0.15); /* optional for more emphasis */
+            padding: 8px 12px;            /* optional for more emphasis */
+            border-radius: 6px;           /* optional for more emphasis */
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <div class="app-container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="app-title"><span class="lowry-style">lowry</span>bunks</div>
+        </div>
+        
+        <!-- Page Title -->
+        <div class="greeting-section">
+            <h1 class="greeting">Attendance Calculator</h1>
+            <p class="welcome-text">Simulate attendance scenarios and see how they affect your percentage</p>
+        </div>
+
+        <!-- Calculator Content -->
+        <div class="calculator-content">
+            <div class="calculator-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Attendance Scenarios
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="reset-btn" id="detectBtn" title="Detect deleted subjects in your data">
+                            <i class="fas fa-search me-1"></i>Detect
+                        </button>
+                        <!-- Cleanup button removed -->
+                        <button class="reset-btn" id="resetAllBtn">
+                            <i class="fas fa-undo me-1"></i>Reset All
+                        </button>
+                    </div>
+                </div>
+                <p class="mb-4 white-important">
+                    Use the + and - buttons to simulate adding or removing attendance days. 
+                    This won't affect your actual attendance data.
+                </p>
+                
+                <!-- Subjects will be dynamically loaded here -->
+                <div id="subjectsContainer">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Loading your attendance data...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary Card -->
+            <div class="summary-card" id="summaryCard" style="display: none;">
+                <div class="summary-title">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Overall Summary
+                </div>
+                <div class="summary-stats" id="summaryStats">
+                    <!-- Summary statistics will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="report.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Report</span>
+            </a>
+            <a href="calculator.html" class="nav-item active">
+                <i class="fas fa-calculator"></i>
+                <span>Calculator</span>
+            </a>
+            <a href="notifications.html" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-badge" id="navNotificationBadge" style="display: none;"></span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-light" id="loadingText">Loading...</p>
+    </div>
+    
+    <!-- Bootstrap Toast -->
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050">
+        <div id="liveToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Calculator updated!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="../api/auth.js"></script>
+
+    <!-- Attendance Calculator Script -->
+    <script src="../components/calculator.js"></script>
+</body>
+</html>

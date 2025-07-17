@@ -176,6 +176,9 @@ async function loadAdminDashboard() {
     // Initialize email testing event listeners
     initializeEmailTestingEventListeners();
 
+    // Initialize attendance management event listeners
+    initializeAttendanceManagementEventListeners();
+
     // Add tab click event listener for contact submissions
     const contactSubmissionsTab = document.getElementById('contact-submissions-tab');
     if (contactSubmissionsTab) {
@@ -363,12 +366,16 @@ async function loadRecentAttendance() {
         attendanceSnapshot.forEach(doc => {
             const data = doc.data();
             const timestamp = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown';
-            
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${data.userName || 'Unknown'}</td>
                 <td>${data.subject || 'Unknown'}</td>
-                <td>${data.status || 'Present'}</td>
+                <td>
+                    <span class="badge ${data.status === 'present' ? 'bg-success' : 'bg-danger'}">
+                        ${data.status || 'Present'}
+                    </span>
+                </td>
                 <td>${timestamp}</td>
             `;
             tbody.appendChild(tr);
@@ -1991,6 +1998,628 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// --- Attendance Management Functions ---
+
+// Initialize attendance management event listeners
+function initializeAttendanceManagementEventListeners() {
+    console.log("Initializing attendance management event listeners...");
+
+    // Add attendance tab click listener to load attendance data
+    const attendanceTab = document.getElementById('attendance-tab');
+    if (attendanceTab && !attendanceTab.dataset.listenerAdded) {
+        attendanceTab.addEventListener('click', function() {
+            console.log('Attendance tab clicked, loading attendance data...');
+            setTimeout(() => {
+                loadAttendanceFormData();
+                loadFullAttendanceRecords();
+            }, 100);
+        });
+        attendanceTab.dataset.listenerAdded = 'true';
+    }
+
+    // Add attendance button listener
+    const addAttendanceBtn = document.getElementById('addAttendanceBtn');
+    if (addAttendanceBtn && !addAttendanceBtn.dataset.listenerAdded) {
+        addAttendanceBtn.addEventListener('click', addAttendanceRecord);
+        addAttendanceBtn.dataset.listenerAdded = 'true';
+    }
+
+    // Filter listeners
+    const filterSubject = document.getElementById('attendanceFilterSubject');
+    const filterStatus = document.getElementById('attendanceFilterStatus');
+    const filterDate = document.getElementById('attendanceFilterDate');
+
+    if (filterSubject && !filterSubject.dataset.listenerAdded) {
+        filterSubject.addEventListener('change', filterAttendanceRecords);
+        filterSubject.dataset.listenerAdded = 'true';
+    }
+
+    if (filterStatus && !filterStatus.dataset.listenerAdded) {
+        filterStatus.addEventListener('change', filterAttendanceRecords);
+        filterStatus.dataset.listenerAdded = 'true';
+    }
+
+    if (filterDate && !filterDate.dataset.listenerAdded) {
+        filterDate.addEventListener('change', filterAttendanceRecords);
+        filterDate.dataset.listenerAdded = 'true';
+    }
+
+    // Report generation listeners
+    const generateCSVBtn = document.getElementById('generateAttendanceReport');
+    const generatePDFBtn = document.getElementById('generateAttendancePDF');
+
+    if (generateCSVBtn && !generateCSVBtn.dataset.listenerAdded) {
+        generateCSVBtn.addEventListener('click', generateAttendanceCSV);
+        generateCSVBtn.dataset.listenerAdded = 'true';
+    }
+
+    if (generatePDFBtn && !generatePDFBtn.dataset.listenerAdded) {
+        generatePDFBtn.addEventListener('click', generateAttendancePDF);
+        generatePDFBtn.dataset.listenerAdded = 'true';
+    }
+}
+
+// Load attendance form data (users and subjects)
+async function loadAttendanceFormData() {
+    try {
+        // Load users for the dropdown
+        const userSelect = document.getElementById('attendanceUserSelect');
+        if (userSelect) {
+            userSelect.innerHTML = '<option value="">Loading users...</option>';
+
+            const usersSnapshot = await db.collection('users').get();
+            userSelect.innerHTML = '<option value="">Select a user</option>';
+
+            usersSnapshot.forEach(doc => {
+                const userData = doc.data();
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = `${userData.displayName || userData.email || 'Unknown'} (${userData.email || 'No email'})`;
+                userSelect.appendChild(option);
+            });
+        }
+
+        // Load subjects for the dropdown
+        const subjectSelect = document.getElementById('attendanceSubjectSelect');
+        const filterSubjectSelect = document.getElementById('attendanceFilterSubject');
+
+        if (subjectSelect || filterSubjectSelect) {
+            const subjectsSnapshot = await db.collection('subjects').get();
+
+            if (subjectSelect) {
+                subjectSelect.innerHTML = '<option value="">Select a subject</option>';
+                subjectsSnapshot.forEach(doc => {
+                    const subjectData = doc.data();
+                    const option = document.createElement('option');
+                    option.value = subjectData.name || doc.id;
+                    option.textContent = subjectData.name || doc.id;
+                    subjectSelect.appendChild(option);
+                });
+            }
+
+            if (filterSubjectSelect) {
+                // Keep the "All Subjects" option and add subjects
+                const currentOptions = filterSubjectSelect.innerHTML;
+                subjectsSnapshot.forEach(doc => {
+                    const subjectData = doc.data();
+                    const option = document.createElement('option');
+                    option.value = subjectData.name || doc.id;
+                    option.textContent = subjectData.name || doc.id;
+                    filterSubjectSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Set default date to today
+        const dateInput = document.getElementById('attendanceDate');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+
+    } catch (error) {
+        console.error('Error loading attendance form data:', error);
+        showToast('Error loading form data', 'danger');
+    }
+}
+
+// Load full attendance records with delete functionality
+async function loadFullAttendanceRecords() {
+    const tableBody = document.querySelector('#recentAttendanceTable tbody');
+    const spinner = document.getElementById('attendanceSpinner');
+
+    if (!tableBody) return;
+
+    try {
+        // Show loading spinner
+        if (spinner) {
+            spinner.style.display = 'block';
+        }
+
+        // Get all attendance records
+        const attendanceSnapshot = await db.collection('attendanceRecords')
+            .orderBy('timestamp', 'desc')
+            .limit(100) // Limit to prevent performance issues
+            .get();
+
+        // Hide loading spinner
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
+
+        if (attendanceSnapshot.empty) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No attendance records found</td></tr>';
+            updateAttendanceStatistics([]);
+            return;
+        }
+
+        const records = [];
+        tableBody.innerHTML = '';
+
+        attendanceSnapshot.forEach(doc => {
+            const data = doc.data();
+            const record = { id: doc.id, ...data };
+            records.push(record);
+
+            const timestamp = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown';
+            const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString() : 'Unknown';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${data.userName || 'Unknown'}</td>
+                <td>${data.subject || 'Unknown'}</td>
+                <td>${date}</td>
+                <td>
+                    <span class="badge ${data.status === 'present' ? 'bg-success' : 'bg-danger'}">
+                        ${data.status || 'Present'}
+                    </span>
+                </td>
+                <td>${data.addedBy || 'System'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger delete-attendance-btn"
+                            data-record-id="${doc.id}"
+                            data-user-name="${data.userName || 'Unknown'}"
+                            data-subject="${data.subject || 'Unknown'}"
+                            data-date="${date}"
+                            data-status="${data.status || 'Present'}"
+                            title="Delete this attendance record">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        // Add event listeners to delete buttons
+        addDeleteAttendanceEventListeners();
+
+        // Update statistics
+        updateAttendanceStatistics(records);
+
+        // Store records for filtering
+        window.allAttendanceRecords = records;
+
+    } catch (error) {
+        console.error('Error loading attendance records:', error);
+        if (spinner) {
+            spinner.style.display = 'none';
+        }
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading attendance records</td></tr>';
+        showToast('Error loading attendance records', 'danger');
+    }
+}
+
+// Add event listeners to delete buttons
+function addDeleteAttendanceEventListeners() {
+    const deleteButtons = document.querySelectorAll('.delete-attendance-btn');
+    deleteButtons.forEach(button => {
+        if (!button.dataset.listenerAdded) {
+            button.addEventListener('click', function() {
+                const recordId = this.dataset.recordId;
+                const userName = this.dataset.userName;
+                const subject = this.dataset.subject;
+                const date = this.dataset.date;
+                const status = this.dataset.status;
+
+                showDeleteAttendanceConfirmation(recordId, userName, subject, date, status);
+            });
+            button.dataset.listenerAdded = 'true';
+        }
+    });
+}
+
+// Show delete confirmation modal
+function showDeleteAttendanceConfirmation(recordId, userName, subject, date, status) {
+    // Create or update the confirmation modal
+    let modal = document.getElementById('deleteAttendanceModal');
+    if (!modal) {
+        const modalHTML = `
+            <div class="modal fade" id="deleteAttendanceModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Confirm Delete Attendance Record
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-warning me-2"></i>
+                                <strong>Warning:</strong> This action cannot be undone.
+                            </div>
+                            <p>Are you sure you want to delete this attendance record?</p>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Record Details:</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li><strong>Student:</strong> <span id="deleteModalUserName"></span></li>
+                                        <li><strong>Subject:</strong> <span id="deleteModalSubject"></span></li>
+                                        <li><strong>Date:</strong> <span id="deleteModalDate"></span></li>
+                                        <li><strong>Status:</strong> <span id="deleteModalStatus"></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </button>
+                            <button type="button" class="btn btn-danger" id="confirmDeleteAttendanceBtn">
+                                <i class="fas fa-trash me-1"></i>Delete Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        modal = document.getElementById('deleteAttendanceModal');
+
+        // Add event listener to confirm button
+        const confirmBtn = document.getElementById('confirmDeleteAttendanceBtn');
+        confirmBtn.addEventListener('click', function() {
+            const recordId = modal.dataset.recordId;
+            deleteAttendanceRecord(recordId);
+        });
+    }
+
+    // Update modal content
+    document.getElementById('deleteModalUserName').textContent = userName;
+    document.getElementById('deleteModalSubject').textContent = subject;
+    document.getElementById('deleteModalDate').textContent = date;
+    const statusSpan = document.getElementById('deleteModalStatus');
+    statusSpan.innerHTML = `<span class="badge ${status === 'present' ? 'bg-success' : 'bg-danger'}">${status}</span>`;
+
+    // Store record ID in modal
+    modal.dataset.recordId = recordId;
+
+    // Show modal
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+}
+
+// Delete attendance record
+async function deleteAttendanceRecord(recordId) {
+    try {
+        // Show loading state
+        const confirmBtn = document.getElementById('confirmDeleteAttendanceBtn');
+        const originalText = confirmBtn.innerHTML;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Deleting...';
+        confirmBtn.disabled = true;
+
+        // Delete from Firestore
+        await db.collection('attendanceRecords').doc(recordId).delete();
+
+        // Log the deletion
+        await logUserActivity('Deleted attendance record', {
+            recordId: recordId,
+            action: 'delete_attendance_record',
+            timestamp: new Date().toISOString()
+        });
+
+        // Close modal
+        const modal = document.getElementById('deleteAttendanceModal');
+        const bootstrapModal = bootstrap.Modal.getInstance(modal);
+        bootstrapModal.hide();
+
+        // Show success message
+        showToast('Attendance record deleted successfully', 'success');
+
+        // Reload attendance records
+        loadFullAttendanceRecords();
+
+        // Update dashboard stats
+        loadDashboardStats();
+
+    } catch (error) {
+        console.error('Error deleting attendance record:', error);
+        showToast('Error deleting attendance record', 'danger');
+
+        // Reset button state
+        const confirmBtn = document.getElementById('confirmDeleteAttendanceBtn');
+        confirmBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Delete Record';
+        confirmBtn.disabled = false;
+    }
+}
+
+// Add new attendance record
+async function addAttendanceRecord() {
+    try {
+        const userSelect = document.getElementById('attendanceUserSelect');
+        const subjectSelect = document.getElementById('attendanceSubjectSelect');
+        const dateInput = document.getElementById('attendanceDate');
+        const statusInputs = document.querySelectorAll('input[name="attendanceStatus"]');
+        const notesInput = document.getElementById('attendanceNotes');
+
+        // Get form values
+        const userId = userSelect.value;
+        const subject = subjectSelect.value;
+        const date = dateInput.value;
+        const notes = notesInput.value.trim();
+
+        let status = 'present';
+        statusInputs.forEach(input => {
+            if (input.checked) {
+                status = input.value;
+            }
+        });
+
+        // Validation
+        if (!userId || !subject || !date) {
+            showToast('Please fill in all required fields', 'warning');
+            return;
+        }
+
+        // Get user data for the record
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (!userDoc.exists) {
+            showToast('Selected user not found', 'danger');
+            return;
+        }
+
+        const userData = userDoc.data();
+        const userName = userData.displayName || userData.email || 'Unknown';
+
+        // Show loading state
+        const addBtn = document.getElementById('addAttendanceBtn');
+        const originalText = addBtn.innerHTML;
+        addBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        addBtn.disabled = true;
+
+        // Create attendance record
+        const attendanceRecord = {
+            userId: userId,
+            userName: userName,
+            userEmail: userData.email || '',
+            subject: subject,
+            status: status,
+            date: date,
+            notes: notes,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            addedBy: userProfile.email || 'Admin',
+            addedByAdmin: true
+        };
+
+        // Save to Firestore
+        await db.collection('attendanceRecords').add(attendanceRecord);
+
+        // Log the activity
+        await logUserActivity('Added attendance record', {
+            targetUser: userName,
+            subject: subject,
+            status: status,
+            date: date,
+            action: 'add_attendance_record'
+        });
+
+        // Reset form
+        userSelect.value = '';
+        subjectSelect.value = '';
+        dateInput.value = new Date().toISOString().split('T')[0];
+        document.getElementById('statusPresent').checked = true;
+        notesInput.value = '';
+
+        // Reset button state
+        addBtn.innerHTML = originalText;
+        addBtn.disabled = false;
+
+        // Show success message
+        showToast('Attendance record added successfully', 'success');
+
+        // Reload attendance records
+        loadFullAttendanceRecords();
+
+        // Update dashboard stats
+        loadDashboardStats();
+
+    } catch (error) {
+        console.error('Error adding attendance record:', error);
+        showToast('Error adding attendance record', 'danger');
+
+        // Reset button state
+        const addBtn = document.getElementById('addAttendanceBtn');
+        addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Save Attendance';
+        addBtn.disabled = false;
+    }
+}
+
+// Filter attendance records
+function filterAttendanceRecords() {
+    if (!window.allAttendanceRecords) {
+        return;
+    }
+
+    const subjectFilter = document.getElementById('attendanceFilterSubject').value;
+    const statusFilter = document.getElementById('attendanceFilterStatus').value;
+    const dateFilter = document.getElementById('attendanceFilterDate').value;
+
+    let filteredRecords = window.allAttendanceRecords;
+
+    // Apply filters
+    if (subjectFilter) {
+        filteredRecords = filteredRecords.filter(record => record.subject === subjectFilter);
+    }
+
+    if (statusFilter) {
+        filteredRecords = filteredRecords.filter(record => record.status === statusFilter);
+    }
+
+    if (dateFilter) {
+        filteredRecords = filteredRecords.filter(record => {
+            if (record.timestamp) {
+                const recordDate = record.timestamp.toDate().toLocaleDateString('en-CA'); // YYYY-MM-DD format
+                return recordDate === dateFilter;
+            }
+            return false;
+        });
+    }
+
+    // Update table
+    displayFilteredAttendanceRecords(filteredRecords);
+
+    // Update statistics
+    updateAttendanceStatistics(filteredRecords);
+}
+
+// Display filtered attendance records
+function displayFilteredAttendanceRecords(records) {
+    const tableBody = document.querySelector('#recentAttendanceTable tbody');
+    if (!tableBody) return;
+
+    if (records.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No records match the current filters</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = '';
+
+    records.forEach(record => {
+        const timestamp = record.timestamp ? record.timestamp.toDate().toLocaleString() : 'Unknown';
+        const date = record.timestamp ? record.timestamp.toDate().toLocaleDateString() : 'Unknown';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${record.userName || 'Unknown'}</td>
+            <td>${record.subject || 'Unknown'}</td>
+            <td>${date}</td>
+            <td>
+                <span class="badge ${record.status === 'present' ? 'bg-success' : 'bg-danger'}">
+                    ${record.status || 'Present'}
+                </span>
+            </td>
+            <td>${record.addedBy || 'System'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger delete-attendance-btn"
+                        data-record-id="${record.id}"
+                        data-user-name="${record.userName || 'Unknown'}"
+                        data-subject="${record.subject || 'Unknown'}"
+                        data-date="${date}"
+                        data-status="${record.status || 'Present'}"
+                        title="Delete this attendance record">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(tr);
+    });
+
+    // Re-add event listeners to delete buttons
+    addDeleteAttendanceEventListeners();
+}
+
+// Update attendance statistics
+function updateAttendanceStatistics(records) {
+    const totalPresentStat = document.getElementById('totalPresentStat');
+    const totalAbsentStat = document.getElementById('totalAbsentStat');
+    const attendanceRateStat = document.getElementById('attendanceRateStat');
+    const totalSessionsStat = document.getElementById('totalSessionsStat');
+
+    if (!totalPresentStat || !totalAbsentStat || !attendanceRateStat || !totalSessionsStat) {
+        return;
+    }
+
+    const presentCount = records.filter(record => record.status === 'present').length;
+    const absentCount = records.filter(record => record.status === 'absent').length;
+    const totalSessions = records.length;
+    const attendanceRate = totalSessions > 0 ? ((presentCount / totalSessions) * 100).toFixed(1) : 0;
+
+    totalPresentStat.textContent = presentCount;
+    totalAbsentStat.textContent = absentCount;
+    attendanceRateStat.textContent = `${attendanceRate}%`;
+    totalSessionsStat.textContent = totalSessions;
+}
+
+// Generate attendance CSV report
+async function generateAttendanceCSV() {
+    try {
+        const records = window.allAttendanceRecords || [];
+
+        if (records.length === 0) {
+            showToast('No attendance records to export', 'warning');
+            return;
+        }
+
+        // Create CSV content
+        const headers = ['Student Name', 'Email', 'Subject', 'Date', 'Status', 'Notes', 'Added By', 'Timestamp'];
+        const csvContent = [
+            headers.join(','),
+            ...records.map(record => {
+                const date = record.timestamp ? record.timestamp.toDate().toLocaleDateString() : 'Unknown';
+                const timestamp = record.timestamp ? record.timestamp.toDate().toLocaleString() : 'Unknown';
+
+                return [
+                    `"${record.userName || 'Unknown'}"`,
+                    `"${record.userEmail || 'Unknown'}"`,
+                    `"${record.subject || 'Unknown'}"`,
+                    `"${date}"`,
+                    `"${record.status || 'Present'}"`,
+                    `"${record.notes || ''}"`,
+                    `"${record.addedBy || 'System'}"`,
+                    `"${timestamp}"`
+                ].join(',');
+            })
+        ].join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `attendance_report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('CSV report generated successfully', 'success');
+
+    } catch (error) {
+        console.error('Error generating CSV report:', error);
+        showToast('Error generating CSV report', 'danger');
+    }
+}
+
+// Generate attendance PDF report
+async function generateAttendancePDF() {
+    try {
+        const records = window.allAttendanceRecords || [];
+
+        if (records.length === 0) {
+            showToast('No attendance records to export', 'warning');
+            return;
+        }
+
+        // For now, show a message that PDF generation requires additional libraries
+        // In a full implementation, you would use libraries like jsPDF
+        showToast('PDF generation feature coming soon. Please use CSV export for now.', 'info');
+
+    } catch (error) {
+        console.error('Error generating PDF report:', error);
+        showToast('Error generating PDF report', 'danger');
+    }
 }
 
 // --- Email Testing Functions ---
