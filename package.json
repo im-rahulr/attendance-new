@@ -4,7 +4,7 @@
   "description": "Attendance tracking application with admin panel",
   "main": "src/pages/index.html",
   "scripts": {
-    "start": "firebase serve --port 5000",
+    "start": "node server.js",
     "dev": "firebase serve --port 5000 --host 0.0.0.0",
     "build": "npm run lint && npm run test",
     "test": "node src/tests/run-tests.js",
@@ -26,9 +26,11 @@
   "author": "CodeCraft",
   "license": "MIT",
   "dependencies": {
+    "express": "^4.18.2",
     "firebase": "^9.23.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
+    "resend": "^3.2.0",
     "task-master-ai": "^0.19.0",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"

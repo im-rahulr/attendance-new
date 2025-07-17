@@ -8,8 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- EmailJS CDN -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../styles/style.css">
     <style>
@@ -723,199 +722,76 @@
                 return errors;
             }
 
-            // Send confirmation email using multiple methods
+            // Send confirmation email using Resend integration
             async function sendConfirmationEmail(contactData) {
                 console.log('Attempting to send confirmation email to:', contactData.email);
 
-                const emailMethods = [
-                    () => sendViaNodeJS(contactData),
-                    () => sendViaPHP(contactData),
-                    () => sendViaEmailJS(contactData),
-                    () => sendViaLocalStorage(contactData) // Fallback method
-                ];
+                try {
+                    // Send confirmation email to user
+                    const response = await fetch('/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            to: contactData.email,
+                            name: contactData.name,
+                            type: 'contact'
+                        })
+                    });
 
-                let lastError = null;
+                    if (!response.ok) {
+                        throw new Error(`Email service failed: HTTP ${response.status}`);
+                    }
 
-                const methodNames = ['Node.js Backend', 'PHP Backend', 'EmailJS', 'Local Storage'];
+                    const result = await response.json();
+                    console.log('Confirmation email sent successfully:', result);
 
-                for (let i = 0; i < emailMethods.length; i++) {
+                    // Also send admin notification
                     try {
-                        console.log(`Trying email method ${i + 1} (${methodNames[i]})...`);
-                        const result = await emailMethods[i]();
-                        console.log(`Email sent successfully via ${methodNames[i]}:`, result);
-
-                        // Also try to send admin notification
-                        try {
-                            await sendAdminNotification(contactData);
-                            console.log('Admin notification sent');
-                        } catch (adminError) {
-                            console.warn('Admin notification failed:', adminError);
-                        }
-
-                        return result;
-                    } catch (error) {
-                        console.warn(`${methodNames[i]} failed:`, error.message);
-                        lastError = error;
-                    }
-                }
-
-                throw new Error(`All email methods failed. Last error: ${lastError?.message}`);
-            }
-
-            // Method 1: Netlify Functions email service
-            async function sendViaNetlifyFunction(contactData) {
-                const emailData = {
-                    to_email: contactData.email,
-                    to_name: contactData.name,
-                    subject: 'Contact Form Confirmation - lowrybunks',
-                    html_content: generateEmailHTML(contactData),
-                    message: generateEmailText(contactData),
-                    from_name: 'lowrybunks Team',
-                    notify_admin: true
-                };
-
-                const response = await fetch('/.netlify/functions/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(emailData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Netlify Function failed: HTTP ${response.status}`);
-                }
-
-                return await response.json();
-            }
-
-            // Method 2: PHP email service
-            async function sendViaPHP(contactData) {
-                const emailData = {
-                    to_email: contactData.email,
-                    to_name: contactData.name,
-                    subject: 'Contact Form Confirmation - lowrybunks',
-                    message: generateEmailText(contactData),
-                    from_name: 'lowrybunks Team',
-                    from_email: 'website.po45@gmail.com'
-                };
-
-                const response = await fetch('../api/send-email.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(emailData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`PHP service failed: HTTP ${response.status}`);
-                }
-
-                return await response.json();
-            }
-
-            // Method 3: EmailJS (if available)
-            async function sendViaEmailJS(contactData) {
-                if (typeof emailjs === 'undefined') {
-                    throw new Error('EmailJS not available');
-                }
-
-                try {
-                    // Initialize EmailJS if not already done
-                    if (!window.emailjsInitialized) {
-                        emailjs.init("YOUR_PUBLIC_KEY"); // You'll need to replace this with your actual EmailJS public key
-                        window.emailjsInitialized = true;
+                        await sendAdminNotification(contactData);
+                        console.log('Admin notification sent');
+                    } catch (adminError) {
+                        console.warn('Admin notification failed:', adminError);
                     }
 
-                    const templateParams = {
-                        to_email: contactData.email,
-                        to_name: contactData.name,
-                        from_name: 'lowrybunks Team',
-                        subject: 'Contact Form Confirmation - lowrybunks',
-                        message: generateEmailText(contactData),
-                        reply_to: 'website.po45@gmail.com'
-                    };
-
-                    const response = await emailjs.send('service_lowrybunks', 'template_contact', templateParams);
-                    console.log('EmailJS response:', response);
-                    return response;
+                    return result;
                 } catch (error) {
-                    console.error('EmailJS error:', error);
-                    throw new Error(`EmailJS failed: ${error.message}`);
-                }
-            }
-
-            // Method 4: Local Storage Fallback (always works)
-            async function sendViaLocalStorage(contactData) {
-                try {
-                    // Store the contact data locally
-                    const timestamp = new Date().toISOString();
-                    const contactEntry = {
-                        ...contactData,
-                        timestamp,
-                        id: 'contact_' + Date.now(),
-                        status: 'pending_email'
-                    };
-
-                    // Get existing contacts or initialize empty array
-                    const existingContacts = JSON.parse(localStorage.getItem('pendingContacts') || '[]');
-                    existingContacts.push(contactEntry);
-                    localStorage.setItem('pendingContacts', JSON.stringify(existingContacts));
-
-                    console.log('Contact stored locally for later processing');
-
-                    return {
-                        success: true,
-                        method: 'localStorage',
-                        message: 'Contact form submitted successfully. We will get back to you soon!',
-                        id: contactEntry.id
-                    };
-                } catch (error) {
-                    throw new Error(`Local storage failed: ${error.message}`);
+                    console.error('Email sending failed:', error);
+                    throw error;
                 }
             }
 
             // Send admin notification
             async function sendAdminNotification(contactData) {
-                const adminEmailData = {
-                    to_email: 'rahulhitwo@gmail.com',
-                    to_name: 'Admin',
-                    subject: `New Contact Form Submission - ${formatSubject(contactData.subject)}`,
-                    html_content: generateAdminEmailHTML(contactData),
-                    from_name: 'lowrybunks System',
-                    from_email: 'website.po45@gmail.com'
-                };
-
                 try {
-                    const response = await fetch('/.netlify/functions/send-email', {
+                    const response = await fetch('/send-email', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(adminEmailData)
-                    });
-
-                    if (response.ok) {
-                        return await response.json();
-                    } else {
-                        throw new Error(`Admin notification failed: ${response.status}`);
-                    }
-                } catch (error) {
-                    // Try PHP fallback for admin notification
-                    const phpResponse = await fetch('../api/send-email.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                         body: JSON.stringify({
-                            to_email: 'rahulhitwo@gmail.com',
-                            to_name: 'Admin',
-                            subject: `New Contact Form Submission - ${formatSubject(contactData.subject)}`,
-                            message: generateAdminEmailText(contactData),
-                            from_email: 'website.po45@gmail.com'
+                            to: 'rahulhitwo@gmail.com',
+                            name: 'Admin',
+                            type: 'hello',
+                            subject: `New Contact Form Submission from ${contactData.name}`
                         })
                     });
 
-                    if (!phpResponse.ok) {
-                        throw new Error('Both admin notification methods failed');
+                    if (!response.ok) {
+                        throw new Error(`Admin notification failed: HTTP ${response.status}`);
                     }
 
-                    return await phpResponse.json();
+                    return await response.json();
+                } catch (error) {
+                    console.error('Admin notification error:', error);
+                    throw error;
                 }
             }
+
+
+
+
 
             // Form submission handler
             if (form) {
@@ -1023,66 +899,52 @@
 
             // Email template generation functions
             function generateEmailHTML(contactData) {
+                // Ensure all required fields have default values
+                const safeData = {
+                    name: contactData?.name || 'Unknown',
+                    email: contactData?.email || 'no-email@example.com',
+                    subject: contactData?.subject || 'No Subject',
+                    message: contactData?.message || 'No message provided'
+                };
+
                 return `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-                        <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <div style="text-align: center; margin-bottom: 30px;">
-                                <h1 style="color: #333; margin: 0; font-size: 24px;">lowrybunks</h1>
-                                <p style="color: #666; margin: 5px 0 0 0;">Attendance Management System</p>
-                            </div>
-
-                            <h2 style="color: #333; margin-bottom: 20px;">Thank you for contacting us!</h2>
-
-                            <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
-                                Dear ${contactData.name},
-                            </p>
-
-                            <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
-                                We have received your message and will get back to you as soon as possible. Here's a summary of your submission:
-                            </p>
-
-                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                <p style="margin: 0 0 10px 0;"><strong>Subject:</strong> ${formatSubject(contactData.subject)}</p>
-                                <p style="margin: 0 0 10px 0;"><strong>Message:</strong></p>
-                                <p style="margin: 0; padding: 10px; background-color: #ffffff; border-radius: 4px; border-left: 4px solid #007bff;">${contactData.message}</p>
-                            </div>
-
-                            <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
-                                Our team typically responds within 24-48 hours during business days.
-                            </p>
-
-                            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                                <p style="color: #888; font-size: 14px; margin: 0;">
-                                    Best regards,<br>The lowrybunks Team
-                                </p>
-                                <p style="color: #888; font-size: 14px; margin: 10px 0 0 0;">
-                                    © 2025 CodeCraft. All rights reserved.
-                                </p>
-                            </div>
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h2>Thank you for contacting lowrybunks!</h2>
+                        <p>Dear ${safeData.name},</p>
+                        <p>We have received your message regarding "${formatSubject(safeData.subject)}" and will get back to you as soon as possible.</p>
+                        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                            <strong>Your message:</strong><br>
+                            ${safeData.message.replace(/\n/g, '<br>')}
                         </div>
+                        <p>Best regards,<br>The lowrybunks Team</p>
                     </div>
                 `;
             }
 
             function generateEmailText(contactData) {
+                // Add null checks here too
+                const safeData = {
+                    name: contactData?.name || 'Unknown',
+                    email: contactData?.email || 'no-email@example.com',
+                    subject: contactData?.subject || 'No Subject',
+                    message: contactData?.message || 'No message provided'
+                };
+
                 return `
-Dear ${contactData.name},
+Dear ${safeData.name},
 
 Thank you for contacting lowrybunks!
 
-We have received your message regarding "${formatSubject(contactData.subject)}" and will get back to you as soon as possible.
+We have received your message regarding "${formatSubject(safeData.subject)}" and will get back to you as soon as possible.
 
 Your message:
-"${contactData.message}"
+"${safeData.message}"
 
 Our team typically responds within 24-48 hours during business days.
 
 Best regards,
 The lowrybunks Team
-
----
-© 2025 CodeCraft. All rights reserved.
-                `.trim();
+    `.trim();
             }
 
             function generateAdminEmailHTML(contactData) {

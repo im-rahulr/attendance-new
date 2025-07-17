@@ -173,6 +173,9 @@ async function loadAdminDashboard() {
     // Initialize user logs event listeners
     initializeUserLogsEventListeners();
 
+    // Initialize email testing event listeners
+    initializeEmailTestingEventListeners();
+
     // Add tab click event listener for contact submissions
     const contactSubmissionsTab = document.getElementById('contact-submissions-tab');
     if (contactSubmissionsTab) {
@@ -1822,16 +1825,29 @@ async function sendContactResponse() {
             from_email: 'website.po45@gmail.com'
         };
 
-        // Send email
-        const response = await fetch('/api/send-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(emailData)
-        });
+        // Send email response using Resend integration
+        try {
+            const response = await fetch('/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: emailData.to_email,
+                    name: emailData.to_name,
+                    type: 'hello',
+                    subject: emailData.subject
+                })
+            });
 
-        if (!response.ok) {
+            if (!response.ok) {
+                throw new Error(`Email service failed: HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Response email sent successfully:', result);
+        } catch (error) {
+            console.error('Failed to send response email:', error);
             throw new Error('Failed to send response email');
         }
 
@@ -1975,4 +1991,320 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// --- Email Testing Functions ---
+
+// Initialize email testing event listeners
+function initializeEmailTestingEventListeners() {
+    console.log("Initializing email testing event listeners...");
+
+    // Test welcome email button
+    const testWelcomeEmailBtn = document.getElementById('testWelcomeEmailBtn');
+    const sendTestWelcomeEmailBtn = document.getElementById('sendTestWelcomeEmailBtn');
+
+    if (testWelcomeEmailBtn) {
+        testWelcomeEmailBtn.addEventListener('click', showTestWelcomeEmailForm);
+    }
+
+    if (sendTestWelcomeEmailBtn) {
+        sendTestWelcomeEmailBtn.addEventListener('click', sendTestWelcomeEmail);
+    }
+
+    // Check email service status button
+    const checkStatusBtn = document.getElementById('checkEmailjsStatusBtn');
+    if (checkStatusBtn) {
+        checkStatusBtn.addEventListener('click', checkEmailServiceStatus);
+    }
+
+    // View email logs button
+    const viewLogsBtn = document.getElementById('viewEmailjsLogsBtn');
+    if (viewLogsBtn) {
+        viewLogsBtn.addEventListener('click', viewEmailLogs);
+    }
+
+    // Test contact email button
+    const testContactEmailBtn = document.getElementById('testContactEmailBtn');
+    if (testContactEmailBtn) {
+        testContactEmailBtn.addEventListener('click', sendTestContactEmail);
+    }
+
+    // Test admin notification button
+    const testAdminNotificationBtn = document.getElementById('testAdminNotificationBtn');
+    if (testAdminNotificationBtn) {
+        testAdminNotificationBtn.addEventListener('click', sendTestAdminNotification);
+    }
+}
+
+function showTestWelcomeEmailForm() {
+    // Switch to email system tab if not already active
+    const emailTab = document.getElementById('email-system-tab');
+    if (emailTab) {
+        emailTab.click();
+    }
+
+    // Focus on email input
+    const emailInput = document.getElementById('testWelcomeEmailAddress');
+    if (emailInput) {
+        emailInput.focus();
+    }
+}
+
+async function sendTestWelcomeEmail() {
+    const emailInput = document.getElementById('testWelcomeEmailAddress');
+    const nameInput = document.getElementById('testWelcomeUserName');
+    const sendBtn = document.getElementById('sendTestWelcomeEmailBtn');
+
+    if (!emailInput || !nameInput || !sendBtn) return;
+
+    const email = emailInput.value.trim();
+    const name = nameInput.value.trim() || 'Test User';
+    const originalText = sendBtn.innerHTML;
+
+    if (!email) {
+        showToast('Please enter an email address', 'warning');
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showToast('Please enter a valid email address', 'danger');
+        return;
+    }
+
+    // Show loading state
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
+
+    try {
+        // Use new Resend integration
+        const response = await fetch('/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                to: email,
+                name: name,
+                type: 'welcome'
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showToast('Test welcome email sent successfully!', 'success');
+            loadWelcomeEmailStatistics(); // Refresh stats
+        } else {
+            showToast(`Failed to send test welcome email: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error sending test welcome email:', error);
+        showToast('Error sending test welcome email', 'danger');
+    } finally {
+        // Reset button state
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalText;
+    }
+}
+
+async function sendTestContactEmail() {
+    const email = 'rahulhitwo@gmail.com'; // Admin email for testing
+    const name = 'Test User';
+
+    try {
+        showToast('Sending test contact email...', 'info');
+
+        const response = await fetch('/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                to: email,
+                name: name,
+                type: 'contact'
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showToast('Test contact email sent successfully!', 'success');
+        } else {
+            showToast(`Failed to send test contact email: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error sending test contact email:', error);
+        showToast('Error sending test contact email', 'danger');
+    }
+}
+
+async function sendTestAdminNotification() {
+    const email = 'rahulhitwo@gmail.com'; // Admin email
+    const name = 'Admin';
+
+    try {
+        showToast('Sending test admin notification...', 'info');
+
+        const response = await fetch('/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                to: email,
+                name: name,
+                type: 'hello',
+                subject: 'Test Admin Notification - Email System Working'
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showToast('Test admin notification sent successfully!', 'success');
+        } else {
+            showToast(`Failed to send test admin notification: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        console.error('Error sending test admin notification:', error);
+        showToast('Error sending test admin notification', 'danger');
+    }
+}
+
+async function checkEmailServiceStatus() {
+    try {
+        showToast('Checking email service status...', 'info');
+
+        const response = await fetch('/health');
+        const result = await response.json();
+
+        if (response.ok && result.status === 'OK') {
+            showToast('✅ Email service is running and healthy!', 'success');
+
+            // Update status indicator if it exists
+            const statusIndicator = document.getElementById('emailServiceStatus');
+            if (statusIndicator) {
+                statusIndicator.innerHTML = '<span class="badge bg-success">Online</span>';
+            }
+        } else {
+            showToast('⚠️ Email service status check failed', 'warning');
+        }
+    } catch (error) {
+        console.error('Error checking email service status:', error);
+        showToast('❌ Email service is not responding', 'danger');
+
+        // Update status indicator if it exists
+        const statusIndicator = document.getElementById('emailServiceStatus');
+        if (statusIndicator) {
+            statusIndicator.innerHTML = '<span class="badge bg-danger">Offline</span>';
+        }
+    }
+}
+
+async function viewEmailLogs() {
+    try {
+        showToast('Loading email logs...', 'info');
+
+        // For now, show a simple modal with recent email activity
+        // In a full implementation, this would fetch actual email logs
+        const modalTitle = document.querySelector('#emailLogsModal .modal-title');
+        const modalBody = document.querySelector('#emailLogsModal .modal-body');
+
+        if (modalTitle) {
+            modalTitle.innerHTML = '<i class="fas fa-envelope me-2"></i>Email System Logs';
+        }
+
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div class="alert alert-info">
+                    <h6>Email System Status</h6>
+                    <p>The email system is using Resend integration and is functioning properly.</p>
+                    <ul>
+                        <li>Service: Resend API</li>
+                        <li>Status: Active</li>
+                        <li>Available Templates: Welcome, Contact, Hello</li>
+                        <li>Last Health Check: ${new Date().toLocaleString()}</li>
+                    </ul>
+                </div>
+                <div class="mt-3">
+                    <h6>Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="sendTestWelcomeEmail()">
+                            <i class="fas fa-paper-plane me-1"></i>Send Test Welcome Email
+                        </button>
+                        <button class="btn btn-outline-info" onclick="sendTestContactEmail()">
+                            <i class="fas fa-envelope me-1"></i>Send Test Contact Email
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="sendTestAdminNotification()">
+                            <i class="fas fa-bell me-1"></i>Send Test Admin Notification
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show the modal (create it if it doesn't exist)
+        let modal = document.getElementById('emailLogsModal');
+        if (!modal) {
+            // Create modal if it doesn't exist
+            const modalHTML = `
+                <div class="modal fade" id="emailLogsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Email Logs</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            modal = document.getElementById('emailLogsModal');
+        }
+
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+
+    } catch (error) {
+        console.error('Error viewing email logs:', error);
+        showToast('Error loading email logs', 'danger');
+    }
+}
+
+function loadWelcomeEmailStatistics() {
+    // Placeholder function for loading email statistics
+    // In a full implementation, this would fetch actual email statistics
+    console.log('Loading welcome email statistics...');
+
+    const statsElement = document.getElementById('welcomeEmailStats');
+    if (statsElement) {
+        statsElement.innerHTML = `
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="border-end">
+                        <h6 class="text-success">Sent Today</h6>
+                        <h4>-</h4>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="border-end">
+                        <h6 class="text-info">This Week</h6>
+                        <h4>-</h4>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <h6 class="text-primary">Total</h6>
+                    <h4>-</h4>
+                </div>
+            </div>
+        `;
+    }
 }

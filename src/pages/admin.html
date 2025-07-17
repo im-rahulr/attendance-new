@@ -2456,15 +2456,15 @@
             </div>
         </div>
 
-        <!-- EmailJS System Content -->
+        <!-- Resend Email System Content -->
         <div class="tab-pane fade" id="email-system-content" role="tabpanel" aria-labelledby="email-system-tab">
             <div class="row">
-                <!-- EmailJS Status and Controls -->
+                <!-- Resend Status and Controls -->
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>EmailJS Welcome Email System</h5>
-                            <small class="text-muted">Manage welcome email templates and delivery</small>
+                            <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Resend Email System</h5>
+                            <small class="text-muted">Manage email templates and delivery with Resend API</small>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -2472,8 +2472,8 @@
                                     <div class="card bg-dark border-secondary">
                                         <div class="card-body text-center">
                                             <i class="fas fa-server fa-2x text-primary mb-2"></i>
-                                            <h6>EmailJS Status</h6>
-                                            <div id="emailjsServiceStatus" class="badge bg-secondary">Checking...</div>
+                                            <h6>Resend Service Status</h6>
+                                            <div id="resendServiceStatus" class="badge bg-secondary">Checking...</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2481,8 +2481,8 @@
                                     <div class="card bg-dark border-secondary">
                                         <div class="card-body text-center">
                                             <i class="fas fa-paper-plane fa-2x text-success mb-2"></i>
-                                            <h6>Welcome Emails Today</h6>
-                                            <div class="h4 text-success" id="welcomeEmailsToday">0</div>
+                                            <h6>Test Emails Sent</h6>
+                                            <div class="h4 text-success" id="testEmailsCount">0</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2491,77 +2491,81 @@
                             <div class="mt-4">
                                 <h6>Quick Actions</h6>
                                 <div class="d-grid gap-2 d-md-flex">
-                                    <button class="btn btn-primary" id="testWelcomeEmailBtn">
-                                        <i class="fas fa-paper-plane me-1"></i>Test Welcome Email
+                                    <button class="btn btn-primary" id="testResendEmailBtn">
+                                        <i class="fas fa-paper-plane me-1"></i>Send Test Email
                                     </button>
-                                    <button class="btn btn-outline-info" id="checkEmailjsStatusBtn">
-                                        <i class="fas fa-sync me-1"></i>Check Status
+                                    <button class="btn btn-outline-info" id="checkResendStatusBtn">
+                                        <i class="fas fa-sync me-1"></i>Check Service Status
                                     </button>
-                                    <button class="btn btn-outline-secondary" id="viewEmailjsLogsBtn">
-                                        <i class="fas fa-list me-1"></i>View Delivery Logs
+                                    <button class="btn btn-outline-success" id="testWelcomeEmailBtn">
+                                        <i class="fas fa-user-plus me-1"></i>Test Welcome Email
                                     </button>
-                                    <button class="btn btn-outline-warning" id="editTemplateBtn">
-                                        <i class="fas fa-edit me-1"></i>Edit Template
+                                    <button class="btn btn-outline-warning" id="viewEmailTemplatesBtn">
+                                        <i class="fas fa-list me-1"></i>View Templates
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Email Template Editor -->
-                    <div class="card mt-3" id="templateEditorCard" style="display: none;">
+                    <!-- Email Test Results -->
+                    <div class="card mt-3" id="emailTestResults" style="display: none;">
                         <div class="card-header">
-                            <h6 class="mb-0"><i class="fas fa-edit me-2"></i>Welcome Email Template Editor</h6>
+                            <h6 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Test Results</h6>
                         </div>
                         <div class="card-body">
-                            <div class="mb-3">
-                                <label for="templateSubject" class="form-label">Email Subject</label>
-                                <input type="text" class="form-control" id="templateSubject"
-                                       placeholder="Welcome to Attendly - Your Attendance Tracking Journey Begins!">
+                            <div id="testResultsContent">
+                                <!-- Test results will be displayed here -->
                             </div>
-                            <div class="mb-3">
-                                <label for="templateContent" class="form-label">Email Content (HTML)</label>
-                                <textarea class="form-control" id="templateContent" rows="10"
-                                          placeholder="Enter HTML email template content..."></textarea>
-                                <small class="text-muted">
-                                    Available variables: {{userName}}, {{userEmail}}, {{dashboardUrl}}, {{currentDate}}, {{supportEmail}}
-                                </small>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-success" id="saveTemplateBtn">
-                                    <i class="fas fa-save me-1"></i>Save Template
-                                </button>
-                                <button class="btn btn-outline-info" id="previewTemplateBtn">
-                                    <i class="fas fa-eye me-1"></i>Preview
-                                </button>
-                                <button class="btn btn-outline-secondary" id="cancelEditBtn">
-                                    <i class="fas fa-times me-1"></i>Cancel
-                                </button>
+                        </div>
+                    </div>
+
+                    <!-- Available Email Templates -->
+                    <div class="card mt-3" id="emailTemplatesCard" style="display: none;">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-list me-2"></i>Available Email Templates</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="emailTemplatesList">
+                                <!-- Templates will be loaded here -->
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Test Email and Statistics -->
+                <!-- Email Testing Panel -->
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
-                            <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Test Welcome Email</h6>
+                            <h6 class="mb-0"><i class="fas fa-flask me-2"></i>Email Testing Panel</h6>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <label for="testWelcomeEmailAddress" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="testWelcomeEmailAddress"
+                                <label for="testEmailAddress" class="form-label">Test Email Address</label>
+                                <input type="email" class="form-control" id="testEmailAddress"
                                        placeholder="Enter email address" value="rahulhitwo@gmail.com">
                             </div>
                             <div class="mb-3">
-                                <label for="testWelcomeUserName" class="form-label">User Name</label>
-                                <input type="text" class="form-control" id="testWelcomeUserName"
+                                <label for="testEmailType" class="form-label">Email Type</label>
+                                <select class="form-select" id="testEmailType">
+                                    <option value="hello">Hello Email</option>
+                                    <option value="welcome">Welcome Email</option>
+                                    <option value="contact">Contact Email</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="testUserName" class="form-label">User Name (Optional)</label>
+                                <input type="text" class="form-control" id="testUserName"
                                        placeholder="Enter user name" value="Test User">
                             </div>
-                            <button class="btn btn-success w-100" id="sendTestWelcomeEmailBtn">
-                                <i class="fas fa-paper-plane me-1"></i>Send Test Welcome Email
-                            </button>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" id="sendTestEmailBtn">
+                                    <i class="fas fa-paper-plane me-1"></i>Send Test Email
+                                </button>
+                                <button class="btn btn-outline-success" id="sendWelcomeTestBtn">
+                                    <i class="fas fa-user-plus me-1"></i>Send Welcome Test
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -2573,40 +2577,43 @@
                             <div class="row text-center">
                                 <div class="col-6">
                                     <div class="border rounded p-2 bg-dark">
-                                        <div class="h6 mb-0 text-success" id="welcomeEmailsSuccessCount">0</div>
+                                        <div class="h6 mb-0 text-success" id="emailsSuccessCount">0</div>
                                         <small class="text-muted">Successful</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="border rounded p-2 bg-dark">
-                                        <div class="h6 mb-0 text-danger" id="welcomeEmailsFailedCount">0</div>
+                                        <div class="h6 mb-0 text-danger" id="emailsFailedCount">0</div>
                                         <small class="text-muted">Failed</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <small class="text-muted">Last 30 days</small>
+                                <small class="text-muted">Current session</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="card mt-3">
                         <div class="card-header">
-                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>EmailJS Configuration</h6>
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Resend Configuration</h6>
                         </div>
                         <div class="card-body">
                             <div class="small">
                                 <div class="mb-2">
-                                    <strong>Service:</strong> EmailJS
+                                    <strong>Service:</strong> Resend API
                                 </div>
                                 <div class="mb-2">
-                                    <strong>Public Key:</strong> 7dVX0Su-MyNkMUoP_
+                                    <strong>From Address:</strong> onboarding@resend.dev
                                 </div>
                                 <div class="mb-2">
-                                    <strong>Service ID:</strong> service_emailjs
+                                    <strong>Server Port:</strong> 3001
                                 </div>
                                 <div class="mb-2">
-                                    <strong>Template ID:</strong> template_welcome
+                                    <strong>Health Endpoint:</strong> /health
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Test Endpoint:</strong> /test-email
                                 </div>
                             </div>
                         </div>
@@ -12767,152 +12774,110 @@ Are you absolutely sure you want to proceed?`;
     window.viewSubjectDetails = viewSubjectDetails;
     window.exportSingleSubjectReport = exportSingleSubjectReport;
 
-    // EmailJS System Functionality
-    function initializeEmailJSSystem() {
-        // Check EmailJS service status
-        updateEmailJSServiceStatus();
 
-        // Load email statistics
-        loadWelcomeEmailStatistics();
 
-        // Set up event listeners
-        setupEmailJSEventListeners();
 
-        // Load current template
-        loadCurrentTemplate();
+    // Resend Email System Functions
+    let emailStats = {
+        success: 0,
+        failed: 0
+    };
+
+    function initializeResendEmailSystem() {
+        updateResendServiceStatus();
+        loadEmailStatistics();
+        setupResendEventListeners();
     }
 
-    function updateEmailJSServiceStatus() {
-        const statusElement = document.getElementById('emailjsServiceStatus');
-        if (window.emailJSService && window.emailJSService.isInitialized) {
-            statusElement.className = 'badge bg-success';
-            statusElement.textContent = 'Online';
-        } else {
-            statusElement.className = 'badge bg-warning';
-            statusElement.textContent = 'Initializing...';
+    // Get the correct server URL
+    function getServerUrl() {
+        // If we're on localhost:3001, use relative URLs
+        if (window.location.hostname === 'localhost' && window.location.port === '3001') {
+            return '';
+        }
+        // Otherwise, use the full URL to the email server
+        return 'http://localhost:3001';
+    }
 
-            // Try to initialize
-            if (window.emailJSService) {
-                window.emailJSService.init().then(success => {
-                    if (success) {
-                        statusElement.className = 'badge bg-success';
-                        statusElement.textContent = 'Online';
-                    } else {
-                        statusElement.className = 'badge bg-danger';
-                        statusElement.textContent = 'Offline';
-                    }
-                });
+    async function updateResendServiceStatus() {
+        const statusElement = document.getElementById('resendServiceStatus');
+        if (!statusElement) return;
+
+        statusElement.className = 'badge bg-warning';
+        statusElement.textContent = 'Checking...';
+
+        try {
+            const serverUrl = getServerUrl();
+            const response = await fetch(`${serverUrl}/health`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === 'OK') {
+                    statusElement.className = 'badge bg-success';
+                    statusElement.textContent = 'Online';
+                } else {
+                    statusElement.className = 'badge bg-warning';
+                    statusElement.textContent = 'Partial';
+                }
             } else {
-                statusElement.className = 'badge bg-danger';
-                statusElement.textContent = 'Service Not Found';
+                throw new Error('Service unavailable');
             }
+        } catch (error) {
+            statusElement.className = 'badge bg-danger';
+            statusElement.textContent = 'Offline';
+            console.error('Resend service check failed:', error);
         }
     }
 
-    function loadWelcomeEmailStatistics() {
-        // Load welcome email statistics from Firebase
-        if (typeof firebase !== 'undefined' && firebase.firestore) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+    function loadEmailStatistics() {
+        const successElement = document.getElementById('emailsSuccessCount');
+        const failedElement = document.getElementById('emailsFailedCount');
+        const testCountElement = document.getElementById('testEmailsCount');
 
-            firebase.firestore().collection('emailDeliveryLogs')
-                .where('timestamp', '>=', today)
-                .where('emailType', '==', 'welcome')
-                .get()
-                .then(snapshot => {
-                    let successCount = 0;
-                    let failedCount = 0;
-
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (data.status === 'success') {
-                            successCount++;
-                        } else {
-                            failedCount++;
-                        }
-                    });
-
-                    document.getElementById('welcomeEmailsToday').textContent = successCount + failedCount;
-                    document.getElementById('welcomeEmailsSuccessCount').textContent = successCount;
-                    document.getElementById('welcomeEmailsFailedCount').textContent = failedCount;
-                })
-                .catch(error => {
-                    console.warn('Failed to load welcome email statistics:', error);
-                });
-        }
+        if (successElement) successElement.textContent = emailStats.success;
+        if (failedElement) failedElement.textContent = emailStats.failed;
+        if (testCountElement) testCountElement.textContent = emailStats.success + emailStats.failed;
     }
 
-    function setupEmailJSEventListeners() {
-        // Test welcome email button
-        const testWelcomeEmailBtn = document.getElementById('testWelcomeEmailBtn');
-        const sendTestWelcomeEmailBtn = document.getElementById('sendTestWelcomeEmailBtn');
+    function setupResendEventListeners() {
+        // Test email buttons
+        const testResendEmailBtn = document.getElementById('testResendEmailBtn');
+        const sendTestEmailBtn = document.getElementById('sendTestEmailBtn');
+        const sendWelcomeTestBtn = document.getElementById('sendWelcomeTestBtn');
+        const checkStatusBtn = document.getElementById('checkResendStatusBtn');
+        const viewTemplatesBtn = document.getElementById('viewEmailTemplatesBtn');
 
-        if (testWelcomeEmailBtn) {
-            testWelcomeEmailBtn.addEventListener('click', showTestWelcomeEmailForm);
+        if (testResendEmailBtn) {
+            testResendEmailBtn.addEventListener('click', () => sendTestEmail('hello'));
         }
 
-        if (sendTestWelcomeEmailBtn) {
-            sendTestWelcomeEmailBtn.addEventListener('click', sendTestWelcomeEmail);
+        if (sendTestEmailBtn) {
+            sendTestEmailBtn.addEventListener('click', sendCustomTestEmail);
         }
 
-        // Check status button
-        const checkStatusBtn = document.getElementById('checkEmailjsStatusBtn');
+        if (sendWelcomeTestBtn) {
+            sendWelcomeTestBtn.addEventListener('click', () => sendTestEmail('welcome'));
+        }
+
         if (checkStatusBtn) {
-            checkStatusBtn.addEventListener('click', updateEmailJSServiceStatus);
+            checkStatusBtn.addEventListener('click', updateResendServiceStatus);
         }
 
-        // View logs button
-        const viewLogsBtn = document.getElementById('viewEmailjsLogsBtn');
-        if (viewLogsBtn) {
-            viewLogsBtn.addEventListener('click', viewEmailJSLogs);
-        }
-
-        // Template editor buttons
-        const editTemplateBtn = document.getElementById('editTemplateBtn');
-        const saveTemplateBtn = document.getElementById('saveTemplateBtn');
-        const previewTemplateBtn = document.getElementById('previewTemplateBtn');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-
-        if (editTemplateBtn) {
-            editTemplateBtn.addEventListener('click', showTemplateEditor);
-        }
-
-        if (saveTemplateBtn) {
-            saveTemplateBtn.addEventListener('click', saveTemplate);
-        }
-
-        if (previewTemplateBtn) {
-            previewTemplateBtn.addEventListener('click', previewTemplate);
-        }
-
-        if (cancelEditBtn) {
-            cancelEditBtn.addEventListener('click', hideTemplateEditor);
+        if (viewTemplatesBtn) {
+            viewTemplatesBtn.addEventListener('click', loadEmailTemplates);
         }
     }
 
-    function showTestWelcomeEmailForm() {
-        // Switch to email system tab if not already active
-        const emailTab = document.getElementById('email-system-tab');
-        if (emailTab) {
-            emailTab.click();
+    async function sendTestEmail(emailType = 'hello') {
+        const emailInput = document.getElementById('testEmailAddress');
+        const nameInput = document.getElementById('testUserName');
+
+        if (!emailInput) {
+            showToast('Email input not found', 'danger');
+            return;
         }
-
-        // Focus on email input
-        const emailInput = document.getElementById('testWelcomeEmailAddress');
-        if (emailInput) {
-            emailInput.focus();
-        }
-    }
-
-    async function sendTestWelcomeEmail() {
-        const emailInput = document.getElementById('testWelcomeEmailAddress');
-        const nameInput = document.getElementById('testWelcomeUserName');
-        const sendBtn = document.getElementById('sendTestWelcomeEmailBtn');
-
-        if (!emailInput || !nameInput || !sendBtn) return;
 
         const email = emailInput.value.trim();
-        const name = nameInput.value.trim() || 'Test User';
+        const name = nameInput ? nameInput.value.trim() || 'Test User' : 'Test User';
 
         if (!email) {
             showToast('Please enter an email address', 'danger');
@@ -12926,188 +12891,177 @@ Are you absolutely sure you want to proceed?`;
             return;
         }
 
-        // Show loading state
-        const originalText = sendBtn.innerHTML;
-        sendBtn.disabled = true;
-        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending...';
-
         try {
-            if (window.emailJSService) {
-                const result = await window.emailJSService.sendWelcomeEmail(email, name, 'test-user-id');
+            showTestResult('Sending test email...', 'info');
 
-                if (result.success) {
-                    showToast('Test welcome email sent successfully!', 'success');
-                    loadWelcomeEmailStatistics(); // Refresh stats
-                } else {
-                    showToast(`Failed to send test welcome email: ${result.error}`, 'danger');
-                }
+            const serverUrl = getServerUrl();
+            const response = await fetch(`${serverUrl}/test-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    testEmail: email,
+                    testType: emailType
+                })
+            });
+
+            let result;
+            try {
+                result = await response.json();
+            } catch (jsonError) {
+                throw new Error(`Server returned invalid JSON. Status: ${response.status}`);
+            }
+
+            if (response.ok && result.success) {
+                emailStats.success++;
+                showToast(`Test ${emailType} email sent successfully!`, 'success');
+                showTestResult(`✅ Test email sent successfully to ${email}`, 'success');
             } else {
-                showToast('EmailJS service not available', 'danger');
+                emailStats.failed++;
+                const errorMsg = result.error || `HTTP ${response.status}`;
+                showToast(`Failed to send test email: ${errorMsg}`, 'danger');
+                showTestResult(`❌ Failed to send test email: ${errorMsg}`, 'error');
             }
+
+            loadEmailStatistics();
         } catch (error) {
-            console.error('Error sending test welcome email:', error);
-            showToast('Error sending test welcome email', 'danger');
-        } finally {
-            // Reset button state
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = originalText;
+            emailStats.failed++;
+            console.error('Test email error:', error);
+            showToast('Error sending test email', 'danger');
+            showTestResult(`❌ Error sending test email: ${error.message}`, 'error');
+            loadEmailStatistics();
         }
     }
 
-    function viewEmailJSLogs() {
-        // Open email delivery logs modal or page
-        showToast('Opening email delivery logs...', 'info');
-        // TODO: Implement logs viewer
-    }
+    async function sendCustomTestEmail() {
+        const emailInput = document.getElementById('testEmailAddress');
+        const nameInput = document.getElementById('testUserName');
+        const typeSelect = document.getElementById('testEmailType');
 
-    // Template management functions
-    async function loadCurrentTemplate() {
-        try {
-            if (window.emailJSService) {
-                const template = await window.emailJSService.getWelcomeTemplate();
-                // Template is loaded automatically by the service
-                console.log('Current template loaded');
-            }
-        } catch (error) {
-            console.warn('Failed to load current template:', error);
-        }
-    }
-
-    function showTemplateEditor() {
-        const editorCard = document.getElementById('templateEditorCard');
-        if (editorCard) {
-            editorCard.style.display = 'block';
-            loadTemplateForEditing();
-        }
-    }
-
-    function hideTemplateEditor() {
-        const editorCard = document.getElementById('templateEditorCard');
-        if (editorCard) {
-            editorCard.style.display = 'none';
-        }
-    }
-
-    async function loadTemplateForEditing() {
-        try {
-            if (typeof firebase !== 'undefined' && firebase.firestore) {
-                const templateDoc = await firebase.firestore()
-                    .collection('emailTemplates')
-                    .doc('welcome')
-                    .get();
-
-                if (templateDoc.exists) {
-                    const data = templateDoc.data();
-                    document.getElementById('templateSubject').value = data.subject || '';
-                    document.getElementById('templateContent').value = data.content || '';
-                } else {
-                    // Load default template
-                    document.getElementById('templateSubject').value = 'Welcome to Attendly - Your Attendance Tracking Journey Begins!';
-                    document.getElementById('templateContent').value = window.emailJSService ? window.emailJSService.getDefaultWelcomeTemplate() : '';
-                }
-            }
-        } catch (error) {
-            console.error('Error loading template for editing:', error);
-            showToast('Error loading template', 'danger');
-        }
-    }
-
-    async function saveTemplate() {
-        const subject = document.getElementById('templateSubject').value.trim();
-        const content = document.getElementById('templateContent').value.trim();
-        const saveBtn = document.getElementById('saveTemplateBtn');
-
-        if (!subject || !content) {
-            showToast('Please fill in both subject and content', 'danger');
+        if (!emailInput || !typeSelect) {
+            showToast('Required inputs not found', 'danger');
             return;
         }
 
-        // Show loading state
-        const originalText = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+        const email = emailInput.value.trim();
+        const name = nameInput ? nameInput.value.trim() || 'Test User' : 'Test User';
+        const emailType = typeSelect.value;
 
-        try {
-            if (typeof firebase !== 'undefined' && firebase.firestore) {
-                await firebase.firestore().collection('emailTemplates').doc('welcome').set({
-                    id: 'welcome',
-                    name: 'Welcome Email',
-                    description: 'Email sent to new users upon registration',
-                    subject: subject,
-                    content: content,
-                    variables: ['userName', 'userEmail', 'dashboardUrl', 'currentDate', 'supportEmail'],
-                    isActive: true,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedBy: firebase.auth().currentUser?.email || 'admin',
-                    version: firebase.firestore.FieldValue.increment(1)
-                }, { merge: true });
-
-                showToast('Template saved successfully!', 'success');
-                hideTemplateEditor();
-            } else {
-                throw new Error('Firebase not available');
-            }
-        } catch (error) {
-            console.error('Error saving template:', error);
-            showToast('Error saving template', 'danger');
-        } finally {
-            // Reset button state
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
-        }
-    }
-
-    function previewTemplate() {
-        const subject = document.getElementById('templateSubject').value.trim();
-        const content = document.getElementById('templateContent').value.trim();
-
-        if (!subject || !content) {
-            showToast('Please fill in both subject and content', 'danger');
+        if (!email) {
+            showToast('Please enter an email address', 'danger');
             return;
         }
 
-        // Process template with sample data
-        const sampleData = {
-            userName: 'John Doe',
-            userEmail: 'john.doe@example.com',
-            dashboardUrl: `${window.location.origin}/src/pages/dashboard.html`,
-            currentDate: new Date().toLocaleDateString(),
-            supportEmail: 'support@attendly.com'
-        };
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Please enter a valid email address', 'danger');
+            return;
+        }
 
-        let processedContent = content;
-        Object.keys(sampleData).forEach(key => {
-            const placeholder = `{{${key}}}`;
-            processedContent = processedContent.replace(new RegExp(placeholder, 'g'), sampleData[key]);
-        });
+        try {
+            showTestResult(`Sending ${emailType} email...`, 'info');
 
-        // Open preview in new window
-        const previewWindow = window.open('', '_blank', 'width=800,height=600');
-        previewWindow.document.write(`
-            <html>
-                <head>
-                    <title>Email Template Preview</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
-                        .preview-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                        .subject { font-size: 18px; font-weight: bold; margin-bottom: 20px; padding: 10px; background: #e9ecef; border-radius: 4px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="preview-container">
-                        <div class="subject">Subject: ${subject}</div>
-                        <div class="content">${processedContent}</div>
+            const serverUrl = getServerUrl();
+            const response = await fetch(`${serverUrl}/send-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: email,
+                    name: name,
+                    type: emailType
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                emailStats.success++;
+                showToast(`${emailType} email sent successfully!`, 'success');
+                showTestResult(`✅ ${emailType} email sent successfully to ${email}`, 'success');
+            } else {
+                emailStats.failed++;
+                showToast(`Failed to send ${emailType} email: ${result.error}`, 'danger');
+                showTestResult(`❌ Failed to send ${emailType} email: ${result.error}`, 'error');
+            }
+
+            loadEmailStatistics();
+        } catch (error) {
+            emailStats.failed++;
+            console.error('Email sending error:', error);
+            showToast('Error sending email', 'danger');
+            showTestResult(`❌ Error sending email: ${error.message}`, 'error');
+            loadEmailStatistics();
+        }
+    }
+
+    function showTestResult(message, type) {
+        const resultsCard = document.getElementById('emailTestResults');
+        const resultsContent = document.getElementById('testResultsContent');
+
+        if (!resultsCard || !resultsContent) return;
+
+        resultsCard.style.display = 'block';
+
+        const timestamp = new Date().toLocaleTimeString();
+        const alertClass = type === 'success' ? 'alert-success' :
+                          type === 'error' ? 'alert-danger' : 'alert-info';
+
+        const resultHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <small class="text-muted">${timestamp}</small><br>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+
+        resultsContent.insertAdjacentHTML('afterbegin', resultHtml);
+
+        // Keep only last 5 results
+        const alerts = resultsContent.querySelectorAll('.alert');
+        if (alerts.length > 5) {
+            alerts[alerts.length - 1].remove();
+        }
+    }
+
+    async function loadEmailTemplates() {
+        const templatesCard = document.getElementById('emailTemplatesCard');
+        const templatesList = document.getElementById('emailTemplatesList');
+
+        if (!templatesCard || !templatesList) return;
+
+        try {
+            const serverUrl = getServerUrl();
+            const response = await fetch(`${serverUrl}/email-templates`);
+            const data = await response.json();
+
+            if (response.ok && data.templates) {
+                templatesCard.style.display = 'block';
+
+                const templatesHtml = data.templates.map(template => `
+                    <div class="border rounded p-2 mb-2">
+                        <strong>${template.name}</strong><br>
+                        <small class="text-muted">${template.description}</small>
                     </div>
-                </body>
-            </html>
-        `);
-        previewWindow.document.close();
+                `).join('');
+
+                templatesList.innerHTML = templatesHtml;
+            } else {
+                showToast('Failed to load email templates', 'danger');
+            }
+        } catch (error) {
+            console.error('Error loading templates:', error);
+            showToast('Error loading email templates', 'danger');
+        }
     }
 
-    // Initialize EmailJS system when DOM is ready
+    // Initialize Resend system when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         // Wait a bit for other scripts to load
-        setTimeout(initializeEmailJSSystem, 1000);
+        setTimeout(initializeResendEmailSystem, 1000);
     });
 
     </script>

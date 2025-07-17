@@ -528,21 +528,29 @@ async function checkFirstTimeLogin(user) {
                 firstLoginAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // Send welcome email using EmailJS service
-            if (window.emailJSService && window.emailJSService.isInitialized) {
-                console.log('Sending welcome email via EmailJS to:', user.email);
-                try {
-                    const result = await window.emailJSService.sendWelcomeEmail(
-                        user.email,
-                        user.displayName || userData.name || 'Valued User',
-                        user.uid
-                    );
-                    console.log('Welcome email result:', result);
-                } catch (error) {
-                    console.error('Error sending welcome email:', error);
+            // Send welcome email using Resend integration
+            try {
+                console.log('Sending welcome email via Resend to:', user.email);
+                const response = await fetch('/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: user.email,
+                        name: user.displayName || userData.name || 'Valued User',
+                        type: 'welcome'
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Welcome email sent successfully:', result);
+                } else {
+                    console.error('Welcome email failed:', response.status);
                 }
-            } else {
-                console.warn('EmailJS service not available, welcome email not sent');
+            } catch (error) {
+                console.error('Error sending welcome email:', error);
             }
         }
     } catch (error) {
